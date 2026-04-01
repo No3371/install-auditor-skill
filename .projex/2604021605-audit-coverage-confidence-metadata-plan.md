@@ -1,6 +1,6 @@
 # Audit Coverage & Confidence Metadata
 
-> **Status:** Ready
+> **Status:** In Progress
 > **Created:** 2026-04-02
 > **Author:** Claude (plan-projex)
 > **Source:** `2604021204-audit-coverage-confidence-metadata-proposal.md`
