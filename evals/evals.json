@@ -1,0 +1,41 @@
+{
+  "skill_name": "install-auditor",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "I want to install express for my Node.js project — npm install express. Is it safe?",
+      "expected_output": "Quick/Tier 1 audit. Should recognize express as high-trust (massive downloads, verified publisher), run a brief check, and produce a short APPROVED report without excessive ceremony.",
+      "files": [],
+      "assertions": [
+        {"text": "Report identifies this as a Tier 1 / Quick audit", "type": "contains_concept"},
+        {"text": "Verdict is APPROVED", "type": "exact_match"},
+        {"text": "Report is saved to a .md file", "type": "file_exists"},
+        {"text": "Report is concise — under 80 lines", "type": "line_count_max"}
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "Is the Wappalyzer browser extension safe to add to Chrome? I want to use it to identify what tech stack websites are using.",
+      "expected_output": "Standard/Tier 2 audit. Should research permissions (broad URL access), note Wappalyzer is a known tool, and produce CONDITIONAL or APPROVED with permission caveats.",
+      "files": [],
+      "assertions": [
+        {"text": "Report discusses browser extension permissions (broad URL access)", "type": "contains_concept"},
+        {"text": "Verdict is APPROVED or CONDITIONAL (not REJECTED)", "type": "verdict_check"},
+        {"text": "Report identifies Wappalyzer as a known company/tool", "type": "contains_concept"},
+        {"text": "Report is saved to a .md file", "type": "file_exists"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "My coworker shared this package in Slack — npm install react-native-community-async-storage. Should I use it for my React Native app?",
+      "expected_output": "Deep/Tier 3 audit. Should detect typosquat of @react-native-async-storage/async-storage, flag Slack source, and produce REJECTED or CONDITIONAL with strong warnings.",
+      "files": [],
+      "assertions": [
+        {"text": "Report flags potential typosquatting or name mismatch", "type": "contains_concept"},
+        {"text": "Report mentions @react-native-async-storage/async-storage", "type": "contains_string"},
+        {"text": "Report notes Slack source as lower trust", "type": "contains_concept"},
+        {"text": "Verdict is REJECTED or CONDITIONAL with strong warnings", "type": "verdict_check"}
+      ]
+    }
+  ]
+}
