@@ -22,7 +22,9 @@
         {"text": "Report discusses browser extension permissions (broad URL access)", "type": "contains_concept"},
         {"text": "Verdict is APPROVED or CONDITIONAL (not REJECTED)", "type": "verdict_check"},
         {"text": "Report identifies Wappalyzer as a known company/tool", "type": "contains_concept"},
-        {"text": "Report is saved to a .md file", "type": "file_exists"}
+        {"text": "Report is saved to a .md file", "type": "file_exists"},
+        {"text": "## Audit Coverage", "type": "contains_string"},
+        {"text": "Audit confidence", "type": "contains_concept"}
       ]
     },
     {
@@ -34,7 +36,9 @@
         {"text": "Report flags potential typosquatting or name mismatch", "type": "contains_concept"},
         {"text": "Report mentions @react-native-async-storage/async-storage", "type": "contains_string"},
         {"text": "Report notes Slack source as lower trust", "type": "contains_concept"},
-        {"text": "Verdict is REJECTED or CONDITIONAL with strong warnings", "type": "verdict_check"}
+        {"text": "Verdict is REJECTED or CONDITIONAL with strong warnings", "type": "verdict_check"},
+        {"text": "## Audit Coverage", "type": "contains_string"},
+        {"text": "Audit confidence", "type": "contains_concept"}
       ]
     }
   ]

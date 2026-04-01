@@ -102,6 +102,14 @@ The purpose of research is to answer these questions with *current* data (not tr
 
 **Collect all source URLs** as you research — they go in the report's Sources section.
 
+### Audit coverage tracking
+
+As you run each check, record its outcome for the **Audit Coverage** table (see Step 6):
+
+- Use the canonical row labels from `references/criteria.md` **Audit Coverage Checklist** for this tier and installable type.
+- For each row: **Status** (`Done`, `Done, N results`, `Skipped (…)`, `Not available (…)`, `N/A (…)`) plus **Source or notes** (script name, API, search query, or why skipped).
+- **Tier-skipped** checks (e.g., deep web search in Tier 1) are **not** the same as **Not available** — the latter means you tried and could not get data.
+
 ### For Tier 1 (Quick Audit)
 Only confirm: no CVEs, not a typosquat, license is compatible. Skip the deep web research.
 
@@ -175,6 +183,10 @@ All criteria pass? ────────────────────�
 
 **CONDITIONAL** means: installation may proceed only after listed conditions are met (pin to safe version, disable certain permissions, sandbox only, etc.).
 
+### Coverage gaps and recommendation
+
+If **two or more** checks are **Not available** (failed API, 404, timeout — **not** tier-skipped and **not** `N/A`), add a sentence in **Recommendation** that the audit has **reduced coverage** because key data sources could not be reached. Do **not** change the verdict label (APPROVED / CONDITIONAL / REJECTED) for coverage alone — the verdict still follows the tree above. **Tier-skipped** checks do not count toward this threshold.
+
 ---
 
 ## Step 6 — Write the Report
@@ -208,6 +220,27 @@ All criteria pass? ────────────────────�
 | Publisher Trust | Verified / Unverified / Anonymous |
 | Adoption | downloads/week, stars, etc. |
 | License | SPDX — Compatible / Review needed / Incompatible |
+
+## Audit Coverage
+
+**Audit confidence (coverage):** [ High | Moderate | Low ] — [short reason: e.g., "7/9 checks Done, 2 Skipped (Tier 1)"]
+
+Audit confidence measures **how completely the tier-appropriate checklist was executed** — **not** whether the installable is free of vulnerabilities. Unknown issues remain possible even when coverage is High.
+
+| Check | Status | Source or notes |
+|-------|--------|-----------------|
+| Registry / metadata lookup | Done | e.g., registry-lookup.ps1 / npm API |
+| Typosquat / name verification | Done | compared to `<legitimate name>` |
+| CVE / advisories | Done, 0 results | OSV, GHSA |
+| OpenSSF Scorecard | Not available | no repo for Scorecard API |
+| Deep web / incident search | Skipped (Tier 1) | — |
+| *(add rows from `references/criteria.md` for this tier; Tier 1: keep to ~3–6 rows — minimal set only)* | | |
+
+**Rules of thumb for confidence**
+
+- **High:** All tier-required checks are Done, legitimately **N/A**, or **Skipped (Tier N)** by design; at most one **Not available** on a non-critical row (e.g., Scorecard missing while CVE scan completed).
+- **Moderate:** One–two **Not available** rows that are not solely tier-skips, or a critical-adjacent gap (e.g., partial advisory data).
+- **Low:** Three or more **Not available**, or any tier-required check missing without a valid **Skipped** / **N/A** reason — especially **CVE / advisories** unavailable for Tier 2 or Tier 3.
 
 ## Risk Flags
 <List each, or "None identified">
@@ -261,6 +294,7 @@ These are the things that should immediately stop an installation:
 4. **Don't be swayed by urgency.** "I need this now" doesn't change the security posture.
 5. **One report per installable.** If multiple packages are requested, produce separate reports.
 6. **Adapt depth to risk.** Use the tiering system — don't over-audit trusted packages, don't under-audit risky ones.
+7. **Document what you checked.** The **Audit Coverage** section is part of the evidence chain for every full report — include it unless the run is explicitly aborted before a report file is written.
 
 ---
 

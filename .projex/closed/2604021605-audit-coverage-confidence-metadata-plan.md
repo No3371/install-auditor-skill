@@ -1,7 +1,9 @@
 # Audit Coverage & Confidence Metadata
 
-> **Status:** In Progress
+> **Status:** Complete
 > **Created:** 2026-04-02
+> **Completed:** 2026-04-02
+> **Walkthrough:** `2604021605-audit-coverage-confidence-metadata-walkthrough.md`
 > **Author:** Claude (plan-projex)
 > **Source:** `2604021204-audit-coverage-confidence-metadata-proposal.md`
 > **Related Projex:** `2604021200-reliability-accuracy-improvements-imagine.md`, `2604021204-audit-coverage-confidence-metadata-proposal.md`
@@ -25,11 +27,11 @@ Implement Option B from the proposal: add a mandatory **Audit Coverage** table p
 Reports show findings without proving which checks ran. Readers cannot distinguish “clean after thorough checks” from “clean because little was checked.” The proposal fixes this with structured coverage metadata and a scoped confidence label.
 
 ### Success Criteria
-- [ ] Step 6 report template includes `## Audit Coverage` (table + confidence line) with status vocabulary and framing that confidence = **coverage completeness**, not “safe.”
-- [ ] Step 3 instructs agents to track each check’s status while researching; Step 5 links verdict narrative to unavailable/ failed checks when relevant.
-- [ ] `references/criteria.md` defines a **canonical row set per tier** (what must appear as Done / Skipped / N/A / Not available).
-- [ ] `evals/evals.json` asserts presence of an Audit Coverage section and of an audit-confidence line on at least one eval.
-- [ ] Tier 1 stays short: only rows for checks actually performed or tier-skipped, per proposal.
+- [x] Step 6 report template includes `## Audit Coverage` (table + confidence line) with status vocabulary and framing that confidence = **coverage completeness**, not “safe.”
+- [x] Step 3 instructs agents to track each check’s status while researching; Step 5 links verdict narrative to unavailable/ failed checks when relevant.
+- [x] `references/criteria.md` defines a **canonical row set per tier** (what must appear as Done / Skipped / N/A / Not available).
+- [x] `evals/evals.json` asserts presence of an Audit Coverage section and of an audit-confidence line on at least one eval.
+- [x] Tier 1 stays short: only rows for checks actually performed or tier-skipped, per proposal.
 
 ### Out of Scope
 - Option C (inline annotations in Security/Reliability cells).

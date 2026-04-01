@@ -6,7 +6,53 @@
 - **Tier 2 (Standard):** Score all sections below. This is the default depth.
 - **Tier 3 (Deep):** Score all sections below AND review source code for behavioral signals (install scripts, obfuscation, credential access patterns).
 
-The `scripts/registry-lookup.js` script provides hard data for many of these checks (downloads, maintainer count, publish date, dependencies). Use it before manual research.
+The `scripts/registry-lookup.ps1` script provides hard data for many of these checks (downloads, maintainer count, publish date, dependencies). Use it before manual research.
+
+---
+
+## Audit Coverage Checklist (Canonical)
+
+Reports must include an **Audit Coverage** table (see `SKILL.md` Step 6). Row labels below should match the **Check** column unless you add an ecosystem-specific row — do **not** omit tier-required rows.
+
+### Status vocabulary
+
+Use one of these in the **Status** column:
+
+| Status | When to use |
+|--------|-------------|
+| `Done` | Check completed; evidence exists |
+| `Done, N results` | Completed with countable outcomes (e.g., web hits, CVE count) |
+| `Skipped (<reason>)` | Deliberately not run — include tier or scope (e.g., `Skipped (Tier 1)`) |
+| `Not available (<detail>)` | Attempted but blocked (API 404, no Scorecard repo, network failure) |
+| `N/A (<reason>)` | Does not apply to this installable (e.g., no `postinstall` script) |
+
+### Critical checks (confidence)
+
+For **Tier 2 (Standard)** and **Tier 3 (Deep)**, a **CVE / advisory scan for the installable version** must **not** end as `Not available` without strong justification — if it does, **Audit confidence** cannot be **High** (see `SKILL.md`).
+
+### Rows by tier
+
+Each row is **Required** (must appear in the table), **Tier-skip** (Tier 1 uses `Skipped (Tier 1)` or omits the row per Tier 1 rules in `SKILL.md`), or **If applicable** (include when the installable type matches).
+
+| Check | Tier 1 | Tier 2 | Tier 3 | Notes |
+|-------|--------|--------|--------|-------|
+| Registry / metadata lookup | Required | Required | Required | e.g., `registry-lookup.ps1` or registry API |
+| Typosquat / name verification | Required | Required | Required | Character-by-character vs legitimate name |
+| CVE / advisories (requested version) | Required | Required | Required | OSV, GHSA, registry advisory APIs — **critical** for T2/T3 |
+| License compatibility | Required | Required | Required | See `references/licenses.md` |
+| Maintainer / activity / health | Tier-skip (brief) | Required | Required | Downloads, last release, signals |
+| Web search — incidents & supply chain | Tier-skip | Required | Required | Malware, hijack, removal notices |
+| OpenSSF Scorecard | Optional | Required (Done or Not available) | Required | Query `api.securityscorecards.dev` when repo known |
+| Permissions / least privilege | If applicable | If applicable | If applicable | Extensions, Docker, GH Actions, etc. |
+| Dependency tree / transitive risk | Tier-skip | Required | Required | Known-bad transitive deps |
+| Install script review (`pre`/`postinstall`, etc.) | Tier-skip | Required | Required | N/A if no scripts |
+| Source code review (behavioral) | Tier-skip | Tier-skip | Required | Obfuscation, network calls, credential access |
+
+**Tier 1 (Quick):** Include **only** the minimal row set — typically registry/metadata, typosquat, CVE/advisories, license, plus **Skipped (Tier 1)** for deeper rows *or* omit deep rows entirely if the table stays readable (see `SKILL.md`). Do not pad with ten `Skipped` lines.
+
+**Browser extensions:** Always include **Permissions / least privilege** when the installable is an extension.
+
+**Containers / images:** Include image configuration checks (user, capabilities) under permissions or as extra rows.
 
 ---
 
