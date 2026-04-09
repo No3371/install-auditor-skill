@@ -3,7 +3,7 @@
 > **Status:** Draft
 > **Created:** 2026-04-02
 > **Author:** Claude (Opus 4.6)
-> **Related Projex:** 2604021200-reliability-accuracy-improvements-imagine.md
+> **Related Projex:** 2604021200-reliability-accuracy-improvements-imagine.md, 2604021815-algorithmic-typosquat-detection-plan.md
 
 ---
 
@@ -117,7 +117,7 @@ None. Additive change. Existing audits continue to work — the agent gains a to
 ## Next Steps
 
 If accepted:
-1. Create Plan projex for implementation
+1. **Plan created:** `2604021815-algorithmic-typosquat-detection-plan.md` — execute when ready (`/execute-projex`)
 2. Build the Levenshtein + registry-search prototype for npm first (highest typosquatting volume)
 3. Test against known typosquat incidents (`event-stream`, `ua-parser-js`, `colors`, `node-ipc`) and verify detection
 4. Test against legitimate similar-named packages to calibrate false-positive rate

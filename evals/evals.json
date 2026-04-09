@@ -40,6 +40,32 @@
         {"text": "## Audit Coverage", "type": "contains_string"},
         {"text": "Audit confidence", "type": "contains_concept"}
       ]
+    },
+    {
+      "id": 3,
+      "prompt": "Can I npm install expresss for my web server? I need an HTTP framework.",
+      "expected_output": "Should detect 'expresss' (triple s) as distance-1 from 'express' (mega-popular package). typosquat-check.ps1 should flag high/critical risk. Verdict should be REJECTED or CONDITIONAL with strong typosquat warning. Report should reference the algorithmic similarity check.",
+      "files": [],
+      "assertions": [
+        {"text": "Report mentions typosquat or similarity detection via algorithmic check or typosquat-check script", "type": "contains_concept"},
+        {"text": "Report identifies 'express' as the likely intended package", "type": "contains_concept"},
+        {"text": "Verdict is REJECTED or CONDITIONAL", "type": "verdict_check"},
+        {"text": "## Audit Coverage", "type": "contains_string"},
+        {"text": "Audit confidence", "type": "contains_concept"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I'd like to npm install chalk for colorizing my CLI output. Is it safe?",
+      "expected_output": "chalk is a legitimate, widely-used package. typosquat-check.ps1 should show low risk. Verdict should be APPROVED or CONDITIONAL (not REJECTED). The typosquat check should be mentioned as having been run, but it should not raise false-positive concerns that block approval. This tests false-positive calibration.",
+      "files": [],
+      "assertions": [
+        {"text": "Report mentions that typosquat or similarity check was performed", "type": "contains_concept"},
+        {"text": "Verdict is APPROVED or CONDITIONAL (not REJECTED)", "type": "verdict_check"},
+        {"text": "Report does not incorrectly flag chalk as a typosquat", "type": "contains_concept"},
+        {"text": "## Audit Coverage", "type": "contains_string"},
+        {"text": "Audit confidence", "type": "contains_concept"}
+      ]
     }
   ]
 }

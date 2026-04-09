@@ -59,8 +59,14 @@ Each row is **Required** (must appear in the table), **Tier-skip** (Tier 1 uses 
 ## 4.1 Provenance & Identity
 
 ### Typosquatting Check (CRITICAL)
-Compare character by character against the known-legitimate package name.
-Common substitutions to watch:
+
+For **npm registry packages**, run `scripts/typosquat-check.ps1` first to get
+algorithmic edit-distance, download-ratio, and combosquat analysis. See
+`references/criteria/registry-package.md` "Typosquat Detection" for full
+interpretation guidance and risk-level thresholds.
+
+Then supplement with manual comparison — character by character against the
+known-legitimate package name. Common substitutions to watch:
 - `l` → `1`, `I` (lowercase L, number 1, uppercase i)
 - `o` → `0`
 - `-` insertion/removal (e.g., `cross-env` vs `crossenv`)
