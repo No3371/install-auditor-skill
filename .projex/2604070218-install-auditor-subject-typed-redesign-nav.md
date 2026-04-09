@@ -1,0 +1,257 @@
+# install-auditor — Subject-Typed Audit Dispatch Redesign
+
+> **Created:** 2026-04-07 | **Last Revised:** 2026-04-09
+> **Author:** Claude (Opus 4.6)
+> **Scope:** The entire `install-auditor` skill at `C:/Users/BA/.claude/skills/install-auditor/` — its `SKILL.md` workflow, `references/`, `scripts/`, `evals/`, and the redesign that turns it from a monolithic 6-step pipeline into a subject-type-first dispatcher with per-type audit workflow files. Covers the full lifecycle from taxonomy lock-in through eval expansion. Excludes cross-skill reorganization (no skill split).
+> **Parent Navigation:** None (this is the project-level roadmap for this skill)
+> **Related Projex:**
+> - **Framing eval (input):** [.projex/2604070217-subject-typed-audit-dispatch-eval.md](2604070217-subject-typed-audit-dispatch-eval.md)
+> - **Locked taxonomy spec (M0.1 deliverable):** [.projex/2604070300-install-auditor-subject-type-taxonomy-def.md](2604070300-install-auditor-subject-type-taxonomy-def.md)
+> - **Active proposals to retarget:**
+>   - [.projex/2604021202-algorithmic-typosquat-detection-proposal.md](2604021202-algorithmic-typosquat-detection-proposal.md)
+>   - [.projex/2604021201-multi-db-vulnerability-correlation-proposal.md](2604021201-multi-db-vulnerability-correlation-proposal.md)
+>   - [.projex/2604021203-transitive-dependency-auditing-proposal.md](2604021203-transitive-dependency-auditing-proposal.md)
+>   - [.projex/2604021200-reliability-accuracy-improvements-imagine.md](2604021200-reliability-accuracy-improvements-imagine.md)
+> - **Executed plan (M2.2):** [.projex/2604021815-algorithmic-typosquat-detection-plan.md](2604021815-algorithmic-typosquat-detection-plan.md)
+> - **Closed work referenced:** [.projex/closed/2604021605-audit-coverage-confidence-metadata-walkthrough.md](closed/2604021605-audit-coverage-confidence-metadata-walkthrough.md)
+
+---
+
+## Vision
+
+`install-auditor` becomes a **dispatcher** skill: a small `SKILL.md` that classifies the subject of an audit (registry package, browser extension, container image, CI action, IDE plugin, desktop app, CLI binary, agent extension, remote integration, or generic), then loads exactly one `workflows/<subject-type>.md` whose rubric, evidence acquisition, and tier thresholds are tuned to that subject's actual risk surface. Shared verdict logic, the audit-coverage report, the `references/` rubrics, and the `registry-lookup.ps1` primitive remain shared. The end state: an auditor that gets *more rigorous* per subject while reading *fewer tokens* per audit, and that can absorb new subject types and new audit signals as additive workflow files instead of dilutions of one shared spine.
+
+---
+
+## Current Position
+
+**As of 2026-04-09:**
+
+The skill is a working dispatcher. `SKILL.md` classifies subjects (Step 0), loads per-type workflows (Step 1), and applies the shared verdict tree + audit-coverage report (Step N). The first subject-specific workflow — `workflows/registry-package.md` — is live for Type 1, with the remaining 9 types falling back to `workflows/generic.md`. Two data primitives exist: `scripts/registry-lookup.ps1` (registry metadata) and `scripts/typosquat-check.ps1` (algorithmic name-similarity detection for npm). The criteria layer is split: `references/criteria.md` (shared core) + `references/criteria/registry-package.md` (first per-subject addendum with ecosystem trust signals, tier thresholds, install-script risk patterns, and typosquat scoring). Eval coverage expanded to 5 cases (ids 0–4) including typosquat detection and false-positive calibration.
+
+**Phase 2 is in progress** — M2.1 (registry-package workflow extraction) and M2.2 (typosquat detection) are complete. M2.3 (multi-DB CVE correlation) and M2.4 (transitive dependency auditing) remain.
+
+### Recent Progress
+- **2026-04-02** — Audit-coverage + confidence metadata feature shipped (closed walkthrough). Established the shared audit-coverage table convention that the redesign will preserve.
+- **2026-04-02** — Four proposals drafted (typosquat, multi-DB CVE, transitive deps, reliability/accuracy). Captured the queued backlog this redesign needs to absorb.
+- **2026-04-02** — Typosquat detection plan drafted (`2604021815`). Currently scoped against the monolithic SKILL.md.
+- **2026-04-07** — Framing evaluation drafted (`2604070217`). Recommends the pivot, defines taxonomy, and produces the phased Next Steps consumed by this navigation.
+- **2026-04-08** — **Phase 1 M1.1 + M1.2 + M1.3 complete.** Dispatcher refactor landed. `SKILL.md` rewritten as the dispatcher shell (Step 0 classifier + 10-row dispatch table + Step 1 workflow loader + Step N shared verdict tree & audit-coverage report). `workflows/generic.md` created as the Phase 1 universal fallback (verbatim move of the old monolithic Steps 1–4 with headings renamed to the Identify / Evidence / Subject Rubric / Subject Verdict Notes template shape; secondary anchors preserve old Step N references). All 10 taxonomy types route to `workflows/generic.md` in Phase 1 (structural-only per M0.4). M1.3 eval gate passed: all three existing eval cases (express, Wappalyzer, react-native-community-async-storage) walk through the new dispatcher at high classification confidence and produce verdicts equivalent to prior expectations. Byte budget for `SKILL.md` ≤ ~4 KB was intentionally overshot (12.5 KB actual) because Step N's load-bearing report skeleton + verdict tree + Red Flags cannot be compressed without violating the "preserve exact audit-coverage table format" hard criterion; read-cost claim validation is already budgeted for Phase 5 M5.3. Plan [`2604082335-dispatcher-refactor-m11-m12-plan.md`](closed/2604082335-dispatcher-refactor-m11-m12-plan.md) closed. Only M1.4 (re-point queued typosquat plan via patch-projex) remains in Phase 1.
+- **2026-04-07 (PM)** — **Phase 0 M0.1 complete.** 10-type taxonomy locked as a first-class spec at `2604070300-install-auditor-subject-type-taxonomy-def.md`. Decisions baked in: Q1 = ide-plugin and agent-extension stay separate; Q5 = one `agent-extension.md` workflow with three labeled sub-rubrics 8a (MCP) / 8b (Claude Code plugin) / 8c (Claude Code skill); IaC modules (Terraform / Ansible / Helm) absorbed into registry-package; taxonomy is closed-at-version + open-across-versions with documented extension procedure. Future-splits triggers documented for agent-extension and registry-package → iac-module.
+- **2026-04-09** — **Phase 2 M2.1 complete.** First subject-specific workflow `workflows/registry-package.md` authored (444 lines). Ecosystem-aware Identify step covering 11 registries (npm, PyPI, crates.io, RubyGems, NuGet, Maven, Go, Hex, Terraform Registry, Ansible Galaxy, Helm/Artifact Hub). Evidence section mandates `registry-lookup.ps1` invocation with tier-scoped research depth. Subject Rubric specializes all §4.1–4.6 criteria for registry context. Subject Verdict Notes provide concrete push-toward guidance for REJECTED/CONDITIONAL/APPROVED. Per-subject criteria addendum created at `references/criteria/registry-package.md` (236 lines) with ecosystem trust signals, tier assignment thresholds, install-script risk patterns, and transitive dependency depth guidance. `SKILL.md` dispatch table updated: Type 1 now routes to `workflows/registry-package.md` (status "Live — Phase 2 (M2.1)"). **Resolves Q4** (per-subject Tier 1/2/3 thresholds) for registry-package: Tier 1 = >1M weekly npm downloads + verified publisher + no CVEs + >1yr old; Tier 2 = default; Tier 3 = any of 9 red-flag triggers.
+- **2026-04-09** — **Phase 2 M2.2 complete.** Typosquat detection landed per plan [`2604021815-algorithmic-typosquat-detection-plan.md`](2604021815-algorithmic-typosquat-detection-plan.md). All 4 plan steps executed: (1) `scripts/typosquat-check.ps1` created (422 lines) — Levenshtein distance, combosquat detection, npm search baseline, download ratio, risk scoring (low/medium/high/critical), JSON output with caching; `.gitignore` updated for cache dir. (2) `references/criteria/registry-package.md` updated with typosquat detection section — risk-level-to-verdict mapping (critical=auto-REJECTED, high=strong CONDITIONAL), manual/homoglyph complement guidance. (3) `workflows/registry-package.md` surgically edited — script invocation added in Evidence, algorithmic-first ordering in research, audit coverage row for npm typosquat. (4) `evals/evals.json` expanded with eval id 3 (`npm install expresss` — distance-1 typosquat, expects REJECTED/CONDITIONAL) and id 4 (`npm install chalk` — legitimate, expects APPROVED/CONDITIONAL for false-positive calibration). `references/criteria.md` §4.1 updated with brief typosquat-check.ps1 reference. **No changes to `SKILL.md` or `workflows/generic.md`** — dispatcher stays subject-agnostic. Plan `2604021815` status: **Blocked → Executed**.
+
+### Active Work
+- **Subject-typed redesign (this nav)** — **Phases 0–1 complete; Phase 2 M2.1 + M2.2 complete (2026-04-09).** The dispatcher is live, the first subject-specific workflow (`registry-package.md`) is routing Type 1 audits, and the first queued proposal (typosquat detection) has landed. **Remaining Phase 2 milestones: M2.3 (multi-DB CVE correlation), M2.4 (transitive dependency auditing), M2.5 (eval gate).** Next concrete action: plan-projex for **Phase 2 M2.3** — add multi-DB CVE correlation into `workflows/registry-package.md`'s §4.3 Security step per proposal [`2604021201`](2604021201-multi-db-vulnerability-correlation-proposal.md). After M2.3, transitive deps (M2.4) follows, then the Phase 2 eval gate (M2.5) which needs at least one pip/PyPI positive case and overall regression pass.
+
+### Known Blockers
+- *(none)* — All prior blockers resolved. M2.3/M2.4 have no external dependencies beyond their proposals (which exist in `.projex/`).
+
+---
+
+## Roadmap
+
+### Phase 0: Taxonomy & Classifier Lock-In — **Status: Complete** (2026-04-08)
+
+**Goal:** Reach explicit user agreement on the subject-type taxonomy, the classifier rule, and the dispatcher contract — *before* any files move. Phase 0 is paperwork only; no code or skill files change.
+
+**Milestones:**
+- [x] **M0.1 — Confirm or revise the 10-type taxonomy** — Walked through the list in eval §5.3 with the user. Locked all 10 types. Resolved Q1 (keep ide-plugin and agent-extension separate) and Q5 (one `agent-extension.md` workflow with three labeled sub-rubrics 8a/8b/8c). Absorbed IaC modules into registry-package. Taxonomy is closed-at-version, open-across-versions with documented extension procedure. **Completed 2026-04-07.**
+  - Ideation: [eval §5.3](2604070217-subject-typed-audit-dispatch-eval.md)
+  - Execution: [2604070300-install-auditor-subject-type-taxonomy-def.md](2604070300-install-auditor-subject-type-taxonomy-def.md)
+- [x] **M0.2 — Specify the "innermost trust boundary" classifier rule** — **Resolved 2026-04-07 (PM).** Q2 = option (a) **dispatcher prose**, not helper script. Rule authored as the "Classifier Rule — Innermost Trust Boundary" section of the taxonomy def (purpose, decision procedure, signal table, confidence levels, worked hybrid examples, edge-case discipline). Hybrid-subject handling (eval gap G4) resolved via the worked-examples + edge-case-discipline sub-sections. Helper script preserved as a documented escalation path, not a v1 deliverable. **Completed 2026-04-07 (PM).**
+  - Ideation: [eval §5.3 hybrid handling, §10 Q2, Q4](2604070217-subject-typed-audit-dispatch-eval.md)
+  - Execution: "Classifier Rule" section inside [2604070300-install-auditor-subject-type-taxonomy-def.md](2604070300-install-auditor-subject-type-taxonomy-def.md)
+- [x] **M0.3 — Decide criteria.md split shape** — **Resolved 2026-04-08.** Q6 = **shared core + per-subject addenda.** `references/criteria.md` stays as the shared core (tier-application rules, audit-coverage checklist, cross-subject §4.1 Provenance / §4.2 Maintenance / §4.3 Security / §4.5 Reliability / §4.7 OpenSSF scoring semantics). Subject-specific rubrics move into `references/criteria/<subject>.md` addenda, one per workflow. Each workflow file loads core + its own addendum. Formalizes the per-subject drift already present in §4.4 Permissions (browser-ext / npm-pip / Docker sub-sections) before it spreads to Phases 3/4. First concrete addendum is Phase 2 M2.1 (`references/criteria/registry-package.md`). **Completed 2026-04-08.**
+  - Ideation: [eval §5.4, §9, §10 Q6](2604070217-subject-typed-audit-dispatch-eval.md)
+  - Execution: Documented in this nav's Decisions section (2026-04-08 entry); addendum files authored per-workflow starting Phase 2
+- [x] **M0.4 — Decide migration cadence** — **Resolved 2026-04-08.** Q8 = **phase-by-phase with eval-regression gates.** Each Phase 1–6 batch lands as its own PR/commit group with an explicit eval-regression gate before the next phase starts. Phase 1 is structural-only (dispatcher + `workflows/generic.md` fallback; existing evals must pass unchanged as a hard gate). Phase 2 bundles `registry-package.md` extraction + the three queued proposals (typosquat, multi-DB CVE, transitive deps), but each proposal commits separately inside the phase so its eval signal stays independently attributable. Phases 3/4 batch 1–2 workflows per commit. Phase 5 (default-off `generic.md`) is its own late-stage PR once all specific workflows are in place. **Completed 2026-04-08.**
+  - Ideation: [eval §8, §10 Q8](2604070217-subject-typed-audit-dispatch-eval.md)
+  - Execution: Documented in this nav's Decisions section (2026-04-08 entry)
+
+**Exit Criteria:** Locked 10-type taxonomy spec exists. Classifier rule is written prose ready to drop into the dispatcher. Decisions on criteria.md shape and migration cadence are recorded in this navigation. User has signed off on all four.
+
+---
+
+### Phase 1: Dispatcher Refactor — **Status: Complete** (2026-04-08)
+
+**Goal:** Convert `SKILL.md` from monolith to dispatcher without changing audit *behavior*. Existing evals must still pass. Old monolith content moves verbatim into `workflows/generic.md` as a safe fallback the dispatcher routes to whenever classification confidence is low.
+
+**Milestones:**
+- [x] **M1.1 — Rewrite `SKILL.md` to dispatcher form** — Step 0 (classify per locked rule) + Step N (shared verdict tree + audit-coverage report shape). Keep total length ≤ ~4 KB. *Completed 2026-04-08. Byte target missed (12.5 KB actual) — Step N's load-bearing report skeleton blocked further compression; documented as deliberate trade-off in the plan close. Read-cost validation deferred to Phase 5 M5.3.*
+  - Ideation: [eval §5.4 architecture sketch](2604070217-subject-typed-audit-dispatch-eval.md)
+  - Execution: [2604082335-dispatcher-refactor-m11-m12-plan.md](closed/2604082335-dispatcher-refactor-m11-m12-plan.md) (closed 2026-04-08)
+- [x] **M1.2 — Create `workflows/generic.md`** — Verbatim move of the existing monolithic Steps 1–4 (evidence acquisition + scoring) from old `SKILL.md`. Trim only the verdict/report sections (those move into the new dispatcher). *Completed 2026-04-08. Step headings renamed to the Identify / Evidence / Subject Rubric / Subject Verdict Notes template shape with secondary "(formerly Step N — …)" anchors. Pays down nav risk 2 (style drift) at creation time.*
+  - Ideation: [eval §5.4](2604070217-subject-typed-audit-dispatch-eval.md)
+  - Execution: [2604082335-dispatcher-refactor-m11-m12-plan.md](closed/2604082335-dispatcher-refactor-m11-m12-plan.md) (closed 2026-04-08)
+- [x] **M1.3 — Eval gate: existing evals.json regressions pass** — All three existing eval cases (express, Wappalyzer, react-native-community-async-storage) route to their classified subjects (registry-package, browser-extension, registry-package) but with `generic.md` still as fallback during Phase 1; outputs match prior expectations. *Passed 2026-04-08 via manual dry-run walkthrough. All three cases classify at high confidence, route to `workflows/generic.md`, produce tier-appropriate findings, return to dispatcher Step N, and emit verdicts equivalent to pre-plan expectations. `## Audit Coverage` and `Audit confidence` literal assertions preserved verbatim in Step N. No regression detected.*
+  - Ideation: [evals.json](../evals/evals.json)
+  - Execution: Eval run as part of M1.1's plan close
+- [x] **M1.4 — Re-point queued plan `2604021815`** — Updated the typosquat plan's "Files" section to target `workflows/registry-package.md` instead of `SKILL.md` Step 3, deferring its execution until Phase 2 lands the file. *Completed 2026-04-08 via patch-projex. Plan status changed to **Blocked — awaiting Phase 2 M2.1**. Changes scoped to the plan document only: Summary, Current State, Key Files table, Success Criteria item 4, Step 3 (title/body/depends-on/files), Acceptance Criteria row 3, Rollback step 2, and a new "Blocked On" section at the top. Typosquat detection logic, thresholds, scoring, and eval coverage preserved unchanged. `SKILL.md`, `workflows/generic.md`, `references/`, `scripts/`, and `evals/` untouched — M1.4 was paperwork only, as designed.*
+  - Ideation: [eval §9 retargeting table](2604070217-subject-typed-audit-dispatch-eval.md)
+  - Execution: Patch-projex applied 2026-04-08 to [2604021815-algorithmic-typosquat-detection-plan.md](2604021815-algorithmic-typosquat-detection-plan.md); see its Revision History entry dated 2026-04-08
+
+**Exit Criteria:** `SKILL.md` is the dispatcher. `workflows/generic.md` exists as the fallback. All existing evals pass. The four queued proposals point to their new homes. No subject-specific behavior has changed yet — only the structure.
+
+---
+
+### Phase 2: `registry-package.md` Extraction — **Status: Current** (as of 2026-04-09)
+
+**Goal:** First real subject-specific workflow file. Validates the shared/per-workflow seam. Lands the three retargeted registry-only proposals (typosquat, multi-DB CVE correlation, transitive deps).
+
+**Milestones:**
+- [x] **M2.1 — Author `workflows/registry-package.md`** — Extract registry-package logic from `generic.md`: ecosystem-aware identify step, registry-lookup.ps1 invocation, npm-shaped Tier 1/2/3 thresholds, §4.1–4.6 rubric application. *Completed 2026-04-09. Workflow is 444 lines covering 11 registries. Per-subject criteria addendum at `references/criteria/registry-package.md` (236 lines). Dispatch table updated. Resolves Q4 for registry-package.*
+  - Ideation: [eval §5.3, §5.4](2604070217-subject-typed-audit-dispatch-eval.md)
+  - Execution: Direct execution (2026-04-09) — no separate plan-projex; scope was well-defined by nav M2.1 spec + taxonomy def + Phase 0 M0.3 criteria shape decision
+- [x] **M2.2 — Land typosquat detection** — Execute the retargeted plan `2604021815`. Add `scripts/typosquat-check.ps1` invocation as a step inside `workflows/registry-package.md` (not `SKILL.md`). *Completed 2026-04-09. All 4 plan steps executed: script created (422 lines), criteria addendum updated, workflow integrated, evals 3+4 added. Plan status → Executed.*
+  - Ideation: [2604021202-algorithmic-typosquat-detection-proposal.md](2604021202-algorithmic-typosquat-detection-proposal.md)
+  - Execution: [2604021815-algorithmic-typosquat-detection-plan.md](2604021815-algorithmic-typosquat-detection-plan.md) (executed 2026-04-09)
+- [ ] **M2.3 — Land multi-DB CVE correlation** — Inside `workflows/registry-package.md`'s §4.3 Security step.
+  - Ideation: [2604021201-multi-db-vulnerability-correlation-proposal.md](2604021201-multi-db-vulnerability-correlation-proposal.md)
+  - Execution: New plan-projex (TBD)
+- [ ] **M2.4 — Land transitive dependency auditing** — Inside `workflows/registry-package.md`'s §4.3 / §4.5 surface.
+  - Ideation: [2604021203-transitive-dependency-auditing-proposal.md](2604021203-transitive-dependency-auditing-proposal.md)
+  - Execution: New plan-projex (TBD)
+- [ ] **M2.5 — Eval gate: registry-package cases** — express + react-native-community-async-storage now route to `workflows/registry-package.md`. Add at least one new positive case (popular pip package) and one new typosquat case (PyPI).
+  - Ideation: [eval §6 G3](2604070217-subject-typed-audit-dispatch-eval.md)
+  - Execution: Update `evals/evals.json` as part of each milestone's plan
+
+**Exit Criteria:** `workflows/registry-package.md` exists and is the route for npm/PyPI/RubyGems/crates.io/Maven/NuGet/Go/Hex. Three queued proposals are merged. Registry-package eval coverage has expanded. `generic.md` is no longer the fallback for known registry ecosystems.
+
+---
+
+### Phase 3: High-Volume Subjects — **Status: Future**
+
+**Goal:** Cover the next four highest-volume subject types with native workflow files: browser extensions, container images, CI actions, IDE plugins. Each gets a subject-native rubric, subject-native evidence sources, and at least one regression eval case.
+
+**Milestones:**
+- [ ] **M3.1 — `workflows/browser-extension.md`** — Manifest permissions, MV2/MV3, host_permissions vs activeTab, content-script reach, store verification (Chrome/Firefox/Edge), update auto-push behavior. Wappalyzer eval re-routes here.
+  - Ideation: [eval §5.1, §5.3](2604070217-subject-typed-audit-dispatch-eval.md)
+  - Execution: New plan-projex (TBD)
+- [ ] **M3.2 — `workflows/container-image.md`** — Cosign/Sigstore signature, SBOM presence, base image lineage, `:latest` warning, layer scanning, runtime privilege (rootful/rootless), registry trust (Docker Hub / GHCR / Quay / ECR / GCR).
+  - Ideation: [eval §5.1, §5.3](2604070217-subject-typed-audit-dispatch-eval.md)
+  - Execution: New plan-projex (TBD)
+- [ ] **M3.3 — `workflows/ci-action.md`** — SHA-pin rule, `pull_request_target` warning, marketplace verified-creator check, transitive action audit, secret access review.
+  - Ideation: [eval §5.1, §5.3](2604070217-subject-typed-audit-dispatch-eval.md)
+  - Execution: New plan-projex (TBD)
+- [ ] **M3.4 — `workflows/ide-plugin.md`** — VS Code Marketplace + Open VSX + JetBrains Marketplace verification, capability declarations, install-base + verified-publisher signals, Sublime/Neovim plugin handling.
+  - Ideation: [eval §5.1, §5.3](2604070217-subject-typed-audit-dispatch-eval.md)
+  - Execution: New plan-projex (TBD)
+- [ ] **M3.5 — Eval gate: subject-typed regression cases** — At least one positive + one negative case per new workflow added to `evals/evals.json`.
+  - Ideation: [eval §6 G3, §9 phase 6](2604070217-subject-typed-audit-dispatch-eval.md)
+  - Execution: Bundled into each M3.x plan close
+
+**Exit Criteria:** Four high-volume subject workflows exist with subject-native rubrics and eval coverage. The dispatcher routes confidently to them. `generic.md` is no longer the fallback for any of these subject types.
+
+---
+
+### Phase 4: Long-Tail Subjects — **Status: Future**
+
+**Goal:** Cover the remaining four subject types — desktop app, CLI binary, agent extension, remote integration — at a scope appropriate to their lower volume. These are smaller workflows that may share more with `generic.md` than Phase 3 workflows do.
+
+**Milestones:**
+- [ ] **M4.1 — `workflows/desktop-app.md`** — Code signing, vendor identity, installer behavior, MS Store / Mac App Store / Homebrew cask / winget / choco / .deb / .rpm provenance.
+- [ ] **M4.2 — `workflows/cli-binary.md`** — Checksum, GPG/Sigstore signature, GitHub Releases provenance, install-script review (curl-pipe-bash detection).
+- [ ] **M4.3 — `workflows/agent-extension.md`** — MCP servers, Claude Code skills/plugins, agent extensions: capability scope, prompt content, network access, file-system reach. **Per M0.1 lock-in: one workflow file with three labeled sub-rubrics 8a (MCP servers) / 8b (Claude Code plugins) / 8c (Claude Code skills).** The split-into-three escalation path is preserved via the Future Splits triggers in the taxonomy def (≥30% sub-rubric-specific content, distinct classifier signal needed, or read-cost budget exceeded).
+- [ ] **M4.4 — `workflows/remote-integration.md`** — OAuth scopes, data residency, terms-of-service, breach history, third-party API trust.
+- [ ] **M4.5 — Eval gate** — At least one case per long-tail workflow.
+
+**Exit Criteria:** All 9 specific workflow files exist. `generic.md` is now genuinely a low-confidence fallback, not the everyday default.
+
+---
+
+### Phase 5: Default-Off Generic — **Status: Future**
+
+**Goal:** Shift the dispatcher's default behavior so that `generic.md` only triggers on low-confidence classifications, not as the everyday route. This is the "redesign complete" milestone.
+
+**Milestones:**
+- [ ] **M5.1 — Tighten the classifier** — Now that all 9 specific workflows exist, raise the dispatcher's confidence threshold; only fall back to `generic.md` when no specific workflow matches.
+- [ ] **M5.2 — Trim `generic.md`** — Reduce to a true fallback: identify subject, ask user to clarify if classification is uncertain, run a defensive minimum audit with a warning note.
+- [ ] **M5.3 — Measure read-cost claim (eval F7)** — Verify per-audit token read cost dropped under dispatch vs the old monolith. If it didn't, document why and reconsider.
+
+**Exit Criteria:** `generic.md` is rare (not default). Read-cost measurement validates or refutes F7. The dispatcher is the steady-state architecture.
+
+---
+
+### Phase 6: Eval Expansion & Stewardship — **Status: Future / Continuous**
+
+**Goal:** The redesign is structurally complete; now harden it. Expand `evals/evals.json` to give each workflow file robust regression coverage, and establish a stewardship cadence for keeping subject-specific rubrics current.
+
+**Milestones:**
+- [ ] **M6.1 — Per-workflow eval bundles** — Aim for ≥3 cases per workflow (positive, negative, edge).
+- [ ] **M6.2 — Hybrid-subject eval cases** — Cases that exercise the "innermost trust boundary" rule (npm-distributed CLI, container-wrapped npm app, VS Code extension wrapping a binary).
+- [ ] **M6.3 — Stewardship cadence** — Schedule periodic re-evaluation of each workflow's rubric (subject-area tooling and trust signals shift fast).
+
+**Exit Criteria:** Continuous. This phase never closes — the navigation revision log captures each maintenance pass.
+
+---
+
+## Priorities
+
+**Current focus:** **Phase 2 M2.3 — multi-DB CVE correlation.** The registry-package workflow is live and typosquat detection is integrated. The next highest-value addition is enriching the §4.3 Security step with cross-database vulnerability correlation per proposal [`2604021201`](2604021201-multi-db-vulnerability-correlation-proposal.md).
+
+**Next up:** **Phase 2 M2.4 (transitive dependency auditing)** per proposal [`2604021203`](2604021203-transitive-dependency-auditing-proposal.md), then **M2.5 (eval gate)** — regression pass + at least one pip/PyPI positive case + one PyPI typosquat case.
+
+**Deferred:** **Phases 4 (long-tail) and 5 (default-off generic)** remain postponed until Phases 2 and 3 prove the architecture works. **Phase 6 (eval stewardship)** runs continuously.
+
+---
+
+## Decisions
+
+| Date | Decision | Rationale | Reference |
+|---|---|---|---|
+| 2026-04-07 | Adopt Option B (dispatcher + per-subject workflows). Rejected Options A (status quo), C (multiple skills), D (conditional sections). | Only option that scales without fragmenting the skill or duplicating shared assets. | [eval §6](2604070217-subject-typed-audit-dispatch-eval.md) |
+| 2026-04-07 | Skill remains a single Anthropic skill. No multi-skill split. | Hard constraint — preserves entrypoint identity, avoids ref duplication. | [eval §3.3](2604070217-subject-typed-audit-dispatch-eval.md) |
+| 2026-04-07 | Phase 0 is paperwork-only with explicit user sign-off gate. | Locks taxonomy before any files move; reduces churn. | This nav §Roadmap |
+| 2026-04-07 | Existing evals are a hard pass-gate at end of Phase 1. | Structural refactor must not change audit behavior; eval drift would mask regressions. | [eval §3.3 constraints](2604070217-subject-typed-audit-dispatch-eval.md) |
+| 2026-04-07 (PM) | Lock v1 taxonomy at 10 types as listed in eval §5.3. | Q1 resolved — granularity validated by user walkthrough. | [taxonomy def](2604070300-install-auditor-subject-type-taxonomy-def.md) |
+| 2026-04-07 (PM) | Keep ide-plugin (Type 3) and agent-extension (Type 8) as separate types. | Q1 — trust signals diverge sharply (marketplace verification ≠ MCP capability scoping; auto-update vs manual install; different threat models). | [taxonomy def §3, §8](2604070300-install-auditor-subject-type-taxonomy-def.md) |
+| 2026-04-07 (PM) | Agent-extension is one workflow file with three labeled sub-rubrics 8a (MCP server) / 8b (Claude Code plugin) / 8c (Claude Code skill). | Q5 = option (c). Preserves the 10-type taxonomy now; bakes in the seam to split later if rubric drift or read-cost demands it. | [taxonomy def §8 + Future Splits](2604070300-install-auditor-subject-type-taxonomy-def.md) |
+| 2026-04-07 (PM) | IaC modules (Terraform / Ansible / Helm) route through registry-package (Type 1), not a dedicated type. | Same evidence shape as language packages (versions, downloads, maintainers, CVE feeds); split-out triggered only if Phase 2 rubric drift demands it. | [taxonomy def §1 + Future Splits](2604070300-install-auditor-subject-type-taxonomy-def.md) |
+| 2026-04-07 (PM) | Taxonomy is closed-at-version, open-across-versions, with a documented 7-step extension procedure. | Locks Phase 1 scope without painting future phases into a corner. | [taxonomy def Extension Procedure](2604070300-install-auditor-subject-type-taxonomy-def.md) |
+| 2026-04-07 (PM) | **M0.2** — Classifier rule lives as **dispatcher prose** (Q2 = option a), authored as the "Classifier Rule — Innermost Trust Boundary" section of the taxonomy def. Helper script preserved as documented escalation path only. Hybrid-subject handling (G4) covered via worked examples + edge-case discipline sub-sections. | Prose is readable at classification time without extra process surface; the rule's decision procedure fits on one page; a helper script would duplicate logic the LLM already encodes and add install-time friction. | [taxonomy def §Classifier Rule](2604070300-install-auditor-subject-type-taxonomy-def.md), [eval §10 Q2](2604070217-subject-typed-audit-dispatch-eval.md) |
+| 2026-04-08 | **M0.3** — `references/criteria.md` adopts **shared core + per-subject addenda** shape. Shared core keeps tier-application rules, audit-coverage checklist, and cross-subject §4.1/4.2/4.3/4.5/4.7 scoring semantics. Per-subject rubrics move to `references/criteria/<subject>.md`, one per workflow. First concrete addendum is Phase 2 M2.1 (`registry-package`). | Formalizes drift already present in §4.4 Permissions (browser-ext / npm-pip / Docker sub-sections) before Phases 3/4 compound it. Matches eval §5.4 "workflows reference + extend" sketch and pre-empts eval §9 conditional ("if workflows duplicate large sections → extract to references/"). Monolith alternative would defeat F7 read-cost improvement as more workflows land. | [eval §5.4, §9, §10 Q6](2604070217-subject-typed-audit-dispatch-eval.md) |
+| 2026-04-08 | **M0.4** — Migration proceeds **phase-by-phase with eval-regression gates** between every phase. Phase 1 structural-only; Phase 2 bundles `registry-package.md` + three queued proposals (committed separately inside the phase); Phases 3/4 batch 1–2 workflows per commit; Phase 5 default-off `generic.md` is its own late-stage PR. | Matches eval §8 risk mitigation ("single migration commit per phase; verbatim move first, trim second"). Preserves independent eval signal for each queued proposal in Phase 2. One-big-PR alternative maximizes blast radius, couples unrelated proposals, and loses per-proposal eval attribution. | [eval §8, §10 Q8](2604070217-subject-typed-audit-dispatch-eval.md) |
+| 2026-04-09 | **Q4 (registry-package)** — Per-subject tier thresholds defined inside each workflow's Evidence Part A section, with detailed thresholds in the criteria addendum. Registry-package pattern: Tier 1 = high-trust heuristics (>1M weekly, verified, no CVEs, >1yr); Tier 2 = default; Tier 3 = any red-flag trigger. | Each subject type has different trust signals; embedding thresholds in the workflow keeps them co-located with the evidence acquisition steps that use them. The criteria addendum provides the detailed reference. | `workflows/registry-package.md` Evidence Part A, `references/criteria/registry-package.md` |
+| 2026-04-09 | **M2.1** — Direct execution without separate plan-projex. Scope was fully defined by this nav's M2.1 spec + taxonomy def + M0.3 criteria shape decision. | Avoided plan overhead for a well-scoped extraction task where the input (generic.md), output shape (workflow template), and integration points (dispatch table, criteria addendum) were already specified. | This nav §Phase 2 M2.1 |
+
+---
+
+## Risks (Inherited from Eval §8)
+
+| Risk | Likelihood | Impact | Mitigation | Phase |
+|---|---|---|---|---|
+| Misclassification routes to wrong workflow | Medium | High | `generic.md` fallback; eval cases for ambiguous subjects | Phase 1 + 5 |
+| Workflows drift apart in style | Medium | Medium | Standard workflow template (Identify / Evidence / Subject Rubric / Subject Verdict Notes) defined in Phase 1 | Phase 1 |
+| Migration leaves orphaned content | Low | Low | Single migration commit per phase; verbatim move first, trim second | Phase 1 |
+| Queued proposal plans become stale | Medium | Medium | Re-link via patch-projex in M1.4 before Phase 2 begins | Phase 1 |
+| F7 read-cost claim is wrong | Low-Medium | Medium | Measure in Phase 5 M5.3; if wrong, re-evaluate the redesign's value | Phase 5 |
+| MCP / Claude Code plugin landscape shifts | Medium | Low (initially) | Keep `agent-extension.md` deliberately small in v1; iterate | Phase 4 |
+
+---
+
+## Open Questions
+
+(Carried forward from eval §10. Each question gates a specific Phase 0 milestone.)
+
+- [x] **Q1 — Taxonomy granularity** — *Resolved 2026-04-07.* 10-type list locked. ide-plugin and agent-extension stay separate. See [taxonomy def](2604070300-install-auditor-subject-type-taxonomy-def.md).
+- [x] **Q2 — Classifier location** — *Resolved 2026-04-07 (PM).* Option (a) dispatcher prose. Rule authored as the "Classifier Rule — Innermost Trust Boundary" section of the taxonomy def. Helper script preserved as documented escalation path, not a v1 deliverable. See [taxonomy def §Classifier Rule](2604070300-install-auditor-subject-type-taxonomy-def.md).
+- [x] **Q3 — Report template ownership** — *Resolved 2026-04-08 (M1.1).* Dispatcher owns the full report skeleton in Step N; workflows produce per-subject findings via Identify / Evidence / Subject Rubric and return to the dispatcher for verdict + report assembly. No workflow embeds its own report skeleton. Mirrors the "one canonical home per piece of content" rule from plan [`2604082335`](closed/2604082335-dispatcher-refactor-m11-m12-plan.md).
+- [x] **Q4 — Per-subject Tier 1/2/3 thresholds** — *Resolved 2026-04-09 (M2.1).* Each workflow defines its own tier thresholds in its Evidence — Part A section. Registry-package sets the pattern: Tier 1 = >1M weekly npm downloads (or cross-ecosystem equivalent) + verified publisher + no CVEs + >1yr old; Tier 2 = default; Tier 3 = any of 9 red-flag triggers (low downloads, new package, anonymous maintainer, chat source, name similarity, scope mismatch, first publish <30d, etc.). Detailed thresholds also documented in `references/criteria/registry-package.md`. Future workflows follow the same pattern: tier thresholds live in the workflow file, detailed thresholds in the criteria addendum.
+- [x] **Q5 — Agent-extension grouping** — *Resolved 2026-04-07.* One workflow file (`agent-extension.md`) with three labeled sub-rubrics 8a (MCP) / 8b (Claude Code plugin) / 8c (Claude Code skill). Split-into-three escalation path preserved. See [taxonomy def §8 + Future Splits](2604070300-install-auditor-subject-type-taxonomy-def.md).
+- [x] **Q6 — `criteria.md` shape** — *Resolved 2026-04-08.* Shared core + per-subject addenda. `references/criteria.md` stays as the shared core; per-subject rubrics move to `references/criteria/<subject>.md`. First concrete addendum is authored in Phase 2 M2.1 for `registry-package`. See Decisions (2026-04-08).
+- [ ] **Q7 — `generic.md` empty-state** — Verbatim old monolith, or "ask user to clarify subject" probe? *Gates M5.2.*
+- [x] **Q8 — Migration cadence** — *Resolved 2026-04-08.* Phase-by-phase with eval-regression gates between every Phase 1–6 batch. Phase 1 structural-only; Phase 2 bundles `registry-package.md` + three queued proposals (committed separately within the phase); Phases 3/4 batch 1–2 workflows per commit; Phase 5 is its own late-stage PR. See Decisions (2026-04-08).
+
+---
+
+## Revision Log
+
+| Date | Summary of Changes |
+|------|--------------------|
+| 2026-04-07 | Initial roadmap created. Consumes framing eval `2604070217`; defines 6-phase + continuous Phase 6 plan; sets Phase 0 (taxonomy lock-in) as current focus; carries forward 8 open questions and 6 risks from the eval; records 4 made decisions and 4 pending Phase-0-gated decisions. |
+| 2026-04-07 (PM) | **Phase 0 M0.1 complete.** Linked the locked taxonomy spec at `2604070300-install-auditor-subject-type-taxonomy-def.md`. Resolved Q1 (10-type granularity confirmed; ide-plugin and agent-extension stay separate) and Q5 (one `agent-extension.md` workflow with three labeled sub-rubrics 8a/8b/8c). Recorded 6 new decisions (taxonomy lock, ide-plugin/agent-extension separation, agent-extension grouping, IaC absorption into registry-package, open-ended extensibility, future-splits triggers). Updated Phase 4 M4.3 wording to reflect locked agent-extension structure. Removed "taxonomy not yet locked" blocker. Phase 0 remains current — M0.2/M0.3/M0.4 still gate exit. |
+| 2026-04-08 | **Phase 0 complete.** Resolved remaining three milestones: **M0.2** (Q2 = option a dispatcher prose; classifier rule authored as the "Classifier Rule — Innermost Trust Boundary" section of the taxonomy def — originally landed 2026-04-07 PM in the taxonomy def, synced into this nav 2026-04-08; hybrid-subject handling G4 covered via worked examples + edge-case discipline; helper script preserved as escalation path). **M0.3** (Q6 = shared core + per-subject addenda; `references/criteria.md` keeps cross-subject scoring semantics, per-subject rubrics move to `references/criteria/<subject>.md` with first addendum authored in Phase 2 M2.1 for `registry-package`). **M0.4** (Q8 = phase-by-phase with eval-regression gates between every Phase 1–6 batch; Phase 1 structural-only, Phase 2 bundles `registry-package.md` + three queued proposals committed separately within the phase, Phases 3/4 batch 1–2 workflows per commit, Phase 5 is its own late-stage PR). Recorded 3 new decisions. Removed "Classifier rule not specified" known blocker. **Phase 0 status → Complete; Phase 1 (dispatcher refactor) is now current.** Next concrete action: author plan-projex for M1.1/M1.2 (rewrite `SKILL.md` to dispatcher form + verbatim move of monolith to `workflows/generic.md`). |
+| 2026-04-08 | **Phase 1 M1.1 + M1.2 + M1.3 complete — dispatcher refactor landed.** Executed plan [`2604082335-dispatcher-refactor-m11-m12-plan.md`](closed/2604082335-dispatcher-refactor-m11-m12-plan.md) and closed it into `.projex/closed/`. Files changed: `SKILL.md` (rewritten as dispatcher shell: Step 0 classifier + 10-row dispatch table + Step 1 workflow loader + Step N shared verdict tree & audit-coverage report skeleton; all 10 taxonomy types route to `workflows/generic.md` in Phase 1); `workflows/generic.md` (new file, verbatim move of pre-pivot monolithic Steps 1–4 with headings renamed to the Identify / Evidence / Subject Rubric / Subject Verdict Notes template shape and secondary `(formerly Step N — …)` anchors preserved for reference robustness); `workflows/` (new directory). Untouched: `references/criteria.md`, `references/licenses.md`, `references/registries.md`, `evals/evals.json`, `scripts/registry-lookup.ps1`. **M1.3 eval gate:** passed via manual dry-run walkthrough — all three existing cases (express → Type 1, Wappalyzer → Type 2, react-native-community-async-storage → Type 1) classify at high confidence, route to `workflows/generic.md`, produce tier-appropriate findings, return to dispatcher Step N, and emit verdicts equivalent to pre-plan expectations. `## Audit Coverage` and `Audit confidence` strings preserved verbatim as hard eval assertions require. **Byte-budget deviation logged:** `SKILL.md` is 12470 B vs the ≤~4 KB target; the load-bearing Step N report skeleton + verdict tree + Red Flags + Audit-Coverage thresholds exceed the budget on their own and cannot be compressed without violating the "preserve exact audit-coverage table format and report skeleton" success criterion. Classifier prose was compressed to the rule statement + decision procedure + signal table + output shape + fallback discipline, with full worked examples and edge-case discipline linked back to `.projex/2604070300-install-auditor-subject-type-taxonomy-def.md`. Read-cost claim (F7) remains scheduled for empirical measurement in Phase 5 M5.3. **Open Questions resolved by this milestone:** Q3 (report template ownership) — dispatcher owns the report skeleton in Step N; workflows produce subject findings and return. |
+| 2026-04-08 | **Phase 1 M1.4 complete → Phase 1 closed → Phase 2 current.** Ran patch-projex against queued plan [`2604021815-algorithmic-typosquat-detection-plan.md`](2604021815-algorithmic-typosquat-detection-plan.md), retargeting all `SKILL.md` Step 3 references to `workflows/registry-package.md` (Phase 2 M2.1 deliverable — not yet authored). Plan-level changes: added top-of-document "Blocked On" section citing Phase 2 M2.1 dependency; rewrote Summary, Current State, Key Files table (including a conditional row for `references/criteria/registry-package.md` per Phase 0 M0.3), Success Criteria item 4, Step 3 (title/body/depends-on/files — now explicitly marks `SKILL.md` and `workflows/generic.md` as do-not-touch), Acceptance Criteria row 3, Rollback step 2, and the Dependencies block (now lists Phase 2 M2.1 as a hard requirement and M2.2 as the scheduled execution milestone). Plan status changed **Ready → Blocked — awaiting Phase 2 M2.1**. Typosquat detection logic, thresholds, scoring, and eval coverage preserved verbatim. **No code files modified** — M1.4 was paperwork only, as the milestone specified. `SKILL.md`, `workflows/generic.md`, `references/`, `scripts/`, and `evals/evals.json` untouched. **Phase 1 status → Complete** (all 4 milestones resolved). **Phase 2 status → Current.** "Queued plans reference monolithic SKILL.md paths" known blocker **removed** (resolved by this milestone). Next concrete action: plan-projex for **Phase 2 M2.1** — author `workflows/registry-package.md` by extracting registry-package logic from `workflows/generic.md` (ecosystem-aware Identify step, `registry-lookup.ps1` invocation, npm-shaped Tier 1/2/3 thresholds, §4.1–4.6 rubric application). First concrete addendum at `references/criteria/registry-package.md` is also a M2.1 deliverable. Once M2.1 lands, the retargeted typosquat plan unblocks as M2.2. |
+| 2026-04-09 | **Phase 2 M2.1 + M2.2 complete.** Two milestones landed in one session. **M2.1:** `workflows/registry-package.md` created (444 lines) — first subject-specific workflow, covering 11 registries with ecosystem-aware Identify, mandatory `registry-lookup.ps1` invocation, registry-specific §4.1–4.6 rubric specialization, and concrete REJECTED/CONDITIONAL/APPROVED push-toward guidance. `references/criteria/registry-package.md` created (236 lines) — per-subject criteria addendum with ecosystem trust signals table (16 entries), tier assignment thresholds with cross-ecosystem download equivalence, install-script risk patterns, and transitive dependency depth guidance. `SKILL.md` dispatch table row 1 updated to route Type 1 to `workflows/registry-package.md`. Q4 resolved for registry-package (tier thresholds defined in workflow + addendum). No separate plan-projex — scope was well-defined by nav spec + taxonomy def + M0.3 criteria shape decision. **M2.2:** Typosquat detection plan [`2604021815`](2604021815-algorithmic-typosquat-detection-plan.md) fully executed (all 4 steps). Files created: `scripts/typosquat-check.ps1` (422 lines — Levenshtein distance, combosquat detection, npm search baseline, download ratio, risk scoring, JSON output, caching), `.gitignore` (cache exclusion). Files edited: `references/criteria/registry-package.md` (typosquat detection section — risk-level-to-verdict mapping), `references/criteria.md` (§4.1 typosquat-check.ps1 reference), `workflows/registry-package.md` (script invocation in Evidence, algorithmic-first in research, audit coverage row), `evals/evals.json` (eval id 3: `expresss` typosquat; eval id 4: `chalk` false-positive calibration). `SKILL.md` and `workflows/generic.md` untouched — dispatcher stays subject-agnostic. Plan `2604021815` status → Executed. **Updated:** Current Position refreshed to 2026-04-09 reflecting dispatcher-is-live state. Priorities updated (M2.3 multi-DB CVE is current focus). Two new decisions recorded (Q4 resolution pattern, M2.1 direct execution without plan-projex). Related Projex header updated (plan `2604021815` marked as executed). **Phase 2 status remains Current** — M2.3, M2.4, M2.5 still open. Next action: M2.3 multi-DB CVE correlation per proposal `2604021201`. |
