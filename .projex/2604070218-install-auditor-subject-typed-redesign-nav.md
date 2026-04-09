@@ -108,7 +108,7 @@ The skill is a working dispatcher. `SKILL.md` classifies subjects (Step 0), load
   - Execution: [2604021815-algorithmic-typosquat-detection-plan.md](2604021815-algorithmic-typosquat-detection-plan.md) (executed 2026-04-09)
 - [ ] **M2.3 — Land multi-DB CVE correlation** — Inside `workflows/registry-package.md`'s §4.3 Security step.
   - Ideation: [2604021201-multi-db-vulnerability-correlation-proposal.md](2604021201-multi-db-vulnerability-correlation-proposal.md)
-  - Execution: New plan-projex (TBD)
+  - Execution: [2604101000-multi-db-cve-correlation-plan.md](2604101000-multi-db-cve-correlation-plan.md) (Ready — 2026-04-10)
 - [ ] **M2.4 — Land transitive dependency auditing** — Inside `workflows/registry-package.md`'s §4.3 / §4.5 surface.
   - Ideation: [2604021203-transitive-dependency-auditing-proposal.md](2604021203-transitive-dependency-auditing-proposal.md)
   - Execution: New plan-projex (TBD)
