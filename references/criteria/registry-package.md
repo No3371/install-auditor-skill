@@ -234,3 +234,64 @@ For the **Typosquat / name verification** row in the Audit Coverage table:
   `Done — typosquat-check.ps1: high risk, manual review confirms squat`.
 - **Other ecosystems**: Until script support is added, use manual comparison:
   `Done — manual character-by-character check`.
+
+---
+
+## Multi-Database CVE Correlation
+
+Run `scripts/vuln-lookup.ps1` before web search to query structured vulnerability
+databases for registry packages.
+
+### Invocation
+
+```
+.\scripts\vuln-lookup.ps1 -Ecosystem <eco> -Name "<name>" [-Version "<version>"]
+```
+
+**Supported ecosystems:** npm, pypi, crates, rubygems, nuget, go, maven, hex.
+IaC registries (Terraform, Ansible, Helm): fall back to web search — OSV/GHSA
+ecosystem mapping for these is not yet established.
+
+**GITHUB_TOKEN:** Set `$env:GITHUB_TOKEN` to raise GHSA rate limit from 60/hr to
+5,000/hr. If unset or rate-limited, the script continues with OSV only (`sources:
+["OSV"]`). The audit is never blocked by token absence.
+
+### Output fields
+
+| Field | Meaning |
+|---|---|
+| `riskLevel` | `none` / `low` / `medium` / `high` / `critical` |
+| `osvResults` | Vulnerabilities from OSV.dev |
+| `ghsaResults` | Vulnerabilities from GitHub Advisory Database |
+| `discrepancies` | Advisories present in one source but not the other |
+| `sources` | Which DBs were actually queried (e.g., `["OSV","GHSA"]`) |
+| `ghsaNote` | Present when GHSA was skipped; explains why |
+
+### Risk level → verdict impact
+
+| `riskLevel` | Audit action |
+|---|---|
+| `none` | Note "None found (checked: OSV, GHSA)" in CVE row. Proceed. |
+| `low` | Note finding; verify version-range scope. Does not shift verdict alone. |
+| `medium` | Investigate — check if requested version is in affected range. May push toward CONDITIONAL. |
+| `high` | Strong CONDITIONAL lean. Report must cite CVE IDs and affected ranges. Condition: upgrade to patched version; pin lockfile. |
+| `critical` | REJECTED lean. Exception only if requested version is affirmatively outside affected range — document the version-range check. |
+| Discrepancy (one DB only) | Flag and investigate. May be ingestion lag or a withdrawn advisory. Document in Security row; do not silently discard. |
+
+### When `-Version` is supplied
+
+The script cross-checks each vulnerability's affected version ranges against the
+requested version. Conservative: if range data is absent, the vulnerability is
+included (not silently dropped). `riskLevel` reflects only vulns that affect the
+specified version.
+
+### Audit coverage row guidance
+
+For the **CVE / vulnerability databases** row in the Audit Coverage table:
+
+- Reference `vuln-lookup.ps1` output: e.g.,
+  `Done -- vuln-lookup.ps1: none found (OSV, GHSA)` or
+  `Done -- vuln-lookup.ps1: 2 CVEs (OSV: CVE-2021-23337, checked: OSV, GHSA)`.
+- If GHSA was skipped: `Done -- vuln-lookup.ps1: none found (OSV only -- GHSA skipped)`.
+- For IaC registries (script not yet supported): use web search and note it:
+  `Done -- web search: no advisories found`.

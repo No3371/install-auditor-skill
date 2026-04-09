@@ -66,6 +66,34 @@
         {"text": "## Audit Coverage", "type": "contains_string"},
         {"text": "Audit confidence", "type": "contains_concept"}
       ]
+    },
+    {
+      "id": 5,
+      "prompt": "I want to npm install lodash@4.17.20 for my Node.js project. Is it safe to use this specific version?",
+      "expected_output": "Should detect known prototype-pollution CVEs in lodash 4.17.20. Must run structured CVE lookup (vuln-lookup.ps1). Report cites CVE IDs sourced from OSV or GHSA. Verdict CONDITIONAL (upgrade to patched version) or REJECTED. Audit Coverage CVE row names the databases checked.",
+      "files": [],
+      "assertions": [
+        {"text": "Report references structured CVE database query (OSV or GHSA or vuln-lookup)", "type": "contains_concept"},
+        {"text": "CVE row in Audit Coverage cites which databases were checked", "type": "contains_concept"},
+        {"text": "Report cites at least one CVE ID (CVE-YYYY-NNNNN or GHSA-xxx)", "type": "contains_concept"},
+        {"text": "Verdict is CONDITIONAL or REJECTED", "type": "verdict_check"},
+        {"text": "## Audit Coverage", "type": "contains_string"},
+        {"text": "Report is saved to a .md file", "type": "file_exists"}
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Should I pip install requests for making HTTP calls in my Python script?",
+      "expected_output": "Tier 1 or Tier 2 audit. 'requests' is a widely-used PyPI package. vuln-lookup.ps1 will find medium-severity CVEs (security/redirect/credential exposure advisories); CVE coverage row must cite structured DB check with findings. Verdict CONDITIONAL due to CVEs. First PyPI eval case (partial M2.5 coverage). Note: plan assumed 'none found' for requests but OSV/GHSA have 13 medium CVEs — assertions updated to reflect actual DB state.",
+      "files": [],
+      "assertions": [
+        {"text": "CVE coverage row mentions structured DB sources (OSV or GHSA or vuln-lookup)", "type": "contains_concept"},
+        {"text": "CVE row references CVE findings or vulnerability database results", "type": "contains_concept"},
+        {"text": "Verdict is CONDITIONAL or APPROVED (not REJECTED)", "type": "verdict_check"},
+        {"text": "Report identifies this as a PyPI or pip package", "type": "contains_concept"},
+        {"text": "## Audit Coverage", "type": "contains_string"},
+        {"text": "Report is saved to a .md file", "type": "file_exists"}
+      ]
     }
   ]
 }

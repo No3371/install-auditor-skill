@@ -210,6 +210,19 @@ from official APIs.
 .\scripts\registry-lookup.ps1 -Ecosystem <eco> -Name "<name>"
 ```
 
+**Then run the structured CVE lookup** for supported ecosystems (npm, PyPI,
+crates, RubyGems, NuGet, Go, Maven, Hex):
+
+```
+.\scripts\vuln-lookup.ps1 -Ecosystem <eco> -Name "<name>" [-Version "<version>"]
+```
+
+Review `riskLevel` and `summary.highestSeverity`. Check `discrepancies` -- an
+advisory present in one DB but not the other may indicate a recently ingested
+or recently withdrawn advisory; flag and investigate. Note `sources` for the
+Audit Coverage CVE row. Web search follows for incidents not yet in structured
+DBs (maintainer compromise, registry removal, behavioral reports).
+
 **Then use web search** for things APIs do not cover:
 - `"<package name>" vulnerability OR malware OR "supply chain"`
 - `"<package name>" deprecated OR abandoned OR alternative`
@@ -249,6 +262,14 @@ As you run each check, record its outcome for the **Audit Coverage** table
   `typosquat-check.ps1: low risk` or `typosquat-check.ps1: high risk,
   investigated and confirmed legitimate`. For non-npm ecosystems, note manual
   comparison was used.
+
+- **CVE / vulnerability databases row**: Reference `vuln-lookup.ps1` output --
+  e.g., `Done -- vuln-lookup.ps1: none found (OSV, GHSA)` or
+  `Done -- vuln-lookup.ps1: 2 CVEs (OSV: CVE-2021-23337, GHSA:
+  GHSA-29mw-wpgm-hmr9, checked: OSV, GHSA)`. If GHSA was skipped:
+  `Done -- vuln-lookup.ps1: none found (OSV only -- GHSA skipped)`. For IaC
+  registries (not yet script-supported), use web search and note it:
+  `Done -- web search: no advisories found`.
 
 ### Tier-specific research scope
 

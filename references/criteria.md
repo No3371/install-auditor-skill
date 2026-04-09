@@ -145,6 +145,13 @@ Search for these terms combined with the package name:
 
 Sources to check: Sonatype blog, Snyk security advisories, Socket.dev, npm security advisories, GitHub Security Advisories (GHSA), OpenSSF Scorecard.
 
+### Vulnerability Database Lookup (registry packages)
+
+For registry packages (npm, PyPI, crates, RubyGems, NuGet, Go, Maven, Hex), run
+`scripts/vuln-lookup.ps1` for structured OSV + GHSA queries before web search. See
+`references/criteria/registry-package.md` "Multi-Database CVE Correlation" for
+risk-level thresholds and coverage row format.
+
 ---
 
 ## 4.4 Permissions & Access
