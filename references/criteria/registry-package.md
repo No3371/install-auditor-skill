@@ -148,31 +148,68 @@ Flag and document any of the following:
 
 ---
 
-## Transitive Dependency Guidance
+## Transitive Dependency Scanning
+
+Run `scripts/dep-scan.ps1` to check direct (Tier 2) or full transitive (Tier 3, npm only)
+dependencies for known CVEs via the OSV batch API. No package installation required.
+
+### Invocation
+
+```
+# Tier 2 — direct deps from registry metadata (all ecosystems):
+.\scripts\dep-scan.ps1 -Ecosystem <eco> -Name "<name>" [-Version "<version>"] -Tier 2
+
+# Tier 3 — full tree resolution (npm only; auto-falls back to Tier 2):
+.\scripts\dep-scan.ps1 -Ecosystem <eco> -Name "<name>" [-Version "<version>"] -Tier 3
+```
+
+Skip for Tier 1 packages.
+
+### Output fields
+
+| Field | Description |
+|---|---|
+| `directDepCount` | Number of direct dependencies resolved from registry API |
+| `transitiveDepCount` | Full tree size (Tier 3 successful only; null otherwise) |
+| `findings` | HIGH/CRITICAL deps: `[{name, ecosystem, version, severity, cveIds[], depth}]` — `depth` 1 = direct, 2+ = transitive (T3 only; always 1 for T2) |
+| `mediumCount` / `lowCount` | Count of MEDIUM/LOW-severity dep CVEs (not enumerated) |
+| `riskLevel` | Maximum severity across all findings: `none`/`low`/`medium`/`high`/`critical` |
+| `fallback` | `true` if Tier 3 fell back to Tier 2 |
+| `fallbackReason` | e.g. `"npm CLI unavailable"` or `"lock generation failed"` |
+
+### Risk level → verdict impact
+
+| `riskLevel` | Verdict guidance |
+|---|---|
+| `none` | Note "X deps checked, none with HIGH+ CVEs (OSV)" in transitive row. Proceed. |
+| `low` | Note findings count. Does not change verdict alone. |
+| `medium` | Note MEDIUM count. Soft CONDITIONAL signal if multiple findings in direct deps. |
+| `high` | CONDITIONAL lean. Cite affected dep name(s) + CVE IDs. Condition: update to patched transitive version. |
+| `critical` | Strong CONDITIONAL. Must cite dep name + CVE IDs. Immediate upgrade path required. |
+
+**Transitive vs direct:** Use the `depth` field in each finding. A finding with `depth: 1`
+(direct dep) carries the same verdict weight as a CVE in the package itself. A finding
+with `depth > 1` (transitive) warrants a flag and citation but not automatic verdict
+escalation — report it and let the reviewer weigh reachability. Tier 2 always emits
+`depth: 1`; Tier 3 reflects actual tree depth.
 
 ### Depth thresholds
 
-| Metric | Concern level | Action |
-|--------|--------------|--------|
-| Direct dependencies <10 | Normal | Standard review |
-| Direct dependencies 10--50 | Elevated | Note in report; check for known-bad transitives |
-| Direct dependencies >50 | High | Flag dependency bloat; increased attack surface |
-| Transitive tree >200 packages | Elevated | Note in report |
-| Transitive tree >500 packages | High | Flag; recommend `npm audit` / `pip-audit` / equivalent |
-| Any transitive dependency with known CVE (HIGH+) | Critical | Flag even if not direct dependency |
+| Signal | Risk level | Action |
+|---|---|---|
+| `directDepCount` > 50 | Medium | Flag dependency bloat; increased attack surface |
+| Any dep with `severity: CRITICAL` | Critical | Flag regardless of depth |
+| Any dep with `severity: HIGH` in `findings` | High | Flag; cite CVE IDs |
 
-### What to check
+### Audit coverage row guidance
 
-- **Known-bad transitives**: Cross-reference against recent supply chain incident lists (e.g., `event-stream`, `ua-parser-js`, `colors`/`faker`, `node-ipc`)
-- **Single-maintainer deep dependencies**: A critical transitive dep maintained by one person is a bus-factor risk
-- **Deprecated transitives**: Dependencies pulling in deprecated packages that have known successors
-- **Duplicate functionality**: Multiple packages in the tree doing the same thing (signals poor curation)
+For the **Transitive dependencies** row in the Audit Coverage table:
 
-### Tier applicability
-
-- **Tier 1**: Skip transitive audit (trust established at top level)
-- **Tier 2**: Run `npm audit` / `pip-audit` / equivalent; flag HIGH+ CVEs in transitives
-- **Tier 3**: Manual review of direct dependency list; automated scan of full tree; flag single-maintainer critical transitives
+- `Done -- dep-scan.ps1 T2: 8 deps, none HIGH+ (OSV)`
+- `Done -- dep-scan.ps1 T2: 1 HIGH CVE in minimist@0.0.8 (CVE-2020-7598, OSV)`
+- `Done -- dep-scan.ps1 T3: 12 direct, 147 transitive, riskLevel: none (OSV)`
+- `Done -- dep-scan.ps1 T3→T2 fallback (npm CLI unavailable): 8 deps, none HIGH+ (OSV)`
+- `Skipped -- Tier 1 quick audit`
 
 ---
 

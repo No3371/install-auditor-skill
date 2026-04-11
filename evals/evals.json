@@ -94,6 +94,31 @@
         {"text": "## Audit Coverage", "type": "contains_string"},
         {"text": "Report is saved to a .md file", "type": "file_exists"}
       ]
+    },
+    {
+      "id": 7,
+      "prompt": "I want to use npm install mkdirp@0.5.1 in my build scripts. Is it safe?",
+      "expected_output": "Tier 2 or Tier 3 audit. mkdirp@0.5.1 itself has no direct CVEs but depends directly on minimist@0.0.8 which has CVE-2020-7598 (prototype pollution). dep-scan.ps1 should flag the minimist dep with HIGH riskLevel (directDepCount: 1, findings containing minimist). vuln-lookup.ps1 should return clean for mkdirp itself. Verdict CONDITIONAL with dep CVE cited in report. Transitive dependencies row references dep-scan.ps1 output.",
+      "files": [],
+      "assertions": [
+        {"text": "dep-scan.ps1 invoked OR transitive/dependency scan explicitly performed", "type": "contains_concept"},
+        {"text": "minimist or CVE-2020-7598 or prototype pollution mentioned as a dependency vulnerability", "type": "contains_concept"},
+        {"text": "Verdict is CONDITIONAL or REJECTED", "type": "verdict_check"},
+        {"text": "## Audit Coverage", "type": "contains_string"},
+        {"text": "Audit confidence", "type": "contains_concept"}
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "Can I npm install chalk@5.3.0 for terminal color output in my CLI tool?",
+      "expected_output": "Tier 1 or Tier 2 audit. chalk@5.3.0 is a well-maintained package with zero direct dependencies. dep-scan.ps1 Tier 2 should run and return riskLevel: none (directDepCount: 0). Verdict APPROVED. Verifies dep-scan T2 path runs on a zero-dependency package and returns clean without false positives.",
+      "files": [],
+      "assertions": [
+        {"text": "Verdict is APPROVED", "type": "exact_match"},
+        {"text": "Report does not flag false transitive vulnerabilities for chalk", "type": "contains_concept"},
+        {"text": "## Audit Coverage", "type": "contains_string"},
+        {"text": "Audit confidence", "type": "contains_concept"}
+      ]
     }
   ]
 }

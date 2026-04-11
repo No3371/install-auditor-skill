@@ -223,6 +223,22 @@ or recently withdrawn advisory; flag and investigate. Note `sources` for the
 Audit Coverage CVE row. Web search follows for incidents not yet in structured
 DBs (maintainer compromise, registry removal, behavioral reports).
 
+**Then run the transitive dependency scan** for Tier 2 and Tier 3 packages
+(skip for Tier 1):
+
+For Tier 2 — direct deps only (default):
+```
+.\scripts\dep-scan.ps1 -Ecosystem <eco> -Name "<name>" [-Version "<version>"] -Tier 2
+```
+
+For Tier 3 — full tree (npm); falls back to Tier 2 if npm is unavailable:
+```
+.\scripts\dep-scan.ps1 -Ecosystem <eco> -Name "<name>" [-Version "<version>"] -Tier 3
+```
+
+Record `riskLevel`, `directDepCount`, and any HIGH/CRITICAL `findings` in the
+Audit Coverage transitive dependencies row.
+
 **Then use web search** for things APIs do not cover:
 - `"<package name>" vulnerability OR malware OR "supply chain"`
 - `"<package name>" deprecated OR abandoned OR alternative`
@@ -271,6 +287,12 @@ As you run each check, record its outcome for the **Audit Coverage** table
   registries (not yet script-supported), use web search and note it:
   `Done -- web search: no advisories found`.
 
+- **Transitive dependencies row**: Reference `dep-scan.ps1` output -- e.g.,
+  `Done -- dep-scan.ps1 T2: 8 deps, none HIGH+ (OSV)` or
+  `Done -- dep-scan.ps1 T2: 1 HIGH CVE in minimist@0.0.8 (CVE-2020-7598, OSV)`.
+  If T3 fell back: note `T3→T2 fallback: <reason>`.
+  For Tier 1: `Skipped -- Tier 1 quick audit`.
+
 ### Tier-specific research scope
 
 **Tier 1 (Quick):** Confirm no CVEs, verify not a typosquat, check license
@@ -279,13 +301,13 @@ dependency tree audit, and install script review.
 
 **Tier 2 (Standard):** All of the above plus: full web search for incidents,
 maintainer/activity assessment, OpenSSF Scorecard lookup, dependency tree
-scan (`npm audit` / `pip-audit` / equivalent), install script existence check
-(flag if scripts exist, but full source review is Tier 3).
+scan (`dep-scan.ps1 -Tier 2`), install script existence check (flag if
+scripts exist, but full source review is Tier 3).
 
-**Tier 3 (Deep):** Everything in Standard plus: install script source code
-review with red-flag pattern matching, manual review of direct dependency
-list, behavioral analysis of source code (credential harvesting, network
-calls, obfuscation), and explicit alternatives comparison.
+**Tier 3 (Deep):** Everything in Standard plus: full dep tree scan
+(`dep-scan.ps1 -Tier 3`), install script source code review with red-flag
+pattern matching, behavioral analysis of source code (credential harvesting,
+network calls, obfuscation), and explicit alternatives comparison.
 
 ---
 
@@ -344,7 +366,8 @@ sections below specialize the shared criteria for registry package context.
   Apply the risk patterns from `references/criteria/registry-package.md`
   "Install Script Risk Patterns". Any network fetch, env var harvesting, or
   obfuscated code in install scripts is a HIGH flag.
-- **Transitive dependency risk**: Run `npm audit` / `pip-audit` / equivalent.
+- **Transitive dependency risk**: Run `dep-scan.ps1 -Tier 2` (Tier 2) or
+  `dep-scan.ps1 -Tier 3` (Tier 3). Skip for Tier 1.
   Flag HIGH+ CVEs in transitive dependencies. See transitive guidance in
   addendum.
 

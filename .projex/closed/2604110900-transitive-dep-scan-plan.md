@@ -1,6 +1,8 @@
 # Transitive Dependency Scanning (registry-package v1)
 
-> **Status:** In Progress
+> **Status:** Complete
+> **Completed:** 2026-04-12
+> **Walkthrough:** 2604110900-transitive-dep-scan-walkthrough.md
 > **Created:** 2026-04-11
 > **Author:** Claude (Sonnet 4.6)
 > **Source:** 2604021203-transitive-dependency-auditing-proposal.md

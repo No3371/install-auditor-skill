@@ -1,3 +1,4 @@
 .claude/settings.local.json
 scripts/.typosquat-cache/
 scripts/.vuln-cache/
+scripts/.dep-scan-cache/

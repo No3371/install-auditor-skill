@@ -152,6 +152,14 @@ For registry packages (npm, PyPI, crates, RubyGems, NuGet, Go, Maven, Hex), run
 `references/criteria/registry-package.md` "Multi-Database CVE Correlation" for
 risk-level thresholds and coverage row format.
 
+### Transitive Dependency Scan (registry packages)
+
+Run `scripts/dep-scan.ps1` to check direct (Tier 2) or full transitive (Tier 3, npm only)
+dependencies for known CVEs via the OSV batch API — no package installation required.
+Invoke after `vuln-lookup.ps1` in the Evidence step for supported ecosystems. Tier 1
+packages skip this step. Full risk-level-to-verdict guidance and output field reference
+in `references/criteria/registry-package.md` §Transitive Dependency Scanning.
+
 ---
 
 ## 4.4 Permissions & Access
