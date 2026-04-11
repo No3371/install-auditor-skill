@@ -25,7 +25,7 @@
 
 ## Current Position
 
-**As of 2026-04-10:**
+**As of 2026-04-11:**
 
 The skill is a working dispatcher with a fully populated registry-package pipeline. `SKILL.md` classifies subjects (Step 0), loads per-type workflows (Step 1), and applies the shared verdict tree + audit-coverage report (Step N). `workflows/registry-package.md` handles Type 1; the remaining 9 types fall back to `workflows/generic.md`. Three data primitives exist: `scripts/registry-lookup.ps1` (registry metadata), `scripts/typosquat-check.ps1` (algorithmic name-similarity detection for npm), and `scripts/vuln-lookup.ps1` (structured OSV + GHSA CVE queries for all 8 supported registry ecosystems). The criteria layer is split: `references/criteria.md` (shared core, §4.3 now cross-references vuln-lookup) + `references/criteria/registry-package.md` (per-subject addendum now includes ecosystem trust signals, tier thresholds, install-script risk patterns, typosquat scoring, and the new Multi-Database CVE Correlation section with risk-level-to-verdict table). Eval coverage expanded to 7 cases (ids 0–6): two new cases added for lodash@4.17.20 CVE (id 5) and pip requests PyPI case (id 6).
 
@@ -43,7 +43,7 @@ The skill is a working dispatcher with a fully populated registry-package pipeli
 - **2026-04-10** — **Phase 2 M2.3 complete.** Multi-DB CVE correlation landed per plan [`2604101000-multi-db-cve-correlation-plan.md`](closed/2604101000-multi-db-cve-correlation-plan.md). All 5 plan steps executed: (1) `scripts/vuln-lookup.ps1` created (270 lines) — queries OSV.dev and GHSA, version-range filtering, cross-DB discrepancy detection, 24hr cache, JSON output; `.gitignore` updated for `.vuln-cache/`. (2) `workflows/registry-package.md` updated — CVE lookup block inserted between registry-lookup and web search in Evidence Part B; CVE row bullet added to audit coverage tracking. (3) `references/criteria/registry-package.md` updated — "Multi-Database CVE Correlation" section appended with invocation, output fields table, risk-level-to-verdict table (none/low/medium/high/critical + discrepancy handling), version filtering guidance, and coverage row format. (4) `references/criteria.md` §4.3 updated — "Vulnerability Database Lookup (registry packages)" subsection inserted. (5) `evals/evals.json` updated — eval id 5 (`npm install lodash@4.17.20` — known CVE case, expects CONDITIONAL/REJECTED with CVE IDs cited) and id 6 (`pip install requests` — PyPI case; adjusted to CONDITIONAL since requests has 13 medium CVEs in OSV/GHSA, not "none found" as assumed). Source proposal `2604021201` closed. **No changes to `SKILL.md` or `workflows/generic.md`.** Plan + walkthrough in `.projex/closed/`.
 
 ### Active Work
-- **Subject-typed redesign (this nav)** — **Phases 0–1 complete; Phase 2 M2.1 + M2.2 + M2.3 complete (2026-04-10).** Three data primitives now live in `scripts/`: registry-lookup, typosquat-check, and vuln-lookup. **Remaining Phase 2 milestones: M2.4 (transitive dependency auditing), M2.5 (eval gate).** Next concrete action: plan-projex for **Phase 2 M2.4** — add transitive dependency auditing per proposal [`2604021203`](2604021203-transitive-dependency-auditing-proposal.md). After M2.4, M2.5 closes out Phase 2 with a regression pass + one PyPI typosquat eval case (pip/PyPI positive already covered by id 6).
+- **Subject-typed redesign (this nav)** — **Phases 0–1 complete; Phase 2 M2.1 + M2.2 + M2.3 complete (2026-04-10).** Three data primitives now live in `scripts/`: registry-lookup, typosquat-check, and vuln-lookup. **Remaining Phase 2 milestones: M2.4 (transitive dependency auditing), M2.5 (eval gate).** M2.4 plan drafted as [`2604110900-transitive-dep-scan-plan.md`](2604110900-transitive-dep-scan-plan.md) (2026-04-11) — ready for `/execute-projex`. After M2.4, M2.5 closes out Phase 2 with a regression pass + one PyPI typosquat eval case (pip/PyPI positive already covered by id 6).
 
 ### Known Blockers
 - *(none)* — All prior blockers resolved. M2.3/M2.4 have no external dependencies beyond their proposals (which exist in `.projex/`).
@@ -112,7 +112,7 @@ The skill is a working dispatcher with a fully populated registry-package pipeli
   - Execution: [2604101000-multi-db-cve-correlation-plan.md](closed/2604101000-multi-db-cve-correlation-plan.md) (closed 2026-04-10) + [walkthrough](closed/2604101000-multi-db-cve-correlation-walkthrough.md)
 - [ ] **M2.4 — Land transitive dependency auditing** — Inside `workflows/registry-package.md`'s §4.3 / §4.5 surface.
   - Ideation: [2604021203-transitive-dependency-auditing-proposal.md](2604021203-transitive-dependency-auditing-proposal.md)
-  - Execution: New plan-projex (TBD)
+  - Execution: [2604110900-transitive-dep-scan-plan.md](2604110900-transitive-dep-scan-plan.md) (planned 2026-04-11)
 - [ ] **M2.5 — Eval gate: registry-package cases** — express + react-native-community-async-storage now route to `workflows/registry-package.md`. Add at least one new positive case (popular pip package) and one new typosquat case (PyPI). *Partially progressed: id 6 (pip requests) added in M2.3. Still needed: one PyPI typosquat case.*
   - Ideation: [eval §6 G3](2604070217-subject-typed-audit-dispatch-eval.md)
   - Execution: Update `evals/evals.json` as part of each milestone's plan
@@ -189,7 +189,7 @@ The skill is a working dispatcher with a fully populated registry-package pipeli
 
 ## Priorities
 
-**Current focus:** **Phase 2 M2.4 — transitive dependency auditing.** Three data primitives are live (registry-lookup, typosquat-check, vuln-lookup). The next highest-value addition is surfacing transitive dependency CVE and install-script risk inside `workflows/registry-package.md`'s §4.3/§4.5 surface per proposal [`2604021203`](2604021203-transitive-dependency-auditing-proposal.md).
+**Current focus:** **Phase 2 M2.4 — transitive dependency auditing.** Plan [`2604110900-transitive-dep-scan-plan.md`](2604110900-transitive-dep-scan-plan.md) is drafted and ready for `/execute-projex`. Adds `scripts/dep-scan.ps1` (OSV batch API, no install required), replaces aspirational `npm audit` / `pip-audit` references in §4.3/criteria addendum with a scripted, citable check, and adds eval ids 7+8.
 
 **Next up:** **Phase 2 M2.5 (eval gate)** — regression pass + one PyPI typosquat eval case (pip/PyPI positive case already covered by eval id 6).
 
