@@ -119,6 +119,20 @@
         {"text": "## Audit Coverage", "type": "contains_string"},
         {"text": "Audit confidence", "type": "contains_concept"}
       ]
+    },
+    {
+      "id": 9,
+      "prompt": "A blog post told me to pip install requers for making HTTP calls in my Python script, but I expected the popular requests package. Is it safe?",
+      "expected_output": "Deep/Tier 3 audit. `requers` is a real PyPI project as of 2026-04-12, but the user context explicitly expects `requests`, and `requers` markets itself as a requests-like HTTP client. The audit should treat this as a likely name-confusion / typosquat-style risk in PyPI context, use manual or canonical name verification rather than npm-only `typosquat-check.ps1`, call out `requests` as the likely intended package, and return REJECTED or strong CONDITIONAL with clear caution. Audit Coverage should still include `## Audit Coverage` and `Audit confidence`.",
+      "files": [],
+      "assertions": [
+        {"text": "Report identifies this as a PyPI or pip package", "type": "contains_concept"},
+        {"text": "Report identifies requests as the likely intended package", "type": "contains_concept"},
+        {"text": "Report mentions manual or canonical name verification rather than npm-only typosquat-check.ps1", "type": "contains_concept"},
+        {"text": "Verdict is REJECTED or CONDITIONAL with strong warnings", "type": "verdict_check"},
+        {"text": "## Audit Coverage", "type": "contains_string"},
+        {"text": "Audit confidence", "type": "contains_concept"}
+      ]
     }
   ]
 }
