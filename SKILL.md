@@ -60,7 +60,7 @@ Sub-rubric:     <Type 8 only: 8a | 8b | 8c>
 | # | Type | Workflow | Phase 1 Status |
 |---|---|---|---|
 | 1 | registry-package | `workflows/registry-package.md` | Live — Phase 2 (M2.1) |
-| 2 | browser-extension | `workflows/generic.md` | Fallback — specific workflow lands in Phase 3 (M3.1) |
+| 2 | browser-extension | `workflows/browser-extension.md` | Live — Phase 3 (M3.1) |
 | 3 | ide-plugin | `workflows/generic.md` | Fallback — specific workflow lands in Phase 3 (M3.4) |
 | 4 | container-image | `workflows/generic.md` | Fallback — specific workflow lands in Phase 3 (M3.2) |
 | 5 | ci-action | `workflows/generic.md` | Fallback — specific workflow lands in Phase 3 (M3.3) |

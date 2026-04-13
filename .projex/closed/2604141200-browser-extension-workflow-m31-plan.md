@@ -1,6 +1,8 @@
 # Browser Extension Workflow — M3.1
 
-> **Status:** In Progress
+> **Status:** Complete
+> **Completed:** 2026-04-14
+> **Walkthrough:** [2604141200-browser-extension-workflow-m31-walkthrough.md](2604141200-browser-extension-workflow-m31-walkthrough.md)
 > **Created:** 2026-04-14
 > **Author:** Claude (Opus 4.6)
 > **Source:** [2604070218-install-auditor-subject-typed-redesign-nav.md](2604070218-install-auditor-subject-typed-redesign-nav.md) Phase 3, M3.1

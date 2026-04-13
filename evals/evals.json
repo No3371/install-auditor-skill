@@ -16,9 +16,10 @@
     {
       "id": 1,
       "prompt": "Is the Wappalyzer browser extension safe to add to Chrome? I want to use it to identify what tech stack websites are using.",
-      "expected_output": "Standard/Tier 2 audit. Should research permissions (broad URL access), note Wappalyzer is a known tool, and produce CONDITIONAL or APPROVED with permission caveats.",
+      "expected_output": "Standard/Tier 2 audit. Routes to browser-extension workflow. Should analyze manifest permissions (broad URL access via host_permissions), note Wappalyzer is a known company/tool with CWS Featured status, and produce CONDITIONAL or APPROVED with permission caveats.",
       "files": [],
       "assertions": [
+        {"text": "Subject type is browser-extension", "type": "contains_concept"},
         {"text": "Report discusses browser extension permissions (broad URL access)", "type": "contains_concept"},
         {"text": "Verdict is APPROVED or CONDITIONAL (not REJECTED)", "type": "verdict_check"},
         {"text": "Report identifies Wappalyzer as a known company/tool", "type": "contains_concept"},
@@ -117,6 +118,34 @@
         {"text": "Verdict is APPROVED", "type": "exact_match"},
         {"text": "Report does not flag false transitive vulnerabilities for chalk", "type": "contains_concept"},
         {"text": "## Audit Coverage", "type": "contains_string"},
+        {"text": "Audit confidence", "type": "contains_concept"}
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "A coworker shared this Chrome extension link in Slack: 'YouTube Video Downloader Pro'. Should I install it?",
+      "expected_output": "Tier 3 deep audit. Should flag: video downloaders are frequently policy-violating (CWS bans YouTube downloaders), shared via Slack (not discovered organically), likely requests broad permissions. Verdict should be REJECTED or CONDITIONAL with strong warnings.",
+      "files": [],
+      "assertions": [
+        {"text": "Subject type is browser-extension", "type": "contains_concept"},
+        {"text": "Report discusses permissions", "type": "contains_concept"},
+        {"text": "Report flags the Slack source or direct sharing as risk", "type": "contains_concept"},
+        {"text": "Verdict is REJECTED or CONDITIONAL", "type": "verdict_check"},
+        {"text": "## Audit Coverage", "type": "contains_string"},
+        {"text": "Audit confidence", "type": "contains_concept"}
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "Is uBlock Origin safe to install on Firefox? I want an ad blocker.",
+      "expected_output": "Tier 1 quick audit. Should recognize uBlock Origin as a well-known open-source ad blocker with AMO Recommended badge. Should note broad permissions are expected for an ad blocker (declarativeNetRequest/webRequest + broad host access). Verdict APPROVED.",
+      "files": [],
+      "assertions": [
+        {"text": "Subject type is browser-extension", "type": "contains_concept"},
+        {"text": "Report identifies uBlock Origin as well-known or trusted", "type": "contains_concept"},
+        {"text": "Report notes permissions are expected for an ad blocker", "type": "contains_concept"},
+        {"text": "Verdict is APPROVED", "type": "exact_match"},
+        {"text": "Report is saved to a .md file", "type": "file_exists"},
         {"text": "Audit confidence", "type": "contains_concept"}
       ]
     },
