@@ -1,0 +1,193 @@
+# Container Image — Criteria Addendum
+
+Per-subject scoring extensions for **Type 4: container-image** audits. This
+addendum layers on top of the shared rubric in `references/criteria.md`.
+When a criterion below conflicts with the shared rubric, the more specific
+(container-image) guidance wins.
+
+Covers: Docker Hub, GitHub Container Registry (GHCR), Quay, Amazon ECR
+(public + private), Google Container Registry / Artifact Registry
+(GCR/GAR), and other OCI-compliant registries.
+
+## Registry Trust Signals
+
+| Registry | Verified Publisher Signal | Adoption Metric | Trust Notes |
+|----------|--------------------------|-----------------|-------------|
+| Docker Hub | "Docker Official Image" badge, "Verified Publisher" badge, "Sponsored OSS" | Pull count, stars | Largest catalog. Official images are maintained by Docker + upstream project. Verified Publisher = vetted org. Unbadged images vary wildly in quality. |
+| GHCR (`ghcr.io`) | Org-scoped (linked to GitHub org); "Publisher" tag on package page; optional package attestations | GitHub package downloads (where visible) | Inherits GitHub org identity. Strong when the GitHub org is well-known (e.g., `ghcr.io/open-telemetry/...`). |
+| Quay (`quay.io`) | Verified Publisher; Red Hat-maintained orgs (`quay.io/redhat/*`, UBI images) | Pull count | Red Hat ecosystem; integrated Clair CVE scanner; long-standing signing support. |
+| Amazon ECR Public (`public.ecr.aws`) | AWS-maintained namespaces (`public.ecr.aws/amazonlinux/`, `public.ecr.aws/lambda/`) | Pull count | Public ECR gallery. AWS namespaces are strongly trusted; third-party namespaces are case-by-case. |
+| ECR Private | Private-account scope (authenticated pulls only) | None public | Trust derives from the AWS account and IAM policies, not a public badge. |
+| GCR / Artifact Registry | Google-maintained projects (`gcr.io/distroless/*`, `gcr.io/google-containers/*`) | None public | Distroless images are a widely trusted minimal-base source. |
+| Self-hosted / mirror | None | None | No external verification. Assume lower baseline trust; mirror registries can republish tampered images. |
+
+### Scoring impact
+
+- Docker Official Image = strong positive (equivalent to AMO Recommended for extensions)
+- Docker Hub Verified Publisher = moderate positive
+- GHCR org-scoped under a recognizable GitHub org = moderate positive (equivalent to the GitHub org's reputation)
+- Quay verified publisher or AWS/Google official namespace = moderate positive
+- Unbadged Docker Hub image from an unknown user = neutral to negative (depends on adoption signals)
+- Self-hosted / mirror registry republishing a popular image = strong negative unless the mirror is operated by a trusted org (e.g., an internal corporate mirror)
+
+## Signing Standards
+
+| Standard | Invocation | Notes |
+|----------|-----------|-------|
+| Cosign / Sigstore (keyless) | `cosign verify <image> --certificate-identity-regexp ...` | Default modern standard. Uses OIDC identity + Fulcio-issued cert + Rekor transparency log. Verifiable without the publisher pre-sharing a public key. |
+| Cosign / Sigstore (keyed) | `cosign verify <image> --key <pubkey>` | Traditional keyed signing. Requires publisher to share the public key. |
+| Cosign attestations | `cosign verify-attestation <image> --type slsaprovenance` | In-toto attestations carried alongside the signature. SLSA provenance is the common type. |
+| Notary v2 / Notation | `notation verify <image>` | OCI-standard signing alternative. Less common in practice than Cosign. |
+| Docker Content Trust (Notary v1) | `DOCKER_CONTENT_TRUST=1 docker pull <image>` | Legacy. Deprecated for new work. Still present for some older Docker Official tags. |
+
+### Scoring impact
+
+- Cosign keyless verify passes with Rekor inclusion = strong positive
+- Cosign attestation (SLSA provenance) present = strong positive
+- Notation / Notary v2 verify passes = moderate-to-strong positive
+- No signing, Docker Official image from Docker Hub = LOW note (Docker-side integrity implicit in Official image pipeline, but not cryptographically verifiable by the user)
+- No signing, unverified publisher = MEDIUM flag on any privileged workload
+- No signing, org policy requires signed images = HIGH flag (policy violation)
+
+## SBOM Standards
+
+| Format | Producers | Notes |
+|--------|----------|-------|
+| SPDX (JSON or tag-value) | Syft, Trivy, anchore, Microsoft SBOM Tool | Linux Foundation standard; broadly supported by consumers |
+| CycloneDX (JSON or XML) | Syft, Trivy, cyclonedx-cli, various language tooling | OWASP-maintained; common in enterprise supply-chain tooling |
+| SPDX-lite / custom | Vendor-specific tools | Lower interoperability |
+
+Fetch SBOMs via `cosign download sbom <image>` (if attached as an attestation), `docker scout sbom <image>`, or generate locally with `syft <image> -o spdx-json` / `syft <image> -o cyclonedx-json`.
+
+### Scoring impact
+
+- SBOM attached as Cosign attestation, complete (OS + language packages) = strong positive
+- SBOM generated by Syft or Trivy locally, complete = moderate positive (confirms contents but not publisher intent)
+- No SBOM available from publisher, no local generation attempted = gap (note, not flag)
+- Publisher claims SBOM but the attached document is empty / malformed = MEDIUM flag (supply chain hygiene concern)
+
+## Layer Risk Patterns
+
+Dockerfile / image-history patterns that elevate risk when observed:
+
+| Pattern | Risk | Why |
+|---------|------|-----|
+| `USER root` (or no `USER`) | Medium-High | Container runs as root inside its namespace; combined with shared kernel, escape bugs land on the host as root |
+| `COPY . .` | Medium | Bundles the entire build context — often includes `.env`, `.git`, credentials, and SSH keys |
+| `ENV` with secret-looking values (`PASSWORD=`, `TOKEN=`, `API_KEY=`) | High | Baked-in credentials readable by anyone who pulls the image |
+| `RUN curl <url> \| sh` / `wget \| bash` | High | Opaque install pipeline; the `<url>` can change under the user between builds |
+| `ADD <url>` | High | Similar to curl-pipe-bash but without checksum verification |
+| `chmod -R 777` | Medium | Over-permissive filesystem; any process inside the container can modify anything |
+| `apt-get install -y ...` without `--no-install-recommends` and without cleanup | Low-Medium | Bloated layers pull in more CVE surface |
+| Full `curl` + `wget` + shell + package manager in a "minimal" image | Medium | Large attacker toolkit available post-compromise |
+| Embedded `nc` / `ncat` / `socat` | Medium-High | Reverse shell primitives embedded in the image |
+| `WORKDIR /root` or writes to `/root` | Low | Implies root-ownership assumptions; ties into USER-root pattern |
+
+### Scoring impact
+
+- Any 2 high patterns = HIGH flag
+- Any 1 high pattern without justification = MEDIUM-HIGH flag
+- Multiple medium patterns (3+) = MEDIUM flag (cumulative hygiene concern)
+
+## Runtime Privilege Classification
+
+Runtime flags on the *invocation* of the container, not the image itself.
+Source: `docker run` arguments, Compose `service` config, Kubernetes `Pod` /
+`Container` spec.
+
+### High-risk runtime flags
+
+| Flag | Risk | Why |
+|------|------|-----|
+| `--privileged` / `privileged: true` | Critical | Disables most isolation; grants all capabilities, device access, and a near-root view of the host |
+| `--cap-add=SYS_ADMIN` | Critical | Effectively root; the "god cap" that covers mount, namespace manipulation, and more |
+| `--cap-add=NET_ADMIN` | High | Full network-stack manipulation; can reshape routes, firewalls, and namespaces |
+| `--cap-add=SYS_PTRACE` | High | Attach debugger to host processes (if pid namespace shared) |
+| `--cap-add=DAC_OVERRIDE` / `DAC_READ_SEARCH` | High | Bypass file ownership/permission checks |
+| Mount `/var/run/docker.sock` | Critical | Container-escape-equivalent: can spawn new containers on the host |
+| Mount host `/`, `/etc`, `/proc`, `/sys`, `/dev` | Critical | Direct host filesystem access |
+| `--network host` / `hostNetwork: true` | High | Bypasses Docker/k8s network namespace; container sees host interfaces |
+| `--pid host` / `hostPID: true` | High | Sees and can signal host processes |
+| `--ipc host` / `hostIPC: true` | Medium-High | Shares SysV IPC / shared memory with host |
+
+### Medium-risk runtime flags
+
+| Flag | Risk | Why |
+|------|------|-----|
+| `--cap-add=NET_RAW` | Medium | Raw socket access; enables some network attacks |
+| `--cap-add=CHOWN` / `FOWNER` / `SETUID` / `SETGID` | Low-Medium | Per-cap risk is modest, but any cap-add on an unverified image is a note |
+| `allowPrivilegeEscalation: true` (or not set) | Medium | In Kubernetes, defaults to true; explicitly false is the safe choice |
+| `securityContext.runAsUser: 0` | Medium | Explicit root; prefer a non-zero UID |
+| Bind-mount of specific host paths (config dirs) read-write | Low-Medium | Reduced risk vs whole-filesystem mount, but still host data exposure |
+| Missing `readOnlyRootFilesystem: true` | Low | Not required, but a positive signal when set |
+
+### Low-risk runtime flags
+
+| Flag | Risk | Why |
+|------|------|-----|
+| Default capability set | Low | Docker's default drops most dangerous caps |
+| Rootless container runtime (rootless Docker, Podman) | Low | Kernel namespacing reduces impact of escape bugs |
+| Read-only root filesystem + scoped writable volume | Low | Strong defense-in-depth |
+| `seccomp=default` + `apparmor=docker-default` | Low | Layered MAC policies |
+
+### Scoring impact
+
+- Any one critical-risk flag on an unverified image = HIGH flag
+- Any critical-risk flag on any image without documented justification = MEDIUM-HIGH flag
+- Multiple high-risk flags on the same container = compound; escalate verdict
+- Default-safe runtime (non-root user, default caps, no host namespaces) = positive signal
+
+## Tag vs Digest Pinning
+
+| Reference shape | Immutability | Risk |
+|-----------------|--------------|------|
+| `<image>@sha256:<hex>` (digest) | Immutable — content-addressed | Lowest; bit-identical pulls |
+| `<image>:<specific-semver>-<variant>` (e.g., `1.27.3-alpine`) | Mostly immutable by convention but publisher can repush | Low-Medium |
+| `<image>:<major>` (e.g., `:1` or `:1.27`) | Mutable — floats to latest minor/patch | Medium |
+| `<image>:latest` | Mutable — floats to whatever publisher most recently pushed | High on production; medium on scratch experiments |
+| `<image>` (no tag) | Equivalent to `:latest` | High |
+
+### Scoring impact
+
+- Digest-pinned reference = strong positive (Tier 1 prerequisite)
+- Specific semver tag (`:1.27.3`) = moderate positive
+- Floating minor/major tag = MEDIUM flag on production
+- `:latest` or no tag = HIGH flag on production; MEDIUM note on dev/experimental
+- `:latest` + `--privileged` + unknown publisher = compound flag, push to REJECTED
+
+## Tier Assignment Thresholds (Container Images)
+
+### Tier 1 — Quick Audit
+
+ALL of these must hold:
+- Docker Official Image OR Verified Publisher OR GHCR package under a recognizable GitHub org OR cloud-vendor official namespace
+- Reference is digest-pinned (`@sha256:...`) OR a specific immutable tag variant from a publisher that pins conventionally
+- Cosign signature present (verify passes) OR image ships with publisher-attested build provenance (SLSA via GitHub Actions)
+- SBOM retrievable via `cosign download sbom` / `docker scout sbom` / publisher-provided SBOM
+- No critical CVEs from scanner (Trivy/Grype/Scout) in the last 90 days
+- Base image is a recognized minimal base (distroless, alpine, debian-slim, ubi-micro) from an official source
+- Runtime profile is default-safe (non-root, default caps, no host namespaces)
+
+### Tier 2 — Standard Audit (default)
+
+Default when not all Tier 1 criteria are met:
+- Named tag (not `:latest`, no digest pin)
+- No verifiable signature, but publisher is identifiable
+- Popular but unverified Docker Hub publisher, or mid-tier GHCR package
+- No explicit SBOM but image is from a recognized base and is recently pushed
+- Runtime profile is mostly default but may request a specific `cap_add` or bind mount
+
+### Tier 3 — Deep Audit
+
+ANY of these triggers:
+- `:latest` with no digest pin
+- Unknown or self-hosted mirror registry
+- No publisher identity
+- `--privileged` requested, OR `cap_add` including SYS_ADMIN/NET_ADMIN/SYS_PTRACE/DAC_OVERRIDE, OR `/var/run/docker.sock` mount
+- `hostNetwork` / `hostPID` / `hostIPC` set
+- Image older than 2 years with no rebuild
+- Unpatched critical CVE in image or direct base layer
+- Suspicious naming (impersonates a well-known image, cryptominer-like names, typo of a popular base)
+- `FROM` chain transits an unknown or unrecognized base
+- Scraped / mirror registry republishing popular image names
+- Dockerfile contains `curl \| sh` / `ADD <url>` / embedded credentials

@@ -162,6 +162,36 @@
         {"text": "## Audit Coverage", "type": "contains_string"},
         {"text": "Audit confidence", "type": "contains_concept"}
       ]
+    },
+    {
+      "id": 12,
+      "prompt": "I want to run a web server in a container — docker pull nginx:latest. Is this safe to use in production?",
+      "expected_output": "Standard/Tier 2 audit. Routes to container-image workflow. `nginx` is a Docker Official Image (strong publisher signal), but the user is pulling the `:latest` tag with no digest pin. Audit should flag the `:latest` + no-digest-pin pattern, recommend pinning to a specific digest (`nginx@sha256:<hex>`) or an immutable tag (`nginx:1.27.3-alpine`), note that Docker Official Images don't ship Cosign signatures by default (acceptable gap on Official image; flag if org policy requires signed images), and check for known critical CVEs in the current nginx tag. Verdict should be CONDITIONAL (approved with the pinning + signature-policy conditions met).",
+      "files": [],
+      "assertions": [
+        {"text": "Subject type is container-image", "type": "contains_concept"},
+        {"text": "Report flags :latest tag or lack of digest pinning", "type": "contains_concept"},
+        {"text": "Report identifies nginx as a Docker Official Image or well-known publisher", "type": "contains_concept"},
+        {"text": "Report recommends pinning to a specific digest or immutable tag", "type": "contains_concept"},
+        {"text": "Verdict is CONDITIONAL or APPROVED (not REJECTED)", "type": "verdict_check"},
+        {"text": "## Audit Coverage", "type": "contains_string"},
+        {"text": "Audit confidence", "type": "contains_concept"}
+      ]
+    },
+    {
+      "id": 13,
+      "prompt": "A tutorial I found says to run docker pull someunknownregistry.io/cryptominer:latest for a 'mining benchmark tool'. Should I use it?",
+      "expected_output": "Deep/Tier 3 audit. Routes to container-image workflow. Multiple CRITICAL red flags: unknown registry (no publisher identity, no verification), `:latest` with no digest pin, suspicious image name (`cryptominer`) that strongly suggests malicious intent, no signing, no SBOM, likely high-privilege runtime requirements. Verdict must be REJECTED. Report should flag the unknown registry, the suspicious naming pattern, and the combination as equivalent to a known malware pattern in container supply chains.",
+      "files": [],
+      "assertions": [
+        {"text": "Subject type is container-image", "type": "contains_concept"},
+        {"text": "Report flags the unknown or untrusted registry", "type": "contains_concept"},
+        {"text": "Report flags the suspicious image name (cryptominer) as a malicious-intent signal", "type": "contains_concept"},
+        {"text": "Report flags :latest tag or lack of digest pinning", "type": "contains_concept"},
+        {"text": "Verdict is REJECTED", "type": "exact_match"},
+        {"text": "## Audit Coverage", "type": "contains_string"},
+        {"text": "Audit confidence", "type": "contains_concept"}
+      ]
     }
   ]
 }
