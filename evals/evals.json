@@ -192,6 +192,36 @@
         {"text": "## Audit Coverage", "type": "contains_string"},
         {"text": "Audit confidence", "type": "contains_concept"}
       ]
+    },
+    {
+      "id": 14,
+      "prompt": "Our workflow uses `actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683` on `pull_request` with `permissions: contents: read` and no extra secrets. Is this safe?",
+      "expected_output": "Tier 1 quick audit. Routes to ci-action workflow. Should recognize `actions/checkout` as an official `actions/*` action, note the full commit-SHA pin, note the read-only permission scope and lack of `pull_request_target` / inherited-secrets exposure, and return APPROVED.",
+      "files": [],
+      "assertions": [
+        {"text": "Subject type is ci-action", "type": "contains_concept"},
+        {"text": "Report identifies `actions/checkout` as official or trusted", "type": "contains_concept"},
+        {"text": "Report notes the action is pinned to a full commit SHA", "type": "contains_concept"},
+        {"text": "Report notes the workflow uses read-only permissions or no dangerous secret exposure", "type": "contains_concept"},
+        {"text": "Verdict is APPROVED", "type": "exact_match"},
+        {"text": "Audit confidence", "type": "contains_concept"}
+      ]
+    },
+    {
+      "id": 15,
+      "prompt": "Can I use this reusable workflow from another org?\n\n```yaml\non: pull_request_target\njobs:\n  release:\n    permissions:\n      contents: write\n      pull-requests: write\n    uses: vendor/release-workflow/.github/workflows/publish.yml@v2\n    secrets: inherit\n```\n\nI checked the reusable workflow and it calls `third-party/build-action@main`.",
+      "expected_output": "Tier 3 deep audit. Routes to ci-action workflow. Should flag `pull_request_target`, inherited secrets, write-capable permissions, top-level tag pin instead of full SHA, and the transitive child action pinned to `main`. Verdict must be REJECTED.",
+      "files": [],
+      "assertions": [
+        {"text": "Subject type is ci-action", "type": "contains_concept"},
+        {"text": "Report flags `pull_request_target` as high-risk or dangerous", "type": "contains_concept"},
+        {"text": "Report flags inherited secrets or privileged token scope", "type": "contains_concept"},
+        {"text": "Report flags the top-level ref or transitive child as not SHA pinned", "type": "contains_concept"},
+        {"text": "Report audits the nested or transitive action", "type": "contains_concept"},
+        {"text": "Verdict is REJECTED", "type": "exact_match"},
+        {"text": "## Audit Coverage", "type": "contains_string"},
+        {"text": "Audit confidence", "type": "contains_concept"}
+      ]
     }
   ]
 }

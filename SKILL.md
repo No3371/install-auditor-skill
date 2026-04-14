@@ -63,7 +63,7 @@ Sub-rubric:     <Type 8 only: 8a | 8b | 8c>
 | 2 | browser-extension | `workflows/browser-extension.md` | Live — Phase 3 (M3.1) |
 | 3 | ide-plugin | `workflows/generic.md` | Fallback — specific workflow lands in Phase 3 (M3.4) |
 | 4 | container-image | `workflows/container-image.md` | Live — Phase 3 (M3.2) |
-| 5 | ci-action | `workflows/generic.md` | Fallback — specific workflow lands in Phase 3 (M3.3) |
+| 5 | ci-action | `workflows/ci-action.md` | Live — Phase 3 (M3.3) |
 | 6 | desktop-app | `workflows/generic.md` | Fallback — specific workflow lands in Phase 4 (M4.1) |
 | 7 | cli-binary | `workflows/generic.md` | Fallback — specific workflow lands in Phase 4 (M4.2) |
 | 8 | agent-extension | `workflows/generic.md` | Fallback — specific workflow lands in Phase 4 (M4.3); 8a/8b/8c resolved at classification |
@@ -212,10 +212,12 @@ If verdict is **REJECTED** or **CONDITIONAL with HIGH flags**: append an escalat
 - `workflows/registry-package.md` — Type 1 registry-package workflow (Phase 2, M2.1)
 - `workflows/browser-extension.md` — Type 2 browser-extension workflow (Phase 3, M3.1)
 - `workflows/container-image.md` — Type 4 container-image workflow (Phase 3, M3.2)
+- `workflows/ci-action.md` — Type 5 ci-action workflow (Phase 3, M3.3)
 - `references/criteria.md` — Shared tier-aware scoring rubric
 - `references/criteria/registry-package.md` — Registry-package criteria addendum (ecosystem trust signals, tier thresholds, install script patterns)
 - `references/criteria/browser-extension.md` — Browser-extension criteria addendum (store trust, permission classification, content-script reach, auto-update risk)
 - `references/criteria/container-image.md` — Container-image criteria addendum (registry trust, signing standards, SBOM, layer risk, runtime privilege, tag/digest pinning)
+- `references/criteria/ci-action.md` — CI-action criteria addendum (publisher trust, pinning, trigger/secret exposure, transitive audit)
 - `references/licenses.md` — License compatibility matrix
 - `references/registries.md` — Trusted vs. untrusted registries per ecosystem
 - `scripts/registry-lookup.ps1` — Automated registry data lookup. Run: `powershell -File scripts/registry-lookup.ps1 <ecosystem> <name> [version]`. If PowerShell is unavailable, query registry APIs directly (npm: `registry.npmjs.org/<pkg>`, PyPI: `pypi.org/pypi/<pkg>/json`, etc.).
