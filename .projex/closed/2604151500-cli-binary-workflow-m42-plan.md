@@ -1,7 +1,9 @@
 # CLI Binary Workflow — M4.2
 
-> **Status:** In Progress
+> **Status:** Complete
 > **Created:** 2026-04-15
+> **Completed:** 2026-04-15
+> **Walkthrough:** [2604151500-cli-binary-workflow-m42-walkthrough.md](2604151500-cli-binary-workflow-m42-walkthrough.md)
 > **Author:** Claude (Opus 4.6)
 > **Source:** [2604070218-install-auditor-subject-typed-redesign-nav.md](2604070218-install-auditor-subject-typed-redesign-nav.md) Phase 4, M4.2
 > **Related Projex:**
