@@ -251,6 +251,35 @@
         {"text": "## Audit Coverage", "type": "contains_string"},
         {"text": "Audit confidence", "type": "contains_concept"}
       ]
+    },
+    {
+      "id": 18,
+      "prompt": "Is it safe to install Firefox via winget? I want to run: winget install Mozilla.Firefox",
+      "expected_output": "Tier 1 quick audit. Routes to desktop-app workflow. Should recognize Firefox as a well-known open-source browser from Mozilla (established vendor), note winget as a recognized distribution channel with community-reviewed manifest, confirm the app is code-signed (Authenticode), and return APPROVED.",
+      "files": [],
+      "assertions": [
+        {"text": "Subject type is desktop-app", "type": "contains_concept"},
+        {"text": "Report identifies Mozilla/Firefox as a known vendor or project", "type": "contains_concept"},
+        {"text": "Report notes winget as a recognized distribution channel", "type": "contains_concept"},
+        {"text": "Report discusses code signing status", "type": "contains_concept"},
+        {"text": "Verdict is APPROVED", "type": "exact_match"},
+        {"text": "Audit confidence", "type": "contains_concept"}
+      ]
+    },
+    {
+      "id": 19,
+      "prompt": "A forum post linked to a site called free-software-downloads.xyz where I can get a 'Pro' version of VLC media player as a .exe file. Should I install it?",
+      "expected_output": "Tier 3 deep audit. Routes to desktop-app workflow. Should flag the third-party mirror (not VideoLAN's official site), the repackaged 'Pro' branding (VLC is free/open-source — there is no Pro version), the .exe installer from an unknown source, and the forum-link distribution. Verdict must be REJECTED.",
+      "files": [],
+      "assertions": [
+        {"text": "Subject type is desktop-app", "type": "contains_concept"},
+        {"text": "Report flags the third-party or unofficial download source", "type": "contains_concept"},
+        {"text": "Report flags the repackaged or fake 'Pro' version as suspicious", "type": "contains_concept"},
+        {"text": "Report flags the .exe installer from unknown source", "type": "contains_concept"},
+        {"text": "Verdict is REJECTED", "type": "exact_match"},
+        {"text": "## Audit Coverage", "type": "contains_string"},
+        {"text": "Audit confidence", "type": "contains_concept"}
+      ]
     }
   ]
 }
