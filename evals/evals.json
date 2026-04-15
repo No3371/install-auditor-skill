@@ -222,6 +222,35 @@
         {"text": "## Audit Coverage", "type": "contains_string"},
         {"text": "Audit confidence", "type": "contains_concept"}
       ]
+    },
+    {
+      "id": 16,
+      "prompt": "Is the Prettier VS Code extension safe to install? I want to use it for code formatting. The extension is published by 'Prettier' on the VS Code Marketplace.",
+      "expected_output": "Tier 1 quick audit. Routes to ide-plugin workflow. Should recognize Prettier as a well-known open-source project with a verified publisher on VS Code Marketplace, note the high install count (tens of millions), confirm capabilities are proportional (formatting commands, language support), and return APPROVED.",
+      "files": [],
+      "assertions": [
+        {"text": "Subject type is ide-plugin", "type": "contains_concept"},
+        {"text": "Report identifies Prettier as a known project or verified publisher", "type": "contains_concept"},
+        {"text": "Report notes high install count or widespread adoption", "type": "contains_concept"},
+        {"text": "Report notes capabilities are proportional to stated purpose (formatting)", "type": "contains_concept"},
+        {"text": "Verdict is APPROVED", "type": "exact_match"},
+        {"text": "Audit confidence", "type": "contains_concept"}
+      ]
+    },
+    {
+      "id": 17,
+      "prompt": "A colleague sent me a .vsix file called 'super-intellisense-pro.vsix' over Slack. They said it makes autocomplete way better. Should I install it?",
+      "expected_output": "Tier 3 deep audit. Routes to ide-plugin workflow. Should flag the sideloaded distribution (no marketplace listing), Slack-shared provenance, unknown publisher, inability to verify capabilities or binary contents without manual VSIX inspection. Verdict must be REJECTED.",
+      "files": [],
+      "assertions": [
+        {"text": "Subject type is ide-plugin", "type": "contains_concept"},
+        {"text": "Report flags sideloaded or non-marketplace distribution as high risk", "type": "contains_concept"},
+        {"text": "Report flags unknown publisher or unverifiable provenance", "type": "contains_concept"},
+        {"text": "Report flags Slack-shared or direct-file distribution", "type": "contains_concept"},
+        {"text": "Verdict is REJECTED", "type": "exact_match"},
+        {"text": "## Audit Coverage", "type": "contains_string"},
+        {"text": "Audit confidence", "type": "contains_concept"}
+      ]
     }
   ]
 }

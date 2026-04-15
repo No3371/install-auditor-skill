@@ -1,6 +1,8 @@
 # IDE Plugin Workflow — M3.4
 
-> **Status:** In Progress
+> **Status:** Complete
+> **Completed:** 2026-04-15
+> **Walkthrough:** [2604150312-ide-plugin-workflow-m34-walkthrough.md](2604150312-ide-plugin-workflow-m34-walkthrough.md)
 > **Created:** 2026-04-15
 > **Author:** Claude (Opus 4.6)
 > **Source:** [2604070218-install-auditor-subject-typed-redesign-nav.md](2604070218-install-auditor-subject-typed-redesign-nav.md) Phase 3, M3.4
