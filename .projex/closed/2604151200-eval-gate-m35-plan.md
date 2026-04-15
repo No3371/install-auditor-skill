@@ -1,10 +1,12 @@
 # Eval Gate Closeout — Phase 3 M3.5
 
-> **Status:** In Progress
+> **Status:** Complete
 > **Created:** 2026-04-15
+> **Completed:** 2026-04-15
 > **Author:** Claude (Opus 4.6)
 > **Source:** 2604070218-install-auditor-subject-typed-redesign-nav.md (Phase 3 M3.5)
 > **Related Projex:** 2604070217-subject-typed-audit-dispatch-eval.md (eval §6 G3, §9 phase 6), 2604070218-install-auditor-subject-typed-redesign-nav.md
+> **Walkthrough:** 2604151200-eval-gate-m35-walkthrough.md
 > **Worktree:** No
 
 ---
@@ -24,13 +26,13 @@ Verify that all four Phase 3 subject workflows have ≥1 positive + ≥1 negativ
 Phase 3 M3.1–M3.4 each added subject workflows + eval cases individually. M3.5 is the collective gate: confirm the full matrix is covered before declaring Phase 3 complete and pivoting to Phase 4.
 
 ### Success Criteria
-- [ ] SC1: Each Phase 3 workflow (browser-extension, container-image, ci-action, ide-plugin) has ≥1 positive (APPROVED/CONDITIONAL) + ≥1 negative (REJECTED) eval case with `Subject type is <type>` assertion
-- [ ] SC2: `evals/evals.json` is valid JSON with no duplicate ids
-- [ ] SC3: All eval assertions use recognized types (`contains_concept`, `exact_match`, `verdict_check`, `contains_string`, `file_exists`, `line_count_max`)
-- [ ] SC4: Nav doc M3.5 checkbox marked complete with date + summary
-- [ ] SC5: Nav doc Phase 3 status → Complete with exit criteria confirmed
-- [ ] SC6: Nav doc Priorities + Active Work updated to pivot to Phase 4
-- [ ] SC7: Eval harness gap explicitly logged as a Phase 6 caveat (not a Phase 3 blocker)
+- [x] SC1: Each Phase 3 workflow (browser-extension, container-image, ci-action, ide-plugin) has ≥1 positive (APPROVED/CONDITIONAL) + ≥1 negative (REJECTED) eval case with `Subject type is <type>` assertion
+- [x] SC2: `evals/evals.json` is valid JSON with no duplicate ids
+- [x] SC3: All eval assertions use recognized types (`contains_concept`, `exact_match`, `verdict_check`, `contains_string`, `file_exists`, `line_count_max`)
+- [x] SC4: Nav doc M3.5 checkbox marked complete with date + summary
+- [x] SC5: Nav doc Phase 3 status → Complete with exit criteria confirmed
+- [x] SC6: Nav doc Priorities + Active Work updated to pivot to Phase 4
+- [x] SC7: Eval harness gap explicitly logged as a Phase 6 caveat (not a Phase 3 blocker)
 
 ### Out of Scope
 - Authoring new eval cases
