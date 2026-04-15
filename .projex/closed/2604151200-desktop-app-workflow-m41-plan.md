@@ -1,6 +1,8 @@
 # Desktop App Workflow — M4.1
 
 > **Status:** Complete
+> **Completed:** 2026-04-15
+> **Walkthrough:** [closed/2604151200-desktop-app-workflow-m41-walkthrough.md](closed/2604151200-desktop-app-workflow-m41-walkthrough.md)
 > **Created:** 2026-04-15
 > **Author:** Claude (Opus 4.6)
 > **Source:** [2604070218-install-auditor-subject-typed-redesign-nav.md](2604070218-install-auditor-subject-typed-redesign-nav.md) Phase 4, M4.1
