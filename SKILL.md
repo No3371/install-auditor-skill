@@ -64,7 +64,7 @@ Sub-rubric:     <Type 8 only: 8a | 8b | 8c>
 | 3 | ide-plugin | `workflows/ide-plugin.md` | Live — Phase 3 (M3.4) |
 | 4 | container-image | `workflows/container-image.md` | Live — Phase 3 (M3.2) |
 | 5 | ci-action | `workflows/ci-action.md` | Live — Phase 3 (M3.3) |
-| 6 | desktop-app | `workflows/generic.md` | Fallback — specific workflow lands in Phase 4 (M4.1) |
+| 6 | desktop-app | `workflows/desktop-app.md` | Live — Phase 4 (M4.1) |
 | 7 | cli-binary | `workflows/generic.md` | Fallback — specific workflow lands in Phase 4 (M4.2) |
 | 8 | agent-extension | `workflows/generic.md` | Fallback — specific workflow lands in Phase 4 (M4.3); 8a/8b/8c resolved at classification |
 | 9 | remote-integration | `workflows/generic.md` | Fallback — specific workflow lands in Phase 4 (M4.4) |
@@ -214,12 +214,14 @@ If verdict is **REJECTED** or **CONDITIONAL with HIGH flags**: append an escalat
 - `workflows/container-image.md` — Type 4 container-image workflow (Phase 3, M3.2)
 - `workflows/ci-action.md` — Type 5 ci-action workflow (Phase 3, M3.3)
 - `workflows/ide-plugin.md` — Type 3 ide-plugin workflow (Phase 3, M3.4)
+- `workflows/desktop-app.md` — Type 6 desktop-app workflow (Phase 4, M4.1)
 - `references/criteria.md` — Shared tier-aware scoring rubric
 - `references/criteria/registry-package.md` — Registry-package criteria addendum (ecosystem trust signals, tier thresholds, install script patterns)
 - `references/criteria/browser-extension.md` — Browser-extension criteria addendum (store trust, permission classification, content-script reach, auto-update risk)
 - `references/criteria/container-image.md` — Container-image criteria addendum (registry trust, signing standards, SBOM, layer risk, runtime privilege, tag/digest pinning)
 - `references/criteria/ci-action.md` — CI-action criteria addendum (publisher trust, pinning, trigger/secret exposure, transitive audit)
 - `references/criteria/ide-plugin.md` — IDE-plugin criteria addendum (marketplace trust, capability risk, bundled-binary provenance, tier thresholds)
+- `references/criteria/desktop-app.md` — Desktop-app criteria addendum (distribution channel trust, code signing, installer risk, sandboxing, tier thresholds)
 - `references/licenses.md` — License compatibility matrix
 - `references/registries.md` — Trusted vs. untrusted registries per ecosystem
 - `scripts/registry-lookup.ps1` — Automated registry data lookup. Run: `powershell -File scripts/registry-lookup.ps1 <ecosystem> <name> [version]`. If PowerShell is unavailable, query registry APIs directly (npm: `registry.npmjs.org/<pkg>`, PyPI: `pypi.org/pypi/<pkg>/json`, etc.).
