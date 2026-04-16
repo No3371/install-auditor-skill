@@ -1,11 +1,13 @@
 # Tighten the Classifier (M5.1)
 
-> **Status:** In Progress
+> **Status:** Complete
 > **Created:** 2026-04-16
+> **Completed:** 2026-04-16
 > **Author:** projex-agent
 > **Source:** Nav M5.1 — Phase 5 "Default-Off Generic"
 > **Nav:** 2604070218-install-auditor-subject-typed-redesign-nav.md
 > **Related Projex:** 2604070300-install-auditor-subject-type-taxonomy-def.md
+> **Walkthrough:** 2604160430-tighten-classifier-m51-walkthrough.md
 > **Worktree:** No
 
 ---
@@ -31,12 +33,12 @@ Additionally:
 
 ### Success Criteria
 
-- [ ] Procedure defines three confidence tiers: `high` (strong match), `medium` (partial/weak match, single best candidate), `low` (no match or unresolved conflict)
-- [ ] Only `low` confidence routes to `generic.md`; `medium` routes to the best-match specific workflow
-- [ ] Phase 2 note removed
-- [ ] Dispatch table column updated from "Phase 1 Status" to "Status"; all rows show "Live" (drop milestone references)
-- [ ] Generic row description updated: "Low-confidence fallback for truly unclassifiable subjects"
-- [ ] Existing 26 eval cases still classify correctly (no regressions — all named-type evals had high confidence, so the new medium tier doesn't affect them)
+- [x] Procedure defines three confidence tiers: `high` (strong match), `medium` (partial/weak match, single best candidate), `low` (no match or unresolved conflict)
+- [x] Only `low` confidence routes to `generic.md`; `medium` routes to the best-match specific workflow
+- [x] Phase 2 note removed
+- [x] Dispatch table column updated from "Phase 1 Status" to "Status"; all rows show "Live" (drop milestone references)
+- [x] Generic row description updated: "Low-confidence fallback only"
+- [x] Existing 26 eval cases still classify correctly (no regressions — all named-type evals had high confidence, so the new medium tier doesn't affect them)
 
 ### Out of Scope
 

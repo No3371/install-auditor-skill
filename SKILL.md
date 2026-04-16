@@ -25,7 +25,17 @@ Any installable: browser extensions, IDE/editor plugins, registry packages (npm,
 
 **Rule:** classify by the **innermost trust boundary the user is crossing** — the last verification gate between the user and the code that will actually execute. Full rule, worked hybrid examples, and edge-case discipline live in `.projex/2604070300-install-auditor-subject-type-taxonomy-def.md` under "Classifier Rule — Innermost Trust Boundary". Read that section when the rule does not resolve cleanly on its own.
 
-**Procedure:** (1) read URL + install command + manifest + user intent (read-only); (2) match against the signal table below; (3) one strong match → **high** confidence; (4) multiple matches → apply the innermost-boundary rule to pick the last gate the user personally crosses; (5) no strong match OR conflict unresolved after the rule → **`generic` (type 0) at low confidence**, naming the conflict; (6) emit the structured output and route. **Low confidence routes to `generic`, never to a best-guess specific type.**
+**Procedure:** (1) read URL + install command + manifest + user intent (read-only); (2) match against the signal table below; (3) apply confidence:
+
+| Condition | Confidence | Routes to |
+|-----------|------------|-----------|
+| One strong signal match | **high** | `workflows/<matched-type>.md` |
+| Multiple strong matches → innermost-boundary rule resolves to one type | **high** | `workflows/<resolved-type>.md` |
+| Weak/partial signals point to a single best-candidate type | **medium** | `workflows/<best-candidate>.md` — note the uncertainty in Rationale |
+| Multiple weak matches, no single best candidate after the boundary rule | **low** | `workflows/generic.md` — name the conflict in Rationale |
+| No signals fire at all | **low** | `workflows/generic.md` |
+
+(4) emit the structured output and route. **Only `low` confidence routes to `generic.md`. Medium-confidence subjects route to their best-match specific workflow — the workflow itself handles residual uncertainty via its tier system.**
 
 **Signal table:**
 
@@ -57,20 +67,18 @@ Sub-rubric:     <Type 8 only: 8a | 8b | 8c>
 
 ### Dispatch Table
 
-| # | Type | Workflow | Phase 1 Status |
+| # | Type | Workflow | Status |
 |---|---|---|---|
-| 1 | registry-package | `workflows/registry-package.md` | Live — Phase 2 (M2.1) |
-| 2 | browser-extension | `workflows/browser-extension.md` | Live — Phase 3 (M3.1) |
-| 3 | ide-plugin | `workflows/ide-plugin.md` | Live — Phase 3 (M3.4) |
-| 4 | container-image | `workflows/container-image.md` | Live — Phase 3 (M3.2) |
-| 5 | ci-action | `workflows/ci-action.md` | Live — Phase 3 (M3.3) |
-| 6 | desktop-app | `workflows/desktop-app.md` | Live — Phase 4 (M4.1) |
-| 7 | cli-binary | `workflows/cli-binary.md` | Live — Phase 4 (M4.2) |
-| 8 | agent-extension | `workflows/agent-extension.md` | Live — Phase 4 (M4.3); 8a/8b/8c resolved at classification |
-| 9 | remote-integration | `workflows/remote-integration.md` | Live — Phase 4 (M4.4) |
-| 0 | generic | `workflows/generic.md` | Universal fallback; also the home for truly unclassifiable subjects |
-
-> **Phase 2 note:** `workflows/registry-package.md` is live (M2.1). Remaining 9 types still route to `workflows/generic.md`; specific workflows land in Phases 2--4 and this table updates per milestone. Do **not** create a workflow file before its owning phase.
+| 1 | registry-package | `workflows/registry-package.md` | Live |
+| 2 | browser-extension | `workflows/browser-extension.md` | Live |
+| 3 | ide-plugin | `workflows/ide-plugin.md` | Live |
+| 4 | container-image | `workflows/container-image.md` | Live |
+| 5 | ci-action | `workflows/ci-action.md` | Live |
+| 6 | desktop-app | `workflows/desktop-app.md` | Live |
+| 7 | cli-binary | `workflows/cli-binary.md` | Live |
+| 8 | agent-extension | `workflows/agent-extension.md` | Live; 8a/8b/8c resolved at classification |
+| 9 | remote-integration | `workflows/remote-integration.md` | Live |
+| 0 | generic | `workflows/generic.md` | Low-confidence fallback only |
 
 ---
 
