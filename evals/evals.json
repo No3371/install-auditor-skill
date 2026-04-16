@@ -309,6 +309,39 @@
         {"text": "## Audit Coverage", "type": "contains_string"},
         {"text": "Audit confidence", "type": "contains_concept"}
       ]
+    },
+    {
+      "id": 22,
+      "prompt": "Is it safe to use the Anthropic-maintained MCP filesystem server? I'd configure it in my .mcp.json like: { \"mcpServers\": { \"filesystem\": { \"command\": \"npx\", \"args\": [\"-y\", \"@modelcontextprotocol/server-filesystem\", \"/Users/me/projects\"] } } }",
+      "expected_output": "Tier 1 quick audit. Routes to agent-extension workflow, sub-rubric 8a (MCP server). Should recognize @modelcontextprotocol/server-filesystem as an Anthropic-maintained official MCP server, distributed via npm under the @modelcontextprotocol scope. stdio transport (local, process-isolated). Capabilities: file-system read/write scoped to the specified directory argument. Should note that while fs-write is generally a High-risk capability, the directory scoping plus Anthropic-official provenance mitigates significantly. Verdict should be APPROVED with a note about directory scope.",
+      "files": [],
+      "assertions": [
+        {"text": "Subject type is agent-extension", "type": "contains_concept"},
+        {"text": "Sub-rubric is 8a or MCP server", "type": "contains_concept"},
+        {"text": "Report identifies Anthropic or @modelcontextprotocol as the official publisher", "type": "contains_concept"},
+        {"text": "Report discusses capability surface (file-system access)", "type": "contains_concept"},
+        {"text": "Report discusses transport (stdio) and isolation", "type": "contains_concept"},
+        {"text": "Report notes directory scoping as a mitigation", "type": "contains_concept"},
+        {"text": "Verdict is APPROVED", "type": "exact_match"},
+        {"text": "Audit confidence", "type": "contains_concept"}
+      ]
+    },
+    {
+      "id": 23,
+      "prompt": "Someone on Discord shared an MCP server config for a 'universal AI assistant' tool: { \"mcpServers\": { \"universal-ai\": { \"command\": \"npx\", \"args\": [\"-y\", \"universal-ai-mcp-server\"], \"env\": { \"OPENAI_API_KEY\": \"...\", \"ANTHROPIC_API_KEY\": \"...\" } } } } — the GitHub repo (github.com/randomuser42/universal-ai-mcp) has 3 stars and was created last week. Should I add this?",
+      "expected_output": "Tier 3 deep audit. Routes to agent-extension workflow, sub-rubric 8a (MCP server). Should flag multiple critical risks: unknown publisher (randomuser42), brand-new repo (created last week, 3 stars), Discord-shared provenance (no registry gate), requires API keys in env (credential exposure — CRITICAL capability), unknown capability surface (cannot verify what tools are exposed without inspection), npx execution of unvetted package. Should flag the API key requirement as a critical credential-theft vector. Verdict must be REJECTED.",
+      "files": [],
+      "assertions": [
+        {"text": "Subject type is agent-extension", "type": "contains_concept"},
+        {"text": "Sub-rubric is 8a or MCP server", "type": "contains_concept"},
+        {"text": "Report flags unknown or unverified publisher", "type": "contains_concept"},
+        {"text": "Report flags the new/low-star GitHub repo", "type": "contains_concept"},
+        {"text": "Report flags API key or credential exposure as critical risk", "type": "contains_concept"},
+        {"text": "Report flags Discord or social-media shared provenance", "type": "contains_concept"},
+        {"text": "Verdict is REJECTED", "type": "exact_match"},
+        {"text": "## Audit Coverage", "type": "contains_string"},
+        {"text": "Audit confidence", "type": "contains_concept"}
+      ]
     }
   ]
 }
