@@ -1,6 +1,6 @@
 # Remote Integration Workflow — M4.4
 
-> **Status:** Ready
+> **Status:** In Progress
 > **Created:** 2026-04-16
 > **Author:** Claude (projex planning agent)
 > **Source:** Direct request — Phase 4 M4.4 from nav
