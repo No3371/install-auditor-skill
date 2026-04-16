@@ -1,6 +1,6 @@
 # Tighten the Classifier (M5.1)
 
-> **Status:** Ready
+> **Status:** In Progress
 > **Created:** 2026-04-16
 > **Author:** projex-agent
 > **Source:** Nav M5.1 — Phase 5 "Default-Off Generic"
