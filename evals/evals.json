@@ -342,6 +342,36 @@
         {"text": "## Audit Coverage", "type": "contains_string"},
         {"text": "Audit confidence", "type": "contains_concept"}
       ]
+    },
+    {
+      "id": 24,
+      "prompt": "Our team wants to add the official Slack app to our workspace for notifications. The admin would install it from the Slack App Directory at https://slack.com/apps — it requests these OAuth scopes: channels:read, chat:write, users:read. Is this integration safe?",
+      "expected_output": "Tier 1 quick audit. Routes to remote-integration workflow. Should recognize the official Slack app installed via Slack App Directory (verified marketplace) as a first-party integration from Slack (Salesforce). Scopes are minimal and appropriate: channels:read (list channels), chat:write (post messages), users:read (list users) — all read-only or write-only-to-own-messages, no admin scopes, no offline_access. Slack is a well-known vendor with SOC2 Type II, ISO 27001, published DPA, and transparent data practices. No disqualifying breach history. Verdict should be APPROVED.",
+      "files": [],
+      "assertions": [
+        {"text": "Subject type is remote-integration", "type": "contains_concept"},
+        {"text": "Report identifies Slack as an established or well-known vendor", "type": "contains_concept"},
+        {"text": "Report notes Slack App Directory as official marketplace", "type": "contains_concept"},
+        {"text": "Report discusses OAuth scopes and least privilege", "type": "contains_concept"},
+        {"text": "Report mentions compliance certifications or SOC2", "type": "contains_concept"},
+        {"text": "Verdict is APPROVED", "type": "exact_match"},
+        {"text": "Audit confidence", "type": "contains_concept"}
+      ]
+    },
+    {
+      "id": 25,
+      "prompt": "I got an email saying I should connect this productivity app to my Google Workspace — it's at https://superproductivity-ai.xyz/connect and asks for these Google OAuth scopes: https://www.googleapis.com/auth/gmail.readonly, https://www.googleapis.com/auth/drive, https://www.googleapis.com/auth/admin.directory.user, https://www.googleapis.com/auth/calendar. The company is 'SuperProductivity AI' and I can't find much about them online. Should I authorize this?",
+      "expected_output": "Tier 3 deep audit. Routes to remote-integration workflow. Should flag multiple critical risks: unknown vendor ('SuperProductivity AI' with no discoverable online presence), suspicious domain (superproductivity-ai.xyz — non-standard TLD, not an established vendor domain), email-distributed authorization link (potential phishing vector — not from Google Workspace Marketplace), grossly overprivileged scopes (full Gmail read, full Drive access, admin directory user management, full calendar access — requests admin scope without justification), no compliance documentation discoverable, no marketplace verification. The combination of email distribution + unknown vendor + broad scopes including admin access is a strong phishing/credential-harvesting signal. Verdict should be REJECTED.",
+      "files": [],
+      "assertions": [
+        {"text": "Subject type is remote-integration", "type": "contains_concept"},
+        {"text": "Report flags unknown vendor or unverifiable publisher", "type": "contains_concept"},
+        {"text": "Report flags overprivileged or excessive OAuth scopes", "type": "contains_concept"},
+        {"text": "Report flags email distribution or phishing risk", "type": "contains_concept"},
+        {"text": "Report flags admin scope or admin.directory access", "type": "contains_concept"},
+        {"text": "Verdict is REJECTED", "type": "exact_match"},
+        {"text": "Audit confidence", "type": "contains_concept"}
+      ]
     }
   ]
 }

@@ -67,7 +67,7 @@ Sub-rubric:     <Type 8 only: 8a | 8b | 8c>
 | 6 | desktop-app | `workflows/desktop-app.md` | Live — Phase 4 (M4.1) |
 | 7 | cli-binary | `workflows/cli-binary.md` | Live — Phase 4 (M4.2) |
 | 8 | agent-extension | `workflows/agent-extension.md` | Live — Phase 4 (M4.3); 8a/8b/8c resolved at classification |
-| 9 | remote-integration | `workflows/generic.md` | Fallback — specific workflow lands in Phase 4 (M4.4) |
+| 9 | remote-integration | `workflows/remote-integration.md` | Live — Phase 4 (M4.4) |
 | 0 | generic | `workflows/generic.md` | Universal fallback; also the home for truly unclassifiable subjects |
 
 > **Phase 2 note:** `workflows/registry-package.md` is live (M2.1). Remaining 9 types still route to `workflows/generic.md`; specific workflows land in Phases 2--4 and this table updates per milestone. Do **not** create a workflow file before its owning phase.
@@ -217,6 +217,7 @@ If verdict is **REJECTED** or **CONDITIONAL with HIGH flags**: append an escalat
 - `workflows/desktop-app.md` — Type 6 desktop-app workflow (Phase 4, M4.1)
 - `workflows/cli-binary.md` — Type 7 cli-binary workflow (Phase 4, M4.2)
 - `workflows/agent-extension.md` — Type 8 agent-extension workflow (Phase 4, M4.3)
+- `workflows/remote-integration.md` — Type 9 remote-integration workflow (Phase 4, M4.4)
 - `references/criteria.md` — Shared tier-aware scoring rubric
 - `references/criteria/registry-package.md` — Registry-package criteria addendum (ecosystem trust signals, tier thresholds, install script patterns)
 - `references/criteria/browser-extension.md` — Browser-extension criteria addendum (store trust, permission classification, content-script reach, auto-update risk)
@@ -226,6 +227,7 @@ If verdict is **REJECTED** or **CONDITIONAL with HIGH flags**: append an escalat
 - `references/criteria/desktop-app.md` — Desktop-app criteria addendum (distribution channel trust, code signing, installer risk, sandboxing, tier thresholds)
 - `references/criteria/cli-binary.md` — CLI-binary criteria addendum (distribution channel trust, signature/checksum standards, install-script risk, provenance, tier thresholds)
 - `references/criteria/agent-extension.md` — Agent-extension criteria addendum (distribution/discovery channel trust, capability scope classification, transport & isolation, prompt/behavioral risk, tier thresholds)
+- `references/criteria/remote-integration.md` — Remote-integration criteria addendum (OAuth scope & permission assessment, data residency & compliance, terms of service & data sharing, breach history & security posture, tier thresholds)
 - `references/licenses.md` — License compatibility matrix
 - `references/registries.md` — Trusted vs. untrusted registries per ecosystem
 - `scripts/registry-lookup.ps1` — Automated registry data lookup. Run: `powershell -File scripts/registry-lookup.ps1 <ecosystem> <name> [version]`. If PowerShell is unavailable, query registry APIs directly (npm: `registry.npmjs.org/<pkg>`, PyPI: `pypi.org/pypi/<pkg>/json`, etc.).

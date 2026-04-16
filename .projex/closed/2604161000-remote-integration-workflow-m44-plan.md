@@ -1,11 +1,13 @@
 # Remote Integration Workflow — M4.4
 
-> **Status:** In Progress
+> **Status:** Complete
 > **Created:** 2026-04-16
+> **Completed:** 2026-04-16
 > **Author:** Claude (projex planning agent)
 > **Source:** Direct request — Phase 4 M4.4 from nav
 > **Nav:** 2604070218-install-auditor-subject-typed-redesign-nav.md
 > **Related Projex:** 2604160900-agent-extension-workflow-m43-plan.md (closed, structural template), 2604151500-cli-binary-workflow-m42-plan.md (closed), 2604151200-desktop-app-workflow-m41-plan.md (closed)
+> **Walkthrough:** 2604161000-remote-integration-workflow-m44-walkthrough.md
 > **Worktree:** No
 
 ---
