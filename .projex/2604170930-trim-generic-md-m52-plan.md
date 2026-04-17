@@ -1,7 +1,7 @@
 # Trim `generic.md` to True Fallback (M5.2)
 
 > **Nav:** 2604070218-install-auditor-subject-typed-redesign-nav.md
-> **Status:** Ready
+> **Status:** In Progress
 > **Created:** 2026-04-17
 > **Author:** projex-agent
 > **Source:** Nav M5.2 — Phase 5 "Default-Off Generic"
