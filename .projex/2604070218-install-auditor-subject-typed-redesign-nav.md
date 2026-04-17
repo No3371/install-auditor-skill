@@ -193,7 +193,7 @@ The skill is a working dispatcher with live subject-specific workflows for all n
 **Milestones:**
 - [x] **M5.1 — Tighten the classifier** — Now that all 9 specific workflows exist, raise the dispatcher's confidence threshold; only fall back to `generic.md` when no specific workflow matches. → [`2604160430-tighten-classifier-m51-walkthrough.md`](closed/2604160430-tighten-classifier-m51-walkthrough.md)
 - [x] **M5.2 — Trim `generic.md`** — Reduce to a true fallback: identify subject, ask user to clarify if classification is uncertain, run a defensive minimum audit with a warning note. → [`2604170930-trim-generic-md-m52-walkthrough.md`](closed/2604170930-trim-generic-md-m52-walkthrough.md)
-- [ ] **M5.3 — Measure read-cost claim (eval F7)** — Verify per-audit token read cost dropped under dispatch vs the old monolith. If it didn't, document why and reconsider.
+- [x] **M5.3 — Measure read-cost claim (eval F7)** — Verify per-audit token read cost dropped under dispatch vs the old monolith. If it didn't, document why and reconsider. → [`2604170511-measure-read-cost-f7-m53-walkthrough.md`](closed/2604170511-measure-read-cost-f7-m53-walkthrough.md) | [`findings`](closed/2604170511-measure-read-cost-f7-m53-findings.md) **F7 refuted: per-audit read cost rises 20–150% under dispatch vs monolith. Dispatch retains qualitative benefits; efficiency claim is false. Recommendation: accept trade-off.**
 
 **Exit Criteria:** `generic.md` is rare (not default). Read-cost measurement validates or refutes F7. The dispatcher is the steady-state architecture.
 
@@ -214,9 +214,9 @@ The skill is a working dispatcher with live subject-specific workflows for all n
 
 ## Priorities
 
-**Current focus:** **Phase 5 M5.3** — measure per-audit token read cost vs old monolith (eval F7 claim). Phase 5 M5.2 complete 2026-04-17 (`generic.md` rewritten as true fallback: 181 → 80 lines, 4-phase probe + clarify + defensive audit + warning).
+**Current focus:** **Phase 5 complete** (2026-04-17). M5.3 complete — F7 refuted: per-audit read cost rises 20–150% under dispatch vs monolith; findings document at [`2604170511-measure-read-cost-f7-m53-findings.md`](closed/2604170511-measure-read-cost-f7-m53-findings.md). All three Phase 5 milestones done (M5.1 classifier tightening, M5.2 generic.md trim, M5.3 read-cost measurement).
 
-**Next up:** **Phase 5 M5.3** — measure per-audit token read cost vs old monolith (eval F7 claim).
+**Next up:** Phase 5 exit review / Phase 6 (eval stewardship).
 
 **Deferred:** **Phase 6 (eval stewardship)** runs continuously; eval runner remains a cross-phase tooling gap.
 

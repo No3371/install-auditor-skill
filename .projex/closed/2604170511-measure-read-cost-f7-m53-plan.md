@@ -1,6 +1,8 @@
 # Measure Read-Cost Claim (Eval F7) — M5.3
 
-> **Status:** In Progress
+> **Status:** Complete
+> **Completed:** 2026-04-17
+> **Walkthrough:** `2604170511-measure-read-cost-f7-m53-walkthrough.md`
 > **Created:** 2026-04-17
 > **Author:** Claude (projex agent)
 > **Source:** `2604070218-install-auditor-subject-typed-redesign-nav.md` Phase 5 M5.3
