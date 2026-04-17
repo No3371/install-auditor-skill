@@ -216,7 +216,7 @@ If verdict is **REJECTED** or **CONDITIONAL with HIGH flags**: append an escalat
 
 ### Reference Files
 
-- `workflows/generic.md` — Phase 1 universal fallback workflow (evidence acquisition + scoring)
+- `workflows/generic.md` — Low-confidence fallback (subject probe + user clarification + defensive minimum audit)
 - `workflows/registry-package.md` — Type 1 registry-package workflow (Phase 2, M2.1)
 - `workflows/browser-extension.md` — Type 2 browser-extension workflow (Phase 3, M3.1)
 - `workflows/container-image.md` — Type 4 container-image workflow (Phase 3, M3.2)
