@@ -506,6 +506,76 @@
         {"text": "Report is saved to a .md file", "type": "file_exists"},
         {"text": "## Audit Coverage", "type": "contains_string"}
       ]
+    },
+    {
+      "id": 36,
+      "prompt": "I want to install Prettier for code formatting — npm install -g prettier. I know it installs a CLI binary. Should I think of this as a CLI tool audit or an npm package audit?",
+      "expected_output": "Routes to registry-package workflow (Type 1), not cli-binary. The innermost trust boundary is the npm registry — the CLI binary exists only because npm delivered it. The trust gate is npm's publishing process; the binary is downstream. Standard/Tier 1 audit. Prettier is high-trust (massive downloads, well-known maintainers). Verdict APPROVED.",
+      "files": [],
+      "assertions": [
+        {"text": "Subject type is registry-package", "type": "contains_concept"},
+        {"text": "Report routes to registry-package workflow, not cli-binary", "type": "contains_concept"},
+        {"text": "Report explains innermost trust boundary is npm registry", "type": "contains_concept"},
+        {"text": "Verdict is APPROVED", "type": "exact_match"},
+        {"text": "Report is saved to a .md file", "type": "file_exists"},
+        {"text": "## Audit Coverage", "type": "contains_string"}
+      ]
+    },
+    {
+      "id": 37,
+      "prompt": "I want to install the rust-analyzer VS Code extension. I know it downloads a native binary (the LSP server) under the hood. Should this be audited as a binary download or as a VS Code extension?",
+      "expected_output": "Routes to ide-plugin workflow (Type 3), not cli-binary. The innermost trust boundary is the VS Code Marketplace — the user clicks 'Install' in VS Code, and the marketplace is the verification layer. The bundled LSP binary is downstream, audited under the ide-plugin rubric. Standard/Tier 1 audit. rust-analyzer is well-known, high installs, active maintainers. Verdict APPROVED.",
+      "files": [],
+      "assertions": [
+        {"text": "Subject type is ide-plugin", "type": "contains_concept"},
+        {"text": "Report routes to ide-plugin workflow, not cli-binary", "type": "contains_concept"},
+        {"text": "Report explains innermost trust boundary is VS Code Marketplace", "type": "contains_concept"},
+        {"text": "Report mentions the bundled binary is audited within the ide-plugin rubric", "type": "contains_concept"},
+        {"text": "Verdict is APPROVED", "type": "exact_match"},
+        {"text": "## Audit Coverage", "type": "contains_string"}
+      ]
+    },
+    {
+      "id": 38,
+      "prompt": "Our team publishes a Node.js microservice as a Docker image on Docker Hub: docker pull acmecorp/invoice-api. The image is just an Express app with npm dependencies baked into the layer. Should I audit the npm packages or the Docker image?",
+      "expected_output": "Routes to container-image workflow (Type 4), not registry-package. The innermost trust boundary is the container registry — the user runs docker pull, and Docker Hub is the trust gate the user personally crosses. The npm packages inside are audited as a sub-step within the container-image workflow if they warrant separate attention. Tier 2 audit. Verdict CONDITIONAL (review image provenance, Dockerfile best practices, and whether baked-in npm dependencies introduce known vulnerabilities).",
+      "files": [],
+      "assertions": [
+        {"text": "Subject type is container-image", "type": "contains_concept"},
+        {"text": "Report routes to container-image workflow, not registry-package", "type": "contains_concept"},
+        {"text": "Report explains innermost trust boundary is the container registry", "type": "contains_concept"},
+        {"text": "Report mentions npm dependencies as sub-step or secondary concern", "type": "contains_concept"},
+        {"text": "Verdict is APPROVED or CONDITIONAL", "type": "verdict_check"},
+        {"text": "## Audit Coverage", "type": "contains_string"}
+      ]
+    },
+    {
+      "id": 39,
+      "prompt": "I want to use the docker/build-push-action GitHub Action in our CI pipeline. I see it pulls a Docker image internally to do the build. Should I audit the Docker image or the GitHub Action itself?",
+      "expected_output": "Routes to ci-action workflow (Type 5), not container-image. The innermost trust boundary is the GitHub Actions marketplace — the user writes `uses: docker/build-push-action@v5` in their workflow file. The Docker image pulled internally is an implementation detail covered by the ci-action workflow's transitive-action surface analysis. Tier 1/2 audit. docker/build-push-action is a Docker-verified, widely-used action. Verdict APPROVED.",
+      "files": [],
+      "assertions": [
+        {"text": "Subject type is ci-action", "type": "contains_concept"},
+        {"text": "Report routes to ci-action workflow, not container-image", "type": "contains_concept"},
+        {"text": "Report explains innermost trust boundary is the GitHub Actions marketplace", "type": "contains_concept"},
+        {"text": "Report mentions Docker image as implementation detail or transitive concern", "type": "contains_concept"},
+        {"text": "Verdict is APPROVED", "type": "exact_match"},
+        {"text": "## Audit Coverage", "type": "contains_string"}
+      ]
+    },
+    {
+      "id": 40,
+      "prompt": "I found a Claude Code skill on npm — npm install -g @anthropic/some-code-skill. It contains SKILL.md and scripts/. Should I audit this as a Claude Code skill (agent-extension) or as an npm package?",
+      "expected_output": "Routes to registry-package workflow (Type 1), not agent-extension. The innermost trust boundary is the npm registry — the user runs npm install, so npm's publishing process is the trust gate. The skill content (SKILL.md, scripts/) is downstream and audited within the registry-package workflow. The workflow may invoke agent-extension sub-rubric signals for the skill content if warranted. Tier 2 audit. Verdict CONDITIONAL (skill content requires review of capability scope, but install gate is npm).",
+      "files": [],
+      "assertions": [
+        {"text": "Subject type is registry-package", "type": "contains_concept"},
+        {"text": "Report routes to registry-package workflow, not agent-extension", "type": "contains_concept"},
+        {"text": "Report explains innermost trust boundary is npm registry", "type": "contains_concept"},
+        {"text": "Report mentions skill content as downstream concern", "type": "contains_concept"},
+        {"text": "Verdict is CONDITIONAL or APPROVED", "type": "verdict_check"},
+        {"text": "## Audit Coverage", "type": "contains_string"}
+      ]
     }
   ]
 }

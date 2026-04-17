@@ -1,11 +1,13 @@
 # M6.2 — Hybrid-Subject Eval Cases
 
-> **Status:** Ready
+> **Status:** Complete
 > **Created:** 2026-04-17
+> **Completed:** 2026-04-17
 > **Author:** Claude (Opus 4.6)
 > **Source:** Direct request — nav M6.2 milestone
 > **Nav:** 2604070218-install-auditor-subject-typed-redesign-nav.md
 > **Related Projex:** 2604171500-per-workflow-eval-bundles-m61-plan.md (predecessor), 2604070300-install-auditor-subject-type-taxonomy-def.md (classifier rule source)
+> **Walkthrough:** 2604171700-hybrid-subject-eval-cases-m62-walkthrough.md
 > **Worktree:** No
 
 ---
