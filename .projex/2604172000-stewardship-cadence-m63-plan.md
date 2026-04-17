@@ -1,6 +1,6 @@
 # Stewardship Cadence (M6.3)
 
-> **Status:** Ready
+> **Status:** In Progress
 > **Created:** 2026-04-17
 > **Author:** Claude (plan-projex)
 > **Source:** Phase 6 M6.3 of subject-typed redesign nav
