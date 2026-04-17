@@ -1,6 +1,6 @@
 # Per-Workflow Eval Bundles (M6.1)
 
-> **Status:** Ready
+> **Status:** In Progress
 > **Created:** 2026-04-17
 > **Author:** Claude (plan-projex)
 > **Source:** Phase 6 M6.1 of subject-typed redesign nav
