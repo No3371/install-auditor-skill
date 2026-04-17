@@ -1,11 +1,13 @@
 # Stewardship Cadence (M6.3)
 
-> **Status:** In Progress
+> **Status:** Complete
 > **Created:** 2026-04-17
+> **Completed:** 2026-04-17
 > **Author:** Claude (plan-projex)
 > **Source:** Phase 6 M6.3 of subject-typed redesign nav
 > **Nav:** 2604070218-install-auditor-subject-typed-redesign-nav.md
 > **Related Projex:** 2604070218-install-auditor-subject-typed-redesign-nav.md (Phase 6), 2604171500-per-workflow-eval-bundles-m61-plan.md, 2604171700-hybrid-subject-eval-cases-m62-plan.md
+> **Walkthrough:** 2604172000-stewardship-cadence-m63-walkthrough.md
 > **Worktree:** No
 
 ---
