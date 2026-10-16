@@ -7,7 +7,7 @@
 > **Type:** Gap Analysis (scheduled `STEWARDSHIP.md` review, checklist steps 1–4; step 4 offline only)
 > **Tier:** Standard (Primary + Secondary in-repo, Tertiary live web research)
 > **Lenses Applied:** Constraint Mapping | Inversion | Steel-Manning
-> **Related Projex:** 2604160900-agent-extension-workflow-m43-plan.md | 2604160900-agent-extension-workflow-m43-walkthrough.md | 2604172000-stewardship-cadence-m63-walkthrough.md | 2604070218-install-auditor-subject-typed-redesign-nav.md | 2610161852-dispatcher-rubric-consistency-walkthrough.md | 2610161927-browser-extension-ide-plugin-stewardship-review-eval.md | 2610161927-registry-package-and-ci-action-stewardship-review-eval.md | 2610161927-remote-integration-generic-stewardship-review-eval.md | 2610161928-stewardship-review-container-cli-desktop-eval.md
+> **Related Projex:** 2604160900-agent-extension-workflow-m43-plan.md | 2604160900-agent-extension-workflow-m43-walkthrough.md | 2604172000-stewardship-cadence-m63-walkthrough.md | 2604070218-install-auditor-subject-typed-redesign-nav.md | 2610161852-dispatcher-rubric-consistency-walkthrough.md | 2610161927-browser-extension-ide-plugin-stewardship-review-eval.md | 2610161927-registry-package-and-ci-action-stewardship-review-eval.md | 2610161927-remote-integration-generic-stewardship-review-eval.md | 2610161928-stewardship-review-container-cli-desktop-eval.md | 2610162007-agent-extension-rubric-refresh-plan.md (P1)
 
 ---
 
