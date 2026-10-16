@@ -111,7 +111,7 @@ This transforms "None found" from ambiguous to precise. A reviewer can see at a 
 - **Install script sandboxed execution** — Actually run `npm pack` + extract + analyze install scripts in a sandbox. High value for Tier 3 but complex to implement safely. Deserves its own imagination.
 - **Continuous monitoring / re-audit triggers** — Watch for new CVEs affecting previously-approved packages. Crosses into a different product (ongoing monitoring vs. point-in-time audit).
 - **Machine-readable report format** — JSON output alongside markdown for programmatic consumption. Useful but orthogonal to reliability.
-- **Multi-platform registry-lookup** — Rewrite the PowerShell script in JavaScript/Python for cross-platform support. Important for adoption but not for accuracy.
+- **Multi-platform registry-lookup** — Rewrite the PowerShell script in JavaScript/Python for cross-platform support. Important for adoption but not for accuracy. → Planned (all four scripts, Python twins): 2610161849-python-script-ports-plan.md
 - **Community signal aggregation** — Scrape GitHub issues, Reddit, Hacker News for sentiment. High noise, uncertain value.
 
 ---
