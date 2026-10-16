@@ -1,6 +1,6 @@
 # IDE-Plugin Rubric Refresh
 
-> **Status:** Ready
+> **Status:** In Progress
 > **Author:** Claude (Opus)
 > **Parent:** 2610161927-browser-extension-ide-plugin-stewardship-review-eval.md
 > **Source:** 2610161927-browser-extension-ide-plugin-stewardship-review-eval.md (F1, F3, F4, F6, F7, F8, F10-IDE, F11 Cursor row) | 2610161941-shared-version-integrity-floor-plan.md (Hand-off rows "browser-extension / ide-plugin" + "§4.3 plug-in") | human decision C6 (via orchestrator)
