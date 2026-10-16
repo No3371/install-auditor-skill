@@ -1,6 +1,9 @@
 # Agent-Extension Rubric Refresh (8a MCP / 8b Plugin / 8c Skill)
 
-> **Status:** In Progress
+> **Status:** Complete
+> **Completed:** 2026-10-16
+> **Walkthrough:** 2610162007-agent-extension-rubric-refresh-walkthrough.md
+> **Log:** 2610162007-agent-extension-rubric-refresh-log.md
 > **Author:** Claude (Opus)
 > **Parent:** 2610161927-agent-extension-stewardship-review-eval.md
 > **Source:** 2610161927-agent-extension-stewardship-review-eval.md (P1: F1–F7, F11, F12, F14; Open Questions 1, 3, 4, 6) on top of 2610161941-shared-version-integrity-floor-plan.md (§4.6 contract, closed — landed as `20843cc`)
