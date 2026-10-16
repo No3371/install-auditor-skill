@@ -1,6 +1,6 @@
 # cli-binary Rubric Refresh
 
-> **Status:** Ready
+> **Status:** In Progress
 > **Author:** Claude (Opus)
 > **Parent:** 2610161928-stewardship-review-container-cli-desktop-eval.md
 > **Source:** 2610161928-stewardship-review-container-cli-desktop-eval.md §5.B (B1–B7) + X1/X2/X3 subject parts | Hand-off row "cli-binary" + "§4.3 plug-in" row of 2610161941-shared-version-integrity-floor-plan.md | Hand-off row "cli-binary refresh" of 2610162004-generic-fallback-and-classifier-refresh-plan.md (G-3: PowerShell forms, opaque URLs, eval 34) | human decision C6 (relayed by orchestrator)
