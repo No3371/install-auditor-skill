@@ -44,9 +44,11 @@ listing page. If they provide a name only, search the relevant store.
   Firefox uses a GUID or `name@author` format
 - **Publisher/developer**: Name shown on the store listing — map to company
   or individual
-- **Version**: Current store version (extensions auto-update; users rarely
-  pin versions)
-- **Store badges**: Chrome "Featured", Firefox "Recommended", Edge "Certified"
+- **Version**: Current store version **and its "Updated" date** — needed
+  for `references/criteria.md` §4.6 V1 (extensions auto-update; consumers
+  cannot pin versions)
+- **Store badges**: Chrome "Featured" / "Established Publisher", Firefox
+  "Recommended", Edge "Featured" — meanings in the addendum
 - **User count and rating**: Primary adoption metric (replaces npm weekly
   downloads)
 
@@ -59,7 +61,8 @@ Collect before proceeding:
 3. **Installation method** — store install button, direct .crx/.xpi, managed
    via enterprise policy, or developer mode sideload
 4. **Stated purpose** — what the user needs this extension for
-5. **Target browser** — Chrome, Firefox, Edge, Brave, Arc, etc.
+5. **Target browser** — Chrome, Firefox, Edge, Brave, Arc, etc. (MV2 runs
+   only where the browser still supports it — see addendum)
 6. **Manifest version** — MV2 or MV3 (inspect the store listing or manifest.json)
 
 If any of 1–5 are missing, ask before proceeding. Item 6 is obtained during
@@ -71,6 +74,8 @@ Gather store listing data via web search:
 - User count, rating, review count
 - Publisher name and verification badges
 - First listed date (if available from store or web archive)
+- Current version, its "Updated" date, and any publisher / website change
+  (§4.6 V1, V3)
 - Brief search for "[extension name] malware OR removed OR security" to
   check for prior incidents
 
@@ -80,12 +85,12 @@ Thresholds"):
 
 ### Tier 1 — Quick Audit (well-known, high-trust)
 
-Use when ALL Tier 1 criteria from the addendum are met: ≥100K users, store
-badge, known publisher, reasonable permissions for stated purpose, MV3 (or
-MV2 on Firefox with Recommended), no incidents, listed ≥1 year.
+Use when ALL Tier 1 criteria from the addendum are met, including the
+`references/criteria.md` §4.6 bars (version ≥ 7 days old, no continuity
+break, no past compromise).
 
-**Quick audit scope:** Confirm store presence + badge, note permissions at
-a glance, check for recent incidents, verify publisher. No deep manifest
+**Quick audit scope:** Confirm store presence + badge, version age,
+permissions at a glance, recent incidents, publisher. No deep manifest
 analysis. If everything checks out, proceed directly to Subject Verdict
 Notes with minimal ceremony.
 
@@ -96,9 +101,9 @@ store verification, incident search, source code spot-check if open source.
 
 ### Tier 3 — Deep Audit (any red flag)
 
-Any Tier 3 trigger from the addendum: low users, sideloaded, unknown
-publisher, dangerous permission combinations, ownership change, prior
-removal, self-hosted updates, `nativeMessaging`.
+Any Tier 3 trigger from the addendum (e.g. sideloaded or Developer mode
+install, ownership change, MV2 targeted at Chrome, remote-config pattern,
+`nativeMessaging`).
 
 **Deep audit scope:** Full manifest analysis + permissions audit + source
 code review (if available) + behavioral analysis of content scripts +
@@ -125,11 +130,14 @@ Answer every question that applies to the assigned tier:
    version is not a red flag but is a data point.
 5. **Are there known security incidents?** Search for prior store removals,
    malware reports, ownership changes, data exfiltration allegations.
-6. **What is the update cadence?** Frequent updates = active maintenance.
-   No updates in >1 year = stale but not necessarily dangerous (simple
-   extensions may not need updates).
+6. **What is the update cadence, and what changed in this version?**
+   Frequent updates = active maintenance; no updates in >1 year = stale but
+   not necessarily dangerous. Record version age + diff (addendum V1/V3).
 7. **Is the source code available?** Open-source extensions can be audited;
    closed-source cannot. Note the repo URL if available.
+8. **Where does page data go?** For extensions reading pages or AI-chat
+   prompts, compare observed endpoints with declared data practices
+   (addendum "Data Disclosure").
 
 ### How to research
 
@@ -147,9 +155,10 @@ Web search for the extension's store page. Extract:
 
 Obtain `manifest.json` via one of:
 - The extension's open-source repository (GitHub, GitLab, etc.)
-- Chrome Web Store source viewer (crxcavator.io or similar)
+- AMO version history (current and prior XPIs — also feeds the V3 diff);
+  for CWS, a CRX download/viewer tool (third-party — label as secondary)
 - `about:debugging` in Firefox → inspect installed extension → manifest
-- Direct .crx/.xpi download + unzip (ZIP format)
+- Direct .crx/.xpi download + unzip (ZIP format; CRX adds a header)
 
 Inspect these manifest keys:
 - `permissions` — API permissions (Chrome namespace APIs)
@@ -157,13 +166,17 @@ Inspect these manifest keys:
   domains the extension can access
 - `optional_permissions` — permissions requested at runtime (lower risk than
   static, but note them)
-- `content_scripts` → `matches` — which pages get injected JS/CSS
+- `content_scripts` → `matches` (and `world`) — which pages get injected
+  JS/CSS, and whether it runs in the page's own context (`"MAIN"`)
 - `background` → `service_worker` (MV3) or `scripts` (MV2) — background
   logic that runs persistently or on events
 - `externally_connectable` — which websites/extensions can message this one
 - `content_security_policy` — custom CSP (relaxed CSP = risk signal)
-- `update_url` (MV2 Firefox) — self-hosted update server (bypasses store
-  review)
+- `declarative_net_request` rules — header rewrites (e.g. CSP removal)
+- `oauth2.scopes` — what `identity` can obtain
+- `update_url` (Chrome) / `browser_specific_settings.gecko.update_url`
+  (Firefox) — a non-store update server bypasses store review
+- `gecko.data_collection_permissions` (Firefox) — declared data collection
 - `web_accessible_resources` — files exposed to web pages (fingerprinting /
   data exfiltration vector)
 
@@ -190,9 +203,9 @@ If the extension is open source, review:
 - `fetch()` / `XMLHttpRequest` calls: Where does data go? Is it the
   extension's own server, a third-party analytics service, or an unknown
   endpoint?
-- Obfuscation: Is the code minified/obfuscated? Minification is normal for
-  build output; heavy obfuscation (eval-based, string encoding) in a
-  browser extension is a red flag.
+- Remote config and obfuscation: rate per addendum "Remote Code &
+  Config" (minification is normal; eval loaders, string encoding, invisible
+  Unicode are not).
 
 ### Audit coverage tracking
 
@@ -209,7 +222,7 @@ browser extensions, the standard rows are:
 | Web search — incidents & removal | Brief | Required | Required |
 | Source code review | Tier-skip | If open source | Required |
 | Manifest version (MV2/MV3) | Note | Required | Required |
-| Auto-update risk | Tier-skip | Note | Required |
+| Version integrity (§4.6) | Required | Required | Required |
 | Cross-store listing check | Optional | Required | Required |
 | OpenSSF Scorecard | Optional | If repo known | Required |
 
@@ -227,8 +240,8 @@ context.
 - **Publisher identity**: Can the publisher be linked to a real company or
   known open-source project? Check the store developer page, linked website,
   and GitHub/GitLab org.
-- **Store badge**: Firefox "Recommended" (strongest signal — human review),
-  Chrome "Featured" (moderate — algorithmic), Edge "Certified" (moderate).
+- **Store badge**: rate per addendum "Store Trust Signals"; badges never
+  offset a version-level flag (§4.6 V2).
 - **Impersonation check**: Are there similarly-named extensions by different
   publishers? Search the store for the extension name and check for
   copycats.
@@ -253,8 +266,9 @@ context.
 - **Store removal history**: Has this extension (or a same-name predecessor)
   ever been removed from a store for policy violations? Search for
   "[extension name] removed Chrome Web Store".
-- **CVEs**: Browser extensions rarely have formal CVEs, but check GHSA and
-  NVD for the extension name and any bundled libraries.
+- **CVEs**: Browser extensions rarely have formal CVEs, but check GHSA,
+  NVD and CISA KEV for the extension name and any bundled libraries
+  (own-code line: addendum "CVE Scope (§4.3)").
 - **Bundled library vulnerabilities**: Extensions often bundle copies of
   jQuery, React, or other libraries. If source is available, check bundled
   library versions against known CVEs.
@@ -281,21 +295,19 @@ declared permission against the risk classification in
 - **Optional vs required permissions**: Optional permissions requested at
   runtime are lower risk (user sees a prompt). Required permissions are
   granted silently at install.
-- **MV2 powerful APIs**: If MV2, does the extension use `webRequestBlocking`,
-  persistent background pages, or other APIs being removed in MV3? These are
-  more powerful and less constrained.
+- **Injection APIs**: `scripting` or `userScripts` with broad hosts equal
+  `<all_urls>` content scripts. Is runtime injection needed, or would
+  static, scoped `content_scripts` do?
 
 ### 4.5 Reliability & Compatibility (browser-extension-specialized)
 
-- **Manifest version**: MV3 is current. MV2 is legacy — Chrome deprecation
-  timeline is shifting but direction is clear. MV2 on Firefox is explicitly
-  supported long-term.
+- **Manifest version**: rate per the addendum's MV2 table (Chrome:
+  unsupported; Edge: retiring; Firefox: supported).
 - **Browser compatibility**: Does the extension work on the user's target
   browser? Cross-browser extensions (WebExtension API) are more broadly
   compatible.
-- **Auto-update risk**: Extensions auto-update silently. Is the extension
-  open source (updates auditable)? Has the extension changed ownership
-  recently? See addendum for scoring.
+- **Auto-update risk**: Extensions auto-update silently. Rate per the
+  addendum's §4.6 plug-ins (V3 ownership transfer, V5 update controls).
 - **Enterprise policy compatibility**: If the user's org manages browser
   extensions via policy, note any conflicts.
 
@@ -319,7 +331,7 @@ Any one of these pushes strongly toward REJECTED:
 
 - **Known malware / store removal for malicious behavior**: Extension was
   removed from any store for injecting ads, stealing data, cryptomining, or
-  similar
+  similar (not an MV2-retirement removal)
 - **Impossible permission justification**: Extension requests
   `<all_urls>` + `cookies` + `nativeMessaging` for a purpose that requires
   none of these (e.g., a color picker)
@@ -327,8 +339,10 @@ Any one of these pushes strongly toward REJECTED:
   no store listing, no source code, no publisher identity
 - **Recent acquisition + permission escalation**: Extension was acquired by
   new entity and simultaneously added high-risk permissions
-- **Self-hosted updates from unknown server**: MV2 extension with
-  `update_url` pointing to an unverified server (bypasses store review)
+- **Self-hosted updates from unknown server**: `update_url` (Chrome) or
+  `gecko.update_url` (Firefox) pointing to an unverified server (bypasses
+  store review)
+- **Unexplained remote code path** (addendum "Remote Code & Config")
 
 ### Toward CONDITIONAL
 
@@ -337,13 +351,16 @@ conditions):
 
 - **Broad permissions with justification**: Extension's purpose requires
   broad access (ad blocker, password manager, dev tools) — Condition:
-  understand and accept the access scope; re-audit on ownership changes
-- **MV2 on Chrome**: Condition: monitor Chrome's MV2 deprecation timeline;
-  identify MV3 alternative
+  understand and accept the access scope; re-audit on any §4.6 V5 trigger;
+  managed fleets: allowlist + version pin
+- **Fresh version** (§4.6 V1): Condition: wait until the version is 72 h
+  old, then re-check advisories before installing
+- **MV2 on Chrome (unsupported)**: Condition: the publisher's MV3 edition,
+  or a browser that still supports MV2 (Edge MV2 = MEDIUM flag only)
 - **Closed-source with broad permissions**: Condition: limit to a separate
   browser profile; monitor for incidents
-- **Single developer with no org backing**: Condition: monitor for
-  acquisition; re-audit if publisher changes
+- **Single developer with no org backing**: Condition: re-audit if the
+  publisher, website or contact changes (common sign of a sale)
 - **Stale but functional**: Condition: verify it still works on current
   browser version; identify alternatives if maintenance stops
 - **3+ MEDIUM flags accumulated**: Cumulative risk triggers CONDITIONAL per
@@ -354,7 +371,9 @@ conditions):
 All of the following support APPROVED:
 
 - All tier-appropriate checks completed with no flags
-- Listed on at least one major store with verification badge
+- Listed on at least one major store with verification badge (never
+  sufficient alone — §4.6 V2)
+- `references/criteria.md` §4.6 raises no flag
 - Permissions are proportional to stated purpose
 - Publisher is identified (company or known individual/project)
 - No known incidents or store removals

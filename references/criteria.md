@@ -184,16 +184,19 @@ in `references/criteria/registry-package.md` §Transitive Dependency Scanning.
 ### Browser Extension Permissions — Risk Matrix
 | Permission | Risk Level | Notes |
 |---|---|---|
-| `<all_urls>` | HIGH | Can read/modify all web traffic |
-| `webRequest` + `<all_urls>` | CRITICAL | Full MITM capability |
-| `cookies` (all domains) | HIGH | Can exfiltrate all session cookies |
-| `history` | HIGH | Full browsing history access |
+| `<all_urls>` / `*://*/*` | CRITICAL | Read/modify every page the user visits |
+| `webRequestBlocking` (with `webRequest`) | CRITICAL | Full MITM: intercept, modify or block all HTTP traffic (MV2; Chrome MV3 only for policy-installed extensions) |
+| `webRequest` (observe only) | HIGH | Sees every request URL and header on permitted hosts (MV2 and MV3); cannot modify |
+| `cookies` | HIGH | Read/write cookies for permitted domains — session theft |
+| `history` | MEDIUM-HIGH | Full browsing history access |
 | `clipboardRead` | MEDIUM-HIGH | Can read anything copied |
-| `nativeMessaging` | HIGH | Can communicate with local apps |
-| `downloads` | MEDIUM | Can write files to disk |
-| `storage` | LOW | Local extension storage only |
-| `tabs` | LOW-MEDIUM | Tab titles/URLs |
-| `activeTab` | LOW | Only current tab when user clicks |
+| `nativeMessaging` | HIGH | Talks to native executables — leaves the browser sandbox |
+| `downloads` | HIGH | Can silently download files to disk |
+| `storage` / `unlimitedStorage` | LOW | Extension-local storage only; risk comes from permissions that read pages or send data |
+| `tabs` | MEDIUM | URLs and titles of every open tab |
+| `activeTab` (alone, no broad hosts) | LOW | Only current tab when user clicks |
+
+Ratings mirror `references/criteria/browser-extension.md` § Permission Risk Classification, which holds the full list and scoring rules; change both together.
 
 **Red flag:** Permissions far exceed stated functionality. A color picker extension requesting `<all_urls>` + `cookies` is suspicious.
 
