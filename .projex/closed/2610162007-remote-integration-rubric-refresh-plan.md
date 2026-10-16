@@ -1,11 +1,14 @@
 # Remote-Integration Rubric Refresh
 
-> **Status:** In Progress
+> **Status:** Complete
 > **Author:** Claude (Opus)
 > **Parent:** 2610161927-remote-integration-generic-stewardship-review-eval.md
 > **Source:** 2610161927-remote-integration-generic-stewardship-review-eval.md (Plan A: RI-1..RI-7, RI-9, RI-10) | shared contract 2610161941-shared-version-integrity-floor-plan.md (§4.6 plug-ins, coverage-row contract) | human decision C6 (via orchestrator)
 > **Related Projex:** 2610161941-shared-version-integrity-floor-plan.md (contract this builds on; landed on base at `20843cc`) | 2610162004-generic-fallback-and-classifier-refresh-plan.md (sibling: RI-8 routing, generic) | 2610162007-agent-extension-rubric-refresh-plan.md (sibling: remote MCP capability side) | 2604161000-remote-integration-workflow-m44-walkthrough.md (origin of both files) | 2604070218-install-auditor-subject-typed-redesign-nav.md
 > **Worktree:** Yes
+> **Completed:** 2026-10-16
+> **Walkthrough:** 2610162007-remote-integration-rubric-refresh-walkthrough.md
+> **Log:** 2610162007-remote-integration-rubric-refresh-log.md
 
 ---
 

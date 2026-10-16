@@ -2,16 +2,26 @@
 This workflow replaces workflows/generic.md for Type 9 subjects. After
 producing findings here, return to SKILL.md Step N for the shared verdict
 tree and report shape. The Audit Coverage table and audit-confidence
-assertion are owned by the dispatcher — do not duplicate them here.
+assertion are owned by the dispatcher — this workflow only names the rows
+the table must carry for Type 9.
 -->
 
 # Remote Integration Workflow (Type 9)
 
-This workflow handles **Type 9: remote-integration** subjects — cloud-hosted services integrated via credential grants (OAuth tokens, API keys, webhook secrets, service accounts). Unlike locally-installed software, the trust boundary is the service's data handling, permission scope, and operational security — no code is installed locally.
+This workflow handles **Type 9: remote-integration** subjects — hosted
+services connected through a credential grant (OAuth token, API key,
+personal access token, service-account key, webhook secret or URL). No
+code is installed locally. The trust boundary is what the grant allows,
+**who holds the credential**, and how the vendor handles the data it can
+reach.
 
-After completing all sections, return to `SKILL.md` Step N for shared verdict tree and audit-coverage report shape.
+After completing all sections, return to `SKILL.md` Step N for the shared
+verdict tree and audit-coverage report shape.
 
-Use `references/criteria/remote-integration.md` for remote-integration-specific tiering and scoring. When it conflicts with the shared rubric, the more-specific remote-integration guidance wins.
+Use `references/criteria/remote-integration.md` (the addendum) for
+remote-integration tiering and scoring. When it conflicts with the shared
+rubric, the addendum wins — except the version-integrity floor in
+`references/criteria.md` §4.6, which it only tightens.
 
 ---
 
@@ -19,155 +29,239 @@ Use `references/criteria/remote-integration.md` for remote-integration-specific 
 
 ### 1. Determine integration type and credential mechanism
 
-| Integration Pattern / Signal | Integration Type | Credential Mechanism |
-|------------------------------|-----------------|---------------------|
-| "Add to Slack", OAuth consent screen | OAuth app | OAuth 2.0 token |
-| "Connect your GitHub account" | OAuth app | OAuth 2.0 token |
-| API key in dashboard → paste into config | API key integration | Static API key |
-| Webhook URL generation (e.g., Zapier, IFTTT) | Webhook receiver | Webhook secret/URL |
-| Service account JSON (e.g., GCP, Firebase) | Service account | Service account credential |
-| "Sign in with Google/GitHub/Microsoft" | SSO/federated auth | OAuth 2.0 / OIDC |
-| "Connect to \<service\>" with redirect flow | OAuth app | OAuth 2.0 token |
-| Marketplace "Install" button (Slack App Directory, GitHub Marketplace) | Marketplace OAuth app | OAuth 2.0 token |
+| Pattern / signal | Integration type | Credential |
+|------------------|------------------|------------|
+| "Add to Slack", "Connect your GitHub account", "Connect to \<service\>" redirect flow | OAuth app (delegated) | OAuth access + refresh token |
+| Admin grants tenant-wide access with no signed-in user | OAuth app (app-only / application permissions) | Client credential, admin consent |
+| "Install" on selected repositories (GitHub) | GitHub App | Short-lived installation token |
+| Marketplace install (Slack Marketplace, GitHub Marketplace, Google Workspace Marketplace, Salesforce AppExchange, Microsoft AppSource) | Marketplace app | Usually OAuth |
+| API key or PAT copied from a dashboard into the vendor | API key / PAT integration | Static bearer key |
+| Vendor posts events to your URL | Inbound webhook | Signing secret |
+| You post to a vendor-generated URL (e.g. Slack incoming webhook) | Outbound webhook | Secret embedded in URL |
+| Service-account JSON or key file (GCP, Firebase, cloud IAM) | Service account | Long-lived key |
+| "Enter this code at \<provider\>/device" or a "connection code" | Device authorization grant | OAuth token |
+| "Sign in with Google/GitHub/Microsoft" only | SSO / federated sign-in | OIDC identity only |
+| "Add connector" in an AI assistant (remote MCP over HTTP + OAuth, no local code) | AI connector | Usually OAuth |
+
+Several rows can apply (e.g. OAuth app plus inbound webhook): audit each
+credential.
 
 ### 2. Extract available metadata
 
-Collect from the integration channel (consent screen, marketplace listing, documentation, email/link):
+From the consent screen, marketplace listing, vendor docs, or the message
+that asked for the grant:
 
-- **Service name** — as listed in marketplace/dashboard/documentation
-- **Publisher/vendor** — organization behind the service
-- **Integration type** — OAuth app | API key | webhook | service account | SSO
-- **Requested scopes/permissions** — full list from consent screen or docs
-- **Marketplace listing** — if distributed via marketplace (Slack App Directory, GitHub Marketplace, Google Workspace Marketplace, etc.)
-- **Version / API version** — if versioned
-- **Pricing model** — free, freemium, paid (relevant to sustainability/incentive analysis)
+- **Service name** and **publisher / vendor**
+- **Operator:** first-party (the platform vendor runs it) or third party
+- **Integration type** and **credential** (table above)
+- **Requested scopes / permissions** — full list, plus delegated vs
+  application and user vs admin consent
+- **Token lifetime** — refresh / offline / non-expiring / short-lived
+- **Credential holder** — vendor servers, your infrastructure, browser
+- **Consent path** — how the request reached the user (marketplace,
+  vendor docs, admin console, email, chat, phone, device code)
+- **Marketplace listing** and verification state
+- **AI connectors:** tool list and the LLM providers the data reaches
+- **Self-hosted or local components** (agent, CLI, SDK, extension) — each
+  is a separate subject; note it and audit it under its own type
+- **Pricing model** — free, freemium, paid (incentive analysis)
 
 ### 3. Gather required context
 
-Before proceeding to Evidence, collect:
-
-- OAuth consent screen or scope documentation
-- Vendor's privacy policy and terms of service
-- Security/compliance page (SOC2, GDPR, certifications)
-- Breach history (web search: `"<vendor>" breach OR incident OR vulnerability`)
-- Marketplace reviews/ratings if available
-- Vendor domain registration and age (WHOIS) if provenance is uncertain
-
----
-
-## Evidence — Part A
-
-Automated/structured checks performable without deep research.
-
-1. **Scope audit** — list all requested scopes/permissions; classify each per `references/criteria/remote-integration.md` §1 (low/elevated/high risk); flag any violating least privilege; note if any high-risk scope (admin, wildcard, delete) is present
-
-2. **Vendor identity verification** — confirm the service is the named vendor (not a proxy or phishing clone); check domain ownership, marketplace verification badge, official documentation links match the integration's source URL
-
-3. **Marketplace listing review** — if applicable: verified publisher badge present? Install count, ratings, listing age, developer contact info; is the listing in an official marketplace or a third-party directory?
-
-4. **Redirect URI / callback validation** — for OAuth: does the redirect URI match the vendor's known domains? Localhost, custom scheme, or non-HTTPS callbacks in a production integration?
-
-5. **Token storage & transmission** — does documentation describe secure token handling? HTTPS-only? Token rotation/expiry policy documented? Client-side token exposure risks?
+- Consent screen or scope documentation
+- Vendor privacy policy, terms of service, DPA, sub-processor list
+  (including AI providers)
+- Security / trust page: certifications, token handling, audit logs,
+  egress IPs, revocation procedure
+- The platform's API or developer terms where the integration copies,
+  indexes or feeds platform data to an AI model
+- Incident search for the service vendor **and** the integration vendor:
+  `"<vendor>" breach OR incident OR "OAuth token" OR "revoked"`
+- Vendor domain age (WHOIS) when provenance is uncertain
 
 ---
 
-## Evidence — Part B
+## Evidence — Part A: Tier Triage
 
-Research-intensive checks requiring documentation review and web search.
+Tier the subject with the addendum §10. Tier 1 needs every Tier 1
+condition; any Tier 3 condition sets Tier 3; otherwise Tier 2.
+Escalate mid-audit when a later check finds a Tier 3 condition.
 
-6. **Data residency & compliance** — per `references/criteria/remote-integration.md` §2: where is data processed/stored, what compliance certifications exist (SOC2, ISO 27001), DPA availability for regulated data, sub-processor disclosure completeness
+- **Tier 1 — Quick:** first-party or verified marketplace app, no
+  High-class scope, official consent path, published compliance
+  documentation, no key / webhook / AI-use / incident / §4.6 flag.
+  Scope: checks 1–3, 5 and 8–11 below, briefly; the Quick skeleton in
+  `SKILL.md`.
+- **Tier 2 — Standard:** the default. Scope: every check that applies;
+  full report template.
+- **Tier 3 — Deep:** unknown or unverified vendor, unjustified High-class
+  scope, consent-path or redirect flag, token-custody incident, required
+  service-account key, risky AI connector, proxy, or disqualifying ToS.
+  Scope: Tier 2 plus a documented answer to every addendum row, and a
+  line-by-line justification of each High-class scope.
 
-7. **Terms of service review** — per `references/criteria/remote-integration.md` §3: data sharing clauses (sold to third parties?), AI/ML training opt-out availability, sub-processor naming, data portability, post-termination retention terms
+---
 
-8. **Breach history & security posture** — per `references/criteria/remote-integration.md` §4: search for known breaches, check security disclosure policy existence, bug bounty program, incident response track record, third-party certifications vs self-attestation
+## Evidence — Part B: Checks
 
-9. **Third-party API trust assessment** — is this the actual vendor or a third-party wrapper/proxy? Does the service intermediate requests through additional infrastructure? For webhooks: are payloads authenticated (HMAC signatures, shared secrets)? Does the integration's domain match the claimed vendor's canonical domain?
+1. **Scope audit** — classify each scope Low / Elevated / High (addendum
+   §1, including the standing-grant modifier and provider maps). For each
+   Elevated or High scope: is it needed for the stated purpose, and does
+   a narrower option exist?
+2. **Vendor identity & marketplace verification** — the integration is
+   the named vendor (domain, consent-screen publisher, docs link back to
+   the listing); verification signals per addendum §7.
+3. **Consent path & distribution** — how the request arrived (addendum
+   §6): official channel, or email / chat / phone / someone else's device
+   code; consent-screen name matches the publisher.
+4. **OAuth flow hygiene** — redirect domain, grant type, device-code
+   origin, refresh-token handling (addendum §3). Native apps may use
+   loopback or private-use scheme callbacks.
+5. **Token custody & lifecycle** — who holds the token, for how long,
+   with what custody evidence; integration-vendor incidents (addendum
+   §6).
+6. **Non-OAuth credentials** (if applicable) — key scope, expiry,
+   network restriction, ownership, service-account key requirement
+   (addendum §2).
+7. **Webhooks** (if applicable) — direction; signature, replay window,
+   rotation; URL-as-secret handling (addendum §9).
+8. **Data residency & compliance** — regions, transfer mechanism, DPA,
+   certifications, sub-processors (addendum §4).
+9. **Terms, AI data use & sub-processors** — data sharing, training, AI
+   sub-processors, platform API terms; AI connector tool baseline
+   (addendum §5).
+10. **Breach history & incident search** — service vendor and
+    integration vendor; security posture (addendum §8).
+11. **Version & update integrity** — shared `references/criteria.md`
+    §4.6 with the addendum plug-in: V1–V3 `N/A (hosted service)`, V4
+    incident scope, V5 triggers for the Recommendation.
 
-10. **Scope necessity analysis** — for each elevated/high-risk scope: is it justified by the integration's stated purpose? Could the same functionality be achieved with narrower scopes? Is documentation provided explaining why the scope is required?
+### Audit coverage tracking
+
+The `SKILL.md` Audit Coverage table keeps every Required row from
+`references/criteria.md` (labels unchanged) and adds the Type 9 rows.
+Tier words follow `references/criteria.md` "Rows by tier". A Required
+row that cannot apply stays as the `N/A (<reason>)` shown; one line each.
+
+| Check | Tier 1 | Tier 2 | Tier 3 | Type 9 meaning / status |
+|-------|--------|--------|--------|-------------------------|
+| Registry / metadata lookup | Required | Required | Required | Marketplace listing or vendor docs page |
+| Typosquat / name verification | Required | Required | Required | Vendor, app and domain names vs the real vendor (check 2) |
+| CVE / advisories (requested version) | Required | Required | Required | `N/A (hosted service, no versioned artifact)` unless a self-hosted component is in scope |
+| License compatibility | Required | Required | Required | `N/A (hosted service; terms in the data-handling row)` |
+| Version integrity (§4.6) | Required | Required | Required | `Done` — V1–V3 N/A (hosted service); V4 result; V5 triggers listed |
+| Permissions / least privilege | Required | Required | Required | Scope audit (check 1) |
+| Vendor identity & consent path | Required | Required | Required | Checks 2–3 |
+| Token custody & lifecycle | Required | Required | Required | Check 5 |
+| Web search — incidents & supply chain | Required | Required | Required | Check 10, both vendors |
+| Data handling, compliance & AI use | Required | Required | Required | Checks 8–9 (brief at Tier 1) |
+| OAuth flow hygiene | Tier-skip | Required | Required | Check 4; `N/A (no OAuth flow)` otherwise |
+| Maintainer / activity / health | Tier-skip (brief) | Required | Required | Vendor viability, listing age, ownership changes |
+| Non-OAuth credential review | If applicable | If applicable | If applicable | Check 6 |
+| Webhook verification | If applicable | If applicable | If applicable | Check 7 |
+| OpenSSF Scorecard | Optional | Required | Required | `N/A (hosted service)` unless an open-source self-hosted component |
+| Dependency tree / transitive risk | Tier-skip | Required | Required | `N/A (hosted service)`; AI sub-processors go in the data-handling row |
+| Install script review (`pre`/`postinstall`, etc.) | Tier-skip | Required | Required | `N/A (no local install)` |
+| Source code review (behavioral) | Tier-skip | Tier-skip | Required | `N/A (hosted service)` |
 
 ---
 
 ## Subject Rubric
 
-### §4.1 OAuth Scope & Permission Model
+Sections follow the shared `references/criteria.md` numbering, specialized
+for Type 9.
 
-- What scopes/permissions are requested? Full list.
-- Does the integration follow principle of least privilege?
-- Are there admin/write/delete scopes that aren't justified by stated functionality?
-- Is `offline_access` or equivalent (persistent token) requested? If so, is it justified?
-- Any wildcard or catch-all scopes?
-- **Scoring:** per `references/criteria/remote-integration.md` §1
+### 4.1 Provenance & Identity
 
-### §4.2 Data Handling & Residency
+- Official vendor or a proxy / wrapper? First-party or third party?
+- Vendor established (company history, domain age, reputation)?
+- Marketplace and consent-screen verification (addendum §7) — identity,
+  not safety.
+- Official consent path and matching redirect domain (addendum §3, §6)?
 
-- Where does the vendor process and store data?
-- What compliance certifications does the vendor hold (SOC2 Type I/II, ISO 27001)?
-- Is a DPA available for regulated/sensitive data use cases?
-- Are sub-processors disclosed with notification on change?
-- Is data retention policy defined? Is a deletion path available?
-- **Scoring:** per `references/criteria/remote-integration.md` §2
+### 4.2 Maintenance & Longevity
 
-### §4.3 Vendor Trust & Provenance
+- Vendor viability, recent acquisition or ownership change, listing last
+  updated.
+- Does the integration's function depend on platform API terms that
+  restrict it (addendum §5)? That is a continuity risk.
 
-- Is this the official vendor or a third-party proxy/intermediary?
-- Is the vendor established (domain age, company history, size, reputation)?
-- Marketplace verification status (verified publisher badge if applicable)?
-- Does the redirect URI / callback domain match the vendor's canonical domain?
-- Is the integration distributed through official channels (marketplace, vendor docs) or informal channels (email, chat links)?
-- **Scoring:** established + verified + official distribution → lower tier; unknown proxy + informal distribution → raise tier
+### 4.3 Security Track Record
 
-### §4.4 Terms of Service & Data Sharing
+- Breaches and incidents at the service vendor and the integration vendor;
+  disclosure and remediation quality (addendum §6, §8).
+- Security policy, bug bounty, third-party certifications.
+- CVE row per addendum §8 (hosted: `N/A`).
 
-- Does the vendor share data with third parties beyond service delivery?
-- Is data used for AI/ML training? Is opt-out available and easy to exercise?
-- What happens to data on account termination? Defined retention/deletion timeline?
-- Is data export supported (API, standard format)?
-- Are sub-processors named, with change notifications?
-- **Scoring:** per `references/criteria/remote-integration.md` §3
+### 4.4 Permissions & Access
 
-### §4.5 Security Posture & Breach History
+Dominant axis for Type 9.
 
-- Any known breaches? Were they disclosed promptly and remediated?
-- Is a security disclosure policy published? Bug bounty or responsible disclosure program?
-- SOC2 Type II, ISO 27001, or equivalent third-party audit?
-- Token rotation, HTTPS enforcement, secure defaults documented?
-- CVE responsiveness and patching track record?
-- **Scoring:** per `references/criteria/remote-integration.md` §4
+- Scope classes, justification, narrower options (addendum §1).
+- Token lifetime and custody; standing grants held by third parties
+  (addendum §6).
+- API keys, PATs, service-account keys (addendum §2); webhooks (addendum
+  §9).
+- Org controls available to contain the grant (addendum §6).
 
-### §4.6 Integration Hygiene
+### 4.5 Data Handling, Terms & AI Use
 
-- Does the integration support token expiry and rotation?
-- Webhook signature verification available (HMAC, shared secret)?
-- Audit logging of API access provided to the integrating party?
-- Rate limiting and abuse protection present?
-- Least-privilege service account or credential scope recommended by vendor documentation?
-- **Scoring:** good hygiene (expiry + rotation + logging + signatures) → neutral to lower tier; no expiry + no logging + no signature verification → raise tier
+- Residency, transfer mechanism, DPA, retention, deletion (addendum §4).
+- Data sharing, AI training, AI sub-processors, export, termination
+  (addendum §5).
+- AI connectors: tool baseline and destructive tools (addendum §5).
+
+### 4.6 Version & Update Integrity
+
+- Shared `references/criteria.md` §4.6 with the addendum plug-in:
+  hosted → V1–V3 `N/A (hosted service)`; V4 and V5 apply.
+- The approved unit is the vendor, app identity and exact scope set
+  (plus tool list for AI connectors). Any change is a re-audit trigger.
 
 ---
 
 ## Subject Verdict Notes
 
-**Toward REJECTED:**
-- Wildcard or admin scopes with no functional justification
-- Vendor has unacknowledged or unremediated breaches
-- Service is a proxy masquerading as the named vendor
-- Data sold to third parties or used for AI/ML training with no opt-out
-- No compliance documentation for a service handling sensitive or regulated data
-- Integration distributed via email/chat phishing link, not official marketplace or vendor documentation
-- Non-standard domain, mismatched redirect URI, or suspicious TLD inconsistent with established vendor
+**Toward REJECTED (rate CRITICAL):**
+- High-class scope with no functional justification
+- Consent requested by phone / "IT support", or via a device or
+  connection code someone else supplied
+- Email or chat link plus an unknown vendor, unverified app or High scope
+- Consent-screen name or branding differs from the registered publisher
+- Redirect domain mismatch, non-HTTPS web callback, or the vendor asks
+  for your platform password in its own form
+- Service masquerading as the named vendor
+- Unresolved token theft at the integration vendor; unremediated active
+  exploitation of the service
+- Repeated unremediated or undisclosed breaches
+- Data sold to third parties, AI training on by default with no opt-out,
+  or data sent to unnamed AI providers
 
-**Toward CONDITIONAL:**
-- Moderate scopes that are justifiable but warrant scope-reduction request or monitoring
-- Vendor has breach history but with transparent disclosure and demonstrated remediation
-- Terms allow data sharing for aggregated analytics (not individual/identifiable data)
-- Compliance docs exist but incomplete (SOC2 Type I not Type II, DPA available but no EU option)
-- Integration hygiene is partial (HTTPS enforced but no token rotation documented)
-- **Suggested conditions:** restrict to minimum required scopes, review on credential renewal, monitor vendor security advisories, enable audit logging if available
+**Toward CONDITIONAL (HIGH):**
+- Third party holds a standing grant with a High-class scope
+- Justified High-class scope where a narrower option exists
+- Required service-account key or admin / never-expiring API key
+- Unsigned inbound webhook that triggers privileged actions; webhook URL
+  exposed
+- Unverified app requesting sensitive scopes, with no consent-path flag
+- Function conflicts with the platform's API terms
+- No compliance documentation for sensitive or regulated data
+- **Suggested conditions:** admin-approval consent or app allowlist;
+  narrowest scope or GitHub App variant; inventory and periodic grant
+  review; alerts on new authorizations and bulk export; token IP
+  restriction; documented revocation runbook; fresh grant and secret
+  rotation after a vendor incident.
 
 **Toward APPROVED:**
-- Well-known vendor with verified marketplace listing and established reputation
-- Minimal scopes consistent with principle of least privilege
-- Clean breach history, or historical incident with transparent disclosure and prompt remediation
-- Published compliance certifications (SOC2 Type II, ISO 27001)
-- Clear, user-favorable terms: no data selling, AI training opt-out available, data portability supported, defined termination/deletion policy
-- Official distribution channel (vendor documentation, official marketplace install flow)
+- First-party app, or verified publisher in the official marketplace
+- Low or justified Elevated scopes only; no standing High-class grant
+- Official consent path, correct redirect domain
+- Clean incident record for both vendors, or disclosed and remediated
+- SOC 2 Type II or ISO/IEC 27001; DPA with a stated transfer mechanism
+- Favorable terms: no data selling, AI training off or opt-out, named AI
+  sub-processors, export and deletion supported
+
+**Recommendation wording:** name the approved app, publisher and exact
+scope set; state that updates cannot be held at a version (hosted
+service); list the re-audit triggers from `references/criteria.md` §4.6
+V5 and the addendum plug-in; give the revocation path.
