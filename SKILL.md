@@ -48,10 +48,10 @@ Any installable: browser extensions, IDE/editor plugins, registry packages (npm,
 | 4 | container-image | `docker pull/run`, `FROM` in Dockerfile, `sha256:` digest, `hub.docker.com/*`, `ghcr.io/*`, `quay.io/*`, ECR/GCR |
 | 5 | ci-action | `uses:` in workflows, GitLab `include:`, CircleCI `orbs:`, `github.com/<owner>/<action>@<ref>` |
 | 6 | desktop-app | `.msi/.dmg/.deb/.rpm/.pkg`, `brew install --cask`, `winget`, `choco`, MS/Mac App Store URLs |
-| 7 | cli-binary | `curl … \| sh`, GitHub Releases binary, `brew install <formula>` (Homebrew core; `--cask` → desktop-app), nvm/pyenv/rustup, vendor-hosted executable URLs |
-| 8 | agent-extension | MCP manifest (**8a**), Claude Code plugin bundle (**8b**), Claude Code skill with `SKILL.md` (**8c**) |
-| 9 | remote-integration | OAuth flow, API key exchange, "Connect to <service>", no local code install |
-| 0 | generic | no strong signals fire, or conflict unresolved after the innermost-boundary rule |
+| 7 | cli-binary | `curl … \| sh`, `irm … \| iex`, GitHub Releases binary, `brew install <formula>` (not `--cask`), nvm/pyenv/rustup, vendor-hosted executables |
+| 8 | agent-extension | MCP config or server URL (**8a**), Claude Code plugin / `/plugin install` (**8b**), `SKILL.md` skill (**8c**) |
+| 9 | remote-integration | OAuth flow, API key exchange, "Connect to <service>"; no local code or MCP server |
+| 0 | generic | no strong signal fires, or conflict unresolved by the innermost-boundary rule |
 
 **Required output shape** (emit verbatim before routing):
 

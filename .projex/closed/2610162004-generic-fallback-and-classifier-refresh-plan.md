@@ -1,11 +1,14 @@
 # Generic Fallback + Classifier Refresh
 
-> **Status:** In Progress
+> **Status:** Complete
 > **Author:** Claude (Opus)
 > **Parent:** 2610161927-remote-integration-generic-stewardship-review-eval.md
 > **Source:** 2610161927-remote-integration-generic-stewardship-review-eval.md (G-1, G-2 subject part, G-3, G-4 alignment, G-5 minor, RI-8) | 2610161927-agent-extension-stewardship-review-eval.md (F13, F14 classifier part) | hand-off row "remote-integration + generic" of 2610161941-shared-version-integrity-floor-plan.md
 > **Related Projex:** 2610161941-shared-version-integrity-floor-plan.md | 2610161941-shared-version-integrity-floor-walkthrough.md | 2604170930-trim-generic-md-m52-walkthrough.md | 2604160430-tighten-classifier-m51-walkthrough.md | 2610161927-agent-extension-stewardship-review-eval.md | 2610161927-remote-integration-generic-stewardship-review-eval.md | 2604070218-install-auditor-subject-typed-redesign-nav.md | siblings: 2610162007-agent-extension-rubric-refresh-plan.md | 2610162007-remote-integration-rubric-refresh-plan.md | 2610162006-cli-binary-rubric-refresh-plan.md
 > **Worktree:** Yes
+> **Completed:** 2026-10-16
+> **Walkthrough:** 2610162004-generic-fallback-and-classifier-refresh-walkthrough.md
+> **Log:** 2610162004-generic-fallback-and-classifier-refresh-log.md
 
 ---
 
