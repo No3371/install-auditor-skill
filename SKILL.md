@@ -64,7 +64,7 @@ Routes to:      workflows/<type>.md
 Sub-rubric:     <Type 8 only: 8a | 8b | 8c>
 ```
 
-**User override:** if the user says "treat this as `<type>`", honor at high confidence with `user override: <verbatim>` in Rationale. Classification is read-only and never re-runs mid-audit.
+**User override:** if the user says "treat this as `<type>`", honor at high confidence with `user override: <verbatim>` in Rationale. Classification is read-only and never re-runs mid-audit (sole exception: `workflows/generic.md` Phase 2).
 
 ### Dispatch Table
 
@@ -96,7 +96,7 @@ Read `workflows/<type>.md` per the dispatch table. Follow its **Identify / Evide
 ```
 Any CRITICAL flag? (see Tree terms below) ──────────► REJECTED ❌
   │ No
-Any unpatched HIGH/CRITICAL CVE? (see Tree terms) ──► REJECTED ❌
+Any blocking CVE? (see Tree terms) ─────────────────► REJECTED ❌
   │ No
 Confirmed supply chain compromise? ─────────────────► REJECTED ❌
   │ No
@@ -112,12 +112,12 @@ All criteria pass? ────────────────────�
 **Tree terms & precedence:**
 
 - **CRITICAL flag** — any Red Flag below, **or** a finding the auditor rates CRITICAL using the routed workflow's addendum and its `Toward REJECTED` notes. Record each rating and its reason in the report's Risk Flags so the verdict is traceable.
-- **Unpatched CVE** — affects the version to be installed **and** no fixed release exists (`references/criteria.md` §4.3 CVE Severity Mapping). A CVE fixed in a newer release does not trigger this node; rate it per the routed workflow (typically HIGH → CONDITIONAL with an upgrade condition).
-- **Precedence** — Red Flags are subject-independent and are never downgraded. For subject-specific patterns (Dockerfile instructions, ref pinning, permission scopes, documented exceptions) the routed workflow and its criteria addendum win over generic wording here or in `references/criteria.md`.
+- **Blocking CVE** — affects the version to be installed and is CRITICAL in CISA KEV, or HIGH/CRITICAL in the subject's own code with no fixed release. Any other HIGH/CRITICAL CVE (fixed upstream, or in an OS package / third-party component) is a HIGH flag → CONDITIONAL; VEX `not_affected` is evidence (`references/criteria.md` §4.3).
+- **Precedence** — Red Flags and the version-integrity floor in `references/criteria.md` §4.6 (it can bar Tier 1) are subject-independent and never downgraded; addenda only tighten §4.6 or fill its plug-ins. For other subject-specific patterns (Dockerfile instructions, ref pinning, permission scopes, documented exceptions) the routed workflow and its criteria addendum win over generic wording here or in `references/criteria.md`.
 
 **CONDITIONAL** means installation may proceed only after listed conditions are met (pin to safe version, disable permissions, sandbox only, etc.).
 
-**Coverage gaps:** if **two or more** checks are **Not available** (failed API / 404 / timeout — **not** tier-skipped, **not** `N/A`), add a sentence to Recommendation that the audit has **reduced coverage**. Do **not** change the verdict label for coverage alone — the verdict still follows the tree above. Tier-skipped checks do not count toward this threshold.
+**Coverage gaps:** if **two or more** checks are **Not available** (failed API / 404 / timeout — **not** `Skipped`, **not** `N/A`), add a sentence to Recommendation that the audit has **reduced coverage**. Do **not** change the verdict label for coverage alone — the verdict still follows the tree above.
 
 ### Report
 
@@ -127,7 +127,7 @@ All criteria pass? ────────────────────�
 
 **Audit confidence** measures how completely the tier-appropriate checklist was executed, not whether the installable is free of vulnerabilities. Rate it:
 
-- **High:** All tier-required checks are Done, legitimately **N/A**, or **Skipped (Tier N)** by design; at most one **Not available** on a non-critical row.
+- **High:** All tier-required checks are Done, legitimately **N/A**, or **Skipped** by design (`Skipped (Tier N)` or a workflow-defined reason, within its confidence cap); at most one **Not available** on a non-critical row.
 - **Moderate:** One–two **Not available** rows that are not solely tier-skips, or a critical-adjacent gap.
 - **Low:** Three or more **Not available**, or any tier-required check missing without a valid **Skipped** / **N/A** reason — especially **CVE / advisories** unavailable for Tier 2 or Tier 3.
 
@@ -154,13 +154,14 @@ All criteria pass? ────────────────────�
 | Typosquat / name verification | Done | compared to `<legitimate name>` |
 | CVE / advisories | Done, 0 results | OSV, GHSA |
 | License compatibility | Done | SPDX — Compatible |
+| Version integrity | Done | §4.6: published <date>; identity <match / none> |
 | *(Tier 1 minimal set from `references/criteria.md`, ~3–6 rows; deeper rows `Skipped (Tier 1)` or omitted)* | | |
 
 ## Risk Flags
 <"None identified", or one line per flag: - [HIGH/MEDIUM/LOW] description>
 
 ## Recommendation
-<1–2 sentences. CONDITIONAL: list the conditions. APPROVED/CONDITIONAL: pin to <package>@<version>; re-audit on major version bump or maintainer change.>
+<1–2 sentences. CONDITIONAL: list the conditions. APPROVED/CONDITIONAL: pin to <package>@<version>; re-audit on any `references/criteria.md` §4.6 V5 trigger.>
 
 **Sources:** <URLs consulted>
 ```
@@ -176,7 +177,7 @@ Subject-independent. Each applies only when its full condition holds; partial ma
 - **Confirmed typosquat / impersonation** — name, scope, or namespace imitates a legitimate subject (edit distance ≤2 from a top-1000 package, combosquat, homoglyph, or namespace impersonation such as `someuser/nginx` vs official `nginx`) **and** the subject has no independent legitimate history. For npm, a `typosquat-check` script result of `riskLevel: critical` qualifies unless legitimacy is affirmatively proven. Similarity alone (script `high`/`medium`, or a name merely close to a popular one) is a HIGH/MEDIUM flag per `references/criteria/registry-package.md`.
 - **Brand new + no history** — published < 72 hours ago with no prior versions
 - **Removed for cause** — previously removed from Chrome Web Store, npm, PyPI, etc. for malicious behavior, compromise, or a security-policy violation (not author unpublish, rename, or naming dispute)
-- **Confirmed supply chain attack** — security blog or advisory confirms compromise
+- **Confirmed supply chain compromise** — advisory or vendor confirms malicious code in the version to be installed, or the affected range is unknown, or the compromise is unresolved (`references/criteria.md` §4.6 V4)
 - **Excessive permissions** — browser extension reads all history/cookies/clipboard with no justification
 - **Mutable CI ref with privileged access** — action or reusable workflow referenced by branch, default branch, or unknown ref — or by any non-SHA ref from an unverified third-party publisher — in a job holding secrets, a write-scoped token, `id-token: write`, or publish rights. Tag-pinned actions from official/verified publishers are HIGH → CONDITIONAL (pin to SHA) per `workflows/ci-action.md`.
 - **Known malware** — confirmed cryptominer, credential stealer, or data exfiltration

@@ -42,6 +42,7 @@ Audit confidence measures **how completely the tier-appropriate checklist was ex
 | Registry / metadata lookup | Done | e.g., registry-lookup / npm API |
 | Typosquat / name verification | Done | compared to `<legitimate name>` |
 | CVE / advisories | Done, 0 results | OSV, GHSA |
+| Version integrity | Done | §4.6: published <date> (<age>); identity matches <expected identity, source> |
 | OpenSSF Scorecard | Not available | no repo for Scorecard API |
 | Source code review (behavioral) | Skipped (Tier 2) | Tier 3 only |
 | *(add rows from `references/criteria.md` for this tier)* | | |
@@ -61,10 +62,10 @@ Audit confidence measures **how completely the tier-appropriate checklist was ex
 
 ## Post-Install Checklist (APPROVED/CONDITIONAL only)
 - [ ] Pin to exact audited version (<package>@<version>)
-- [ ] Verify checksum/signature if provided
+- [ ] Verify checksum/signature against the expected identity (`references/criteria.md` §4.6 V2)
 - [ ] Check lock file for unexpected entries after install
 - [ ] Review post-install script output if applicable
-- [ ] Re-audit on major version bump or maintainer change
+- [ ] Hold updates at the audited version where possible; re-audit on any `references/criteria.md` §4.6 V5 trigger
 
 **Sources:** <URLs consulted>
 ```

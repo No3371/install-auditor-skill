@@ -119,3 +119,5 @@ Full pattern list behind Step 0's signal summary.
   intent. Never run install scripts or probes to classify; evidence
   acquisition starts inside the routed workflow.
 - **No re-classification mid-audit.** Once routed, the workflow owns the audit.
+  Sole exception: `workflows/generic.md` Phase 2 re-routes after the user
+  confirms the type.

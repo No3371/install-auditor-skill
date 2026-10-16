@@ -442,11 +442,14 @@ packages:
 - **Install script with exfiltration pattern**: `postinstall` script that
   reads env vars or `~/.ssh` and sends them to an external URL
 - **Maintainer account compromise confirmed**: Security advisory or blog post
-  confirms the maintainer account was hijacked
+  confirms the account was hijacked **and** the requested version is in the
+  affected range, no bounded range is stated, or the compromise is unresolved
+  (`references/criteria.md` §4.6 V4; a resolved past hijack is a LOW flag)
 - **Package removed from registry**: Previously yanked/removed for security
   reasons (and re-published or accessed via cache)
-- **Known malware**: Confirmed cryptominer, credential stealer, or data
-  exfiltration in any version
+- **Known malware**: Package malicious by design (cryptominer, credential
+  stealer, data exfiltration). Malicious versions of a legitimate package are
+  rated by version scope per `references/criteria.md` §4.6 V4
 - **Unpatched CRITICAL/HIGH CVE**: In the requested version with no fix
   available
 
