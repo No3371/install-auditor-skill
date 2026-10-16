@@ -1,6 +1,6 @@
 # Container-Image Rubric Refresh
 
-> **Status:** Ready
+> **Status:** In Progress
 > **Author:** Claude (Opus)
 > **Parent:** 2610161928-stewardship-review-container-cli-desktop-eval.md
 > **Source:** 2610161928-stewardship-review-container-cli-desktop-eval.md (C1–C9; container parts of X1/X3) | Hand-off "container-image" row of 2610161941-shared-version-integrity-floor-plan.md | human decisions C4 + C6 (relayed by orchestrator 2026-10-16)
