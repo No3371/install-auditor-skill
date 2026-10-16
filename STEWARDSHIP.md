@@ -44,11 +44,29 @@ Run these steps in order for each workflow during a scheduled or event-triggered
 1. Read the workflow file end-to-end; note any stale commands, URLs, or version references
 2. Read the paired criteria file; verify tier thresholds still reflect current ecosystem norms
 3. Check ecosystem changelogs/announcements since last review for security-relevant changes
-4. Run existing eval cases for this workflow; confirm no regressions
+4. Run existing eval cases for this workflow; confirm no regressions (see Running Evals below: `prepare --workflow <name>` → run → `grade` → `summary`; any failed assertion or routing mismatch is a regression signal)
 5. If rubric gaps found: file a `plan-projex` for the update (do not edit in-place during review)
 6. If eval gaps found: add new cases or update existing ones via `plan-projex`
 7. Update the "Last Reviewed" and "Next Due" columns in the inventory table above
 8. Add a dated entry to the nav doc revision log summarizing findings (Phase 6 section)
+
+---
+
+## Running Evals
+
+`evals/run_evals.py` (Python 3.9+, stdlib only). Workspace defaults to `<repo>-workspace/` beside the repo and must stay outside it.
+
+| Command | Purpose | Needs a model |
+|---|---|---|
+| `python3 evals/run_evals.py validate` | Schema + invariants of `evals/evals.json` (params, `workflow` tags, ≥3 cases/workflow) | No |
+| `python3 evals/run_evals.py prepare --workflow <name>` (or `--ids 0,5`) | Snapshot skill, write per-eval `task_prompt.md` | No |
+| `python3 evals/run_evals.py run [--dry-run] [--model M] [--max-budget-usd B]` | Execute via `claude -p` (`dontAsk`, restricted tool allowlist) | Yes (`claude` auth) |
+| `python3 evals/run_evals.py grade [--model-grader claude-cli]` | Deterministic grading; `contains_concept` → pending + `model_grader_prompt.md` | Only for `--model-grader` |
+| `python3 evals/run_evals.py summary` | Per-eval / per-workflow table; exit 1 on any failure | No |
+
+Without `claude -p` credentials, an agent session can execute instead: run each `eval-<id>/task_prompt.md` in a fresh subagent with cwd `eval-<id>/with_skill/run-1/outputs/`, save its final message to `../response.md`, and for model grading answer `model_grader_prompt.md` into `model_grading.json`; then rerun `grade` and `summary`.
+
+New eval cases must carry `workflow` and the type's param (`exact_match`/`verdict_check` → `expected`, `contains_string` → `value`, `file_exists` → `glob`, `line_count_max` → `max`); `validate` enforces this. Self-test: `python3 -m unittest discover -s evals -p "test_*.py"`.
 
 ---
 

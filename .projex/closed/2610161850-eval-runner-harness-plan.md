@@ -1,11 +1,14 @@
 # Eval Runner Harness
 
-> **Status:** In Progress
+> **Status:** Complete
 > **Author:** Claude (Opus), plan-projex subagent
 > **Parent:** Orchestrator
 > **Source:** Direct request (orchestrated: "What can we do to improve this?" → "orchestrate it")
 > **Related Projex:** 2604070218-install-auditor-subject-typed-redesign-nav.md (§ Priorities "Deferred: Eval runner tooling"), 2604150048-ci-action-workflow-m33-walkthrough.md (recommendation: add eval runner), 2604172000-stewardship-cadence-m63-plan.md (STEWARDSHIP.md checklist step 4), 2604171500-per-workflow-eval-bundles-m61-plan.md + 2604171700-hybrid-subject-eval-cases-m62-plan.md (id → workflow mapping source), 2610161849-python-script-ports-plan.md (sibling; adds `scripts/*.py` ports — covered by snapshot + `python3 <snapshot>/scripts/` allow rule; no `evals/` overlap), 2610161852-dispatcher-rubric-consistency-plan.md (sibling; `SKILL.md` red-flag/classifier — no file overlap)
 > **Worktree:** Yes
+> **Completed:** 2026-10-16
+> **Walkthrough:** 2610161850-eval-runner-harness-walkthrough.md
+> **Log:** 2610161850-eval-runner-harness-log.md
 
 ---
 
