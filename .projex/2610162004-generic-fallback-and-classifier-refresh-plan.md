@@ -1,6 +1,6 @@
 # Generic Fallback + Classifier Refresh
 
-> **Status:** Ready
+> **Status:** In Progress
 > **Author:** Claude (Opus)
 > **Parent:** 2610161927-remote-integration-generic-stewardship-review-eval.md
 > **Source:** 2610161927-remote-integration-generic-stewardship-review-eval.md (G-1, G-2 subject part, G-3, G-4 alignment, G-5 minor, RI-8) | 2610161927-agent-extension-stewardship-review-eval.md (F13, F14 classifier part) | hand-off row "remote-integration + generic" of 2610161941-shared-version-integrity-floor-plan.md
