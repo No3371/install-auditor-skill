@@ -3,8 +3,6 @@ This workflow replaces workflows/generic.md for Type 9 subjects. After
 producing findings here, return to SKILL.md Step N for the shared verdict
 tree and report shape. The Audit Coverage table and audit-confidence
 assertion are owned by the dispatcher — do not duplicate them here.
-
-Phase 4 / M4.4 — ninth subject-specific workflow (fourth Phase 4).
 -->
 
 # Remote Integration Workflow (Type 9)

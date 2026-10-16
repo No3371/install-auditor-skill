@@ -10,8 +10,6 @@ This workflow replaces workflows/generic.md for Type 7 subjects. After
 producing findings here, return to SKILL.md Step N for the shared verdict
 tree and report shape. The Audit Coverage table and audit-confidence
 assertion are owned by the dispatcher — do not duplicate them here.
-
-Phase 4 / M4.2 — seventh subject-specific workflow (second Phase 4).
 -->
 
 # CLI Binary Workflow (Type 7)

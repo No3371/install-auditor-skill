@@ -7,8 +7,6 @@ This workflow replaces workflows/generic.md for Type 2 subjects. After
 producing findings here, return to SKILL.md Step N for the shared verdict
 tree and report shape. The Audit Coverage table and audit-confidence
 assertion are owned by the dispatcher — do not duplicate them here.
-
-Phase 3 / M3.1 — second subject-specific workflow (first Phase 3).
 -->
 
 # Browser Extension Workflow (Type 2)

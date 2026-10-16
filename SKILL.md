@@ -23,7 +23,7 @@ Any installable: browser extensions, IDE/editor plugins, registry packages (npm,
 
 ## Step 0 — Classify the Subject (Innermost Trust Boundary)
 
-**Rule:** classify by the **innermost trust boundary the user is crossing** — the last verification gate between the user and the code that will actually execute. Full rule, worked hybrid examples, and edge-case discipline live in `.projex/2604070300-install-auditor-subject-type-taxonomy-def.md` under "Classifier Rule — Innermost Trust Boundary". Read that section when the rule does not resolve cleanly on its own.
+**Rule:** classify by the **innermost trust boundary the user is crossing** — the last verification gate between the user and the code that will actually execute. Full rule, routing overrides, extended signals, worked hybrid examples, and edge-case discipline live in `references/classifier.md`. Read it when the rule does not resolve cleanly on its own.
 
 **Procedure:** (1) read URL + install command + manifest + user intent (read-only); (2) match against the signal table below; (3) apply confidence:
 
@@ -47,7 +47,7 @@ Any installable: browser extensions, IDE/editor plugins, registry packages (npm,
 | 4 | container-image | `docker pull/run`, `FROM` in Dockerfile, `sha256:` digest, `hub.docker.com/*`, `ghcr.io/*`, `quay.io/*`, ECR/GCR |
 | 5 | ci-action | `uses:` in workflows, GitLab `include:`, CircleCI `orbs:`, `github.com/<owner>/<action>@<ref>` |
 | 6 | desktop-app | `.msi/.dmg/.deb/.rpm/.pkg`, `brew install --cask`, `winget`, `choco`, MS/Mac App Store URLs |
-| 7 | cli-binary | `curl … \| sh`, GitHub Releases binary, nvm/pyenv/rustup, vendor-hosted executable URLs |
+| 7 | cli-binary | `curl … \| sh`, GitHub Releases binary, `brew install <formula>` (Homebrew core; `--cask` → desktop-app), nvm/pyenv/rustup, vendor-hosted executable URLs |
 | 8 | agent-extension | MCP manifest (**8a**), Claude Code plugin bundle (**8b**), Claude Code skill with `SKILL.md` (**8c**) |
 | 9 | remote-integration | OAuth flow, API key exchange, "Connect to <service>", no local code install |
 | 0 | generic | no strong signals fire, or conflict unresolved after the innermost-boundary rule |
@@ -93,9 +93,9 @@ Read `workflows/<type>.md` per the dispatch table. Follow its **Identify / Evide
 ### Verdict Tree
 
 ```
-Any CRITICAL red flag? (see Red Flags below) ───────► REJECTED ❌
+Any CRITICAL flag? (see Tree terms below) ──────────► REJECTED ❌
   │ No
-Any unpatched CVE (HIGH or CRITICAL severity)? ────► REJECTED ❌
+Any unpatched HIGH/CRITICAL CVE? (see Tree terms) ──► REJECTED ❌
   │ No
 Confirmed supply chain compromise? ─────────────────► REJECTED ❌
   │ No
@@ -107,6 +107,12 @@ Abandoned with no alternative? ────────────────�
   │ No
 All criteria pass? ─────────────────────────────────► APPROVED ✅
 ```
+
+**Tree terms & precedence:**
+
+- **CRITICAL flag** — any Red Flag below, **or** a finding the auditor rates CRITICAL using the routed workflow's addendum and its `Toward REJECTED` notes. Record each rating and its reason in the report's Risk Flags so the verdict is traceable.
+- **Unpatched CVE** — affects the version to be installed **and** no fixed release exists (`references/criteria.md` §4.3 CVE Severity Mapping). A CVE fixed in a newer release does not trigger this node; rate it per the routed workflow (typically HIGH → CONDITIONAL with an upgrade condition).
+- **Precedence** — Red Flags are subject-independent and are never downgraded. For subject-specific patterns (Dockerfile instructions, ref pinning, permission scopes, documented exceptions) the routed workflow and its criteria addendum win over generic wording here or in `references/criteria.md`.
 
 **CONDITIONAL** means installation may proceed only after listed conditions are met (pin to safe version, disable permissions, sandbox only, etc.).
 
@@ -195,13 +201,14 @@ If verdict is **REJECTED** or **CONDITIONAL with HIGH flags**: append an escalat
 
 ### Red Flags — Automatic REJECTED
 
-- **Typosquatting** — name differs from legitimate package by 1–2 characters
+Subject-independent. Each applies only when its full condition holds; partial matches are rated by the routed workflow, not auto-rejected.
+
+- **Confirmed typosquat / impersonation** — name, scope, or namespace imitates a legitimate subject (edit distance ≤2 from a top-1000 package, combosquat, homoglyph, or namespace impersonation such as `someuser/nginx` vs official `nginx`) **and** the subject has no independent legitimate history. For npm, a `typosquat-check` script result of `riskLevel: critical` qualifies unless legitimacy is affirmatively proven. Similarity alone (script `high`/`medium`, or a name merely close to a popular one) is a HIGH/MEDIUM flag per `references/criteria/registry-package.md`.
 - **Brand new + no history** — published < 72 hours ago with no prior versions
-- **Removed from registry** — previously removed from Chrome Web Store, npm, PyPI, etc.
+- **Removed for cause** — previously removed from Chrome Web Store, npm, PyPI, etc. for malicious behavior, compromise, or a security-policy violation (not author unpublish, rename, or naming dispute)
 - **Confirmed supply chain attack** — security blog or advisory confirms compromise
 - **Excessive permissions** — browser extension reads all history/cookies/clipboard with no justification
-- **Dangerous container defaults** — image runs as root with no USER switch, unjustified
-- **Unpinned CI action with secrets access** — not pinned to commit SHA while accessing secrets
+- **Mutable CI ref with privileged access** — action or reusable workflow referenced by branch, default branch, or unknown ref — or by any non-SHA ref from an unverified third-party publisher — in a job holding secrets, a write-scoped token, `id-token: write`, or publish rights. Tag-pinned actions from official/verified publishers are HIGH → CONDITIONAL (pin to SHA) per `workflows/ci-action.md`.
 - **Known malware** — confirmed cryptominer, credential stealer, or data exfiltration
 
 ### Behavioral Principles
@@ -217,15 +224,15 @@ If verdict is **REJECTED** or **CONDITIONAL with HIGH flags**: append an escalat
 ### Reference Files
 
 - `workflows/generic.md` — Low-confidence fallback (subject probe + user clarification + defensive minimum audit)
-- `workflows/registry-package.md` — Type 1 registry-package workflow (Phase 2, M2.1)
-- `workflows/browser-extension.md` — Type 2 browser-extension workflow (Phase 3, M3.1)
-- `workflows/container-image.md` — Type 4 container-image workflow (Phase 3, M3.2)
-- `workflows/ci-action.md` — Type 5 ci-action workflow (Phase 3, M3.3)
-- `workflows/ide-plugin.md` — Type 3 ide-plugin workflow (Phase 3, M3.4)
-- `workflows/desktop-app.md` — Type 6 desktop-app workflow (Phase 4, M4.1)
-- `workflows/cli-binary.md` — Type 7 cli-binary workflow (Phase 4, M4.2)
-- `workflows/agent-extension.md` — Type 8 agent-extension workflow (Phase 4, M4.3)
-- `workflows/remote-integration.md` — Type 9 remote-integration workflow (Phase 4, M4.4)
+- `workflows/registry-package.md` — Type 1 registry-package workflow
+- `workflows/browser-extension.md` — Type 2 browser-extension workflow
+- `workflows/container-image.md` — Type 4 container-image workflow
+- `workflows/ci-action.md` — Type 5 ci-action workflow
+- `workflows/ide-plugin.md` — Type 3 ide-plugin workflow
+- `workflows/desktop-app.md` — Type 6 desktop-app workflow
+- `workflows/cli-binary.md` — Type 7 cli-binary workflow
+- `workflows/agent-extension.md` — Type 8 agent-extension workflow
+- `workflows/remote-integration.md` — Type 9 remote-integration workflow
 - `references/criteria.md` — Shared tier-aware scoring rubric
 - `references/criteria/registry-package.md` — Registry-package criteria addendum (ecosystem trust signals, tier thresholds, install script patterns)
 - `references/criteria/browser-extension.md` — Browser-extension criteria addendum (store trust, permission classification, content-script reach, auto-update risk)
@@ -239,4 +246,4 @@ If verdict is **REJECTED** or **CONDITIONAL with HIGH flags**: append an escalat
 - `references/licenses.md` — License compatibility matrix
 - `references/registries.md` — Trusted vs. untrusted registries per ecosystem
 - `scripts/registry-lookup.ps1` — Automated registry data lookup. Run: `powershell -File scripts/registry-lookup.ps1 <ecosystem> <name> [version]`. If PowerShell is unavailable, query registry APIs directly (npm: `registry.npmjs.org/<pkg>`, PyPI: `pypi.org/pypi/<pkg>/json`, etc.).
-- `.projex/2604070300-install-auditor-subject-type-taxonomy-def.md` — Locked 10-type taxonomy + full Classifier Rule
+- `references/classifier.md` — Full classifier rule: tie-breaking, routing overrides, extended signals, worked hybrid examples, edge-case discipline

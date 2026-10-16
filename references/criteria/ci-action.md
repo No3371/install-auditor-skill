@@ -7,7 +7,7 @@ ci-action guidance wins.
 
 Covers: GitHub Actions, reusable workflows, GitLab CI components, CircleCI
 orbs, and equivalent CI-imported automation. Depth is GitHub Actions-first
-in v1 because the repo's current refs and milestone scope are GitHub-heavy.
+in v1.
 
 ## Publisher / Marketplace Trust Signals
 
@@ -32,7 +32,7 @@ in v1 because the repo's current refs and milestone scope are GitHub-heavy.
 | Ref style | Mutability | Scoring impact |
 |-----------|------------|----------------|
 | Full commit SHA | Immutable | Required for Tier 1 and for any secret-bearing third-party action path |
-| Release tag (`v4`, `v1.2.3`) | Mutable | Usually CONDITIONAL; reject when paired with secrets, write perms, or untrusted code paths |
+| Release tag (`v4`, `v1.2.3`) | Mutable | CONDITIONAL from official/verified publishers (condition: pin to SHA); reject when the publisher is unverified and the job holds secrets, write perms, OIDC, or publish rights, or on untrusted code paths |
 | Branch (`main`, `master`) | Mutable | High-risk; pushes subject to Tier 3 |
 | PR ref / fork SHA path | Mutable + untrusted | Reject for privileged workflows |
 | Unknown / omitted | Unknown | Treat as mutable until proven otherwise |
@@ -42,7 +42,7 @@ in v1 because the repo's current refs and milestone scope are GitHub-heavy.
 - Full 40-char SHA = strong positive
 - Semantic tag or major tag = moderate negative because retargeting is possible
 - Branch or floating ref = strong negative
-- Secret-bearing or write-capable third-party code not pinned to SHA = high-risk finding
+- Secret-bearing or write-capable code not pinned to SHA = HIGH finding (official/verified publisher, tag ref) | CRITICAL (branch/unknown ref, or unverified third-party publisher — `SKILL.md` Red Flags)
 
 ## Trigger & Secret Exposure Matrix
 

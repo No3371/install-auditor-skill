@@ -3,8 +3,6 @@ This workflow replaces workflows/generic.md for Type 8 subjects. After
 producing findings here, return to SKILL.md Step N for the shared verdict
 tree and report shape. The Audit Coverage table and audit-confidence
 assertion are owned by the dispatcher — do not duplicate them here.
-
-Phase 4 / M4.3 — eighth subject-specific workflow (third Phase 4).
 -->
 
 # Agent Extension Workflow (Type 8)

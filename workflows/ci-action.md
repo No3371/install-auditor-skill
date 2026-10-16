@@ -7,8 +7,6 @@ This workflow replaces workflows/generic.md for Type 5 subjects. After
 producing findings here, return to SKILL.md Step N for the shared verdict
 tree and report shape. The Audit Coverage table and audit-confidence
 assertion are owned by the dispatcher - do not duplicate them here.
-
-Phase 3 / M3.3 - fourth subject-specific workflow (third Phase 3).
 -->
 
 # CI Action Workflow (Type 5)
@@ -16,8 +14,7 @@ Phase 3 / M3.3 - fourth subject-specific workflow (third Phase 3).
 This workflow handles **Type 5: ci-action** subjects - GitHub Actions,
 reusable workflows, GitLab CI components, CircleCI orbs, and equivalent
 CI-imported automation referenced from pipeline config. Primary depth in
-v1 is GitHub Actions / reusable workflows because the repo's trust
-references and milestone scope are GitHub-first.
+v1 is GitHub Actions / reusable workflows.
 
 After completing all sections below, return to `SKILL.md` Step N for the
 shared verdict tree and audit-coverage report shape.
@@ -201,6 +198,8 @@ Toward REJECTED:
 - `workflow_call` plus `secrets: inherit` into third-party workflow not SHA pinned
 - Branch or `main` pin on an action with write scopes, OIDC, package publish,
   or secret access
+- Non-SHA ref from an unverified third-party publisher with write scopes,
+  OIDC, package publish, or secret access
 - Unknown transitive child introduced by composite or reusable workflow
 - Self-hosted runner plus untrusted external code path
 

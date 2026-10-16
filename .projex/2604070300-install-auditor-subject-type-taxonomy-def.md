@@ -1,6 +1,6 @@
 # Definition: install-auditor Subject-Type Taxonomy
 
-> **Created:** 2026-04-07 | **Last Revised:** 2026-04-08
+> **Created:** 2026-04-07 | **Last Revised:** 2026-10-16
 > **Author:** Claude (Opus 4.6)
 > **Scope:** The locked v1 subject-type taxonomy that the `install-auditor` dispatcher routes audits against. Defines each type's identity, boundaries, examples, target workflow file, and the rules for adding/splitting types over time. Excludes the classifier rule itself (M0.2) and per-type Tier 1/2/3 thresholds (Q4).
 > **Status:** Stabilizing
@@ -101,7 +101,7 @@ Each type entry uses a uniform structure:
 - **Identity:** A standalone application installed onto a user's OS, gaining process- or user-level privileges.
 - **Examples:** Vendor-hosted installer, Microsoft Store, Mac App Store, Homebrew cask, winget, choco, `.deb` / `.rpm`
 - **Workflow file:** `workflows/desktop-app.md`
-- **Includes:** Signed and unsigned installers, store and non-store distribution, package managers that score publisher trust (Homebrew core/cask, winget, choco)
+- **Includes:** Signed and unsigned installers, store and non-store distribution, package managers that score publisher trust (Homebrew cask, winget, choco)
 - **Routes elsewhere:**
   - A desktop app distributed via a registry-package's `bin` (e.g. an Electron app shipped through npm) → **registry-package** (innermost is the registry)
 
@@ -113,7 +113,7 @@ Each type entry uses a uniform structure:
 - **Includes:** Binaries with checksums or signatures, install scripts, language version managers
 - **Routes elsewhere:**
   - A CLI distributed via a registry's `bin` → **registry-package**
-  - A CLI distributed via Homebrew core → **desktop-app** (Homebrew acts as a trust authority)
+  - A CLI distributed via Homebrew core (`brew install <formula>`) → **still cli-binary** (boundary confirmed during M4.1/M4.2; `brew install --cask` → desktop-app)
 
 ### 8. MCP server / agent extension
 
@@ -153,6 +153,8 @@ Each type entry uses a uniform structure:
 > **Milestone:** M0.2 of Phase 0 (Taxonomy & Classifier Lock-In)
 > **Resolves:** Q2 (classifier location — prose vs helper script), eval gap G4 (hybrid-subject handling)
 > **Form:** Pure prose (v1). The LLM running the dispatcher reads this section and applies it contextually. A helper script for high-confidence URL-pattern pre-checks is an explicit escalation path (see Escalation at the end of this section), not a v1 deliverable.
+
+> **Runtime copy:** promoted to shipped `references/classifier.md` (2026-10-16, `2610161852-dispatcher-rubric-consistency-plan.md`). That file is canonical for runtime classification; this section is the design record. Change the rule there first, then mirror material changes here.
 
 ### Purpose
 
@@ -381,7 +383,7 @@ Both splits are **anticipated, not committed.** They activate only if their trig
 - [ ] **Q4 — Per-type Tier 1/2/3 thresholds.** Out of scope for this definition; defined inside each workflow file as it is authored. *Tracked in parent nav; first concrete instance is Phase 2 M2.1 for registry-package.*
 - [ ] **Q5 follow-up — Agent-extension sub-rubric depth.** Sub-rubrics 8a/8b/8c are placeholders here; their full evidence-source list is authored in Phase 4 M4.3.
 - [ ] **IaC routing re-validation.** Type 1 currently absorbs Terraform / Ansible / Helm. Re-validate during Phase 2 M2.1 — if `registry-package.md`'s evidence shape doesn't fit, trigger the split-out per Future Splits.
-- [ ] **CLI vs desktop-app boundary at Homebrew.** Homebrew is currently routed to desktop-app on the basis that Homebrew scores publisher trust. Confirm during Phase 4 M4.1/M4.2 authoring; revisit if Homebrew core formulae and casks diverge in audit shape.
+- [x] **CLI vs desktop-app boundary at Homebrew.** *Resolved in M4.1/M4.2:* `brew install <formula>` (core) → cli-binary; `brew install --cask` → desktop-app. Recorded in `references/classifier.md` Routing Overrides (2026-10-16).
 - [ ] **Versioning policy.** Should the taxonomy carry a semver-style version (v1 → v1.1 → v2)? Which kinds of changes bump major vs minor (add vs split vs rename)? Address once a second type is added or split.
 - [ ] **Type-stability guarantee for downstream consumers.** Should `references/criteria.md` and `evals/evals.json` use the workflow filename (`registry-package`) or a stable type ID (`type-1`) as their key? Bears on rename safety during future splits.
 
@@ -393,3 +395,4 @@ Both splits are **anticipated, not committed.** They activate only if their trig
 |---|---|
 | 2026-04-07 | Initial definition created. Locks v1 10-type taxonomy: registry-package, browser-extension, ide-plugin, container-image, ci-action, desktop-app, cli-binary, agent-extension, remote-integration, generic. Decisions baked in: ide-plugin and agent-extension stay separate (Q1 confirmed); agent-extension uses one workflow with three labeled sub-rubrics 8a/8b/8c for MCP-server / Claude Code plugin / Claude Code skill (Q5 = option c); IaC modules (Terraform / Ansible / Helm) route through registry-package as Type 1 (scope gap = option b); taxonomy is closed-at-version, open-across-versions with documented extension procedure (taxonomy stance = open-ended). Excluded by scope: classifier rule (M0.2) and per-type Tier 1/2/3 thresholds (Q4). Future splits documented: agent-extension → 8a/8b/8c separation; registry-package → iac-module extraction. Both anticipated but not committed. |
 | 2026-04-08 | **M0.2 complete.** Added Classifier Rule — Innermost Trust Boundary section between Subject Types and Constraints & Invariants. Decisions: Q2 = option (a) pure prose; structured output format `{type, confidence, boundary, rationale, routes, sub-rubric}`; signal table lives inside the classifier section as condensed per-type signals + strong URL patterns (option a). Section contents: purpose, rule statement, 6-step decision procedure, signal table (10 types), confidence level definitions, output format with worked example, 5 worked hybrid examples (npm-with-bin, VS Code wrap, Docker wrapping npm, GitHub Action pulling Docker, Claude Code skill via npm), edge-case discipline (prefer generic over misroute, no split-classification, user override honored, read-only, no re-classification mid-audit), escalation path for optional future URL-pattern helper script `scripts/classify-prescan.*`. Updated Relationships table and M0.2 Open Question → resolved. |
+| 2026-10-16 | Classifier rule promoted to shipped `references/classifier.md` (runtime-canonical); `SKILL.md` no longer links into `.projex/`. Homebrew boundary corrected to match M4.1/M4.2 (formula → cli-binary, cask → desktop-app); Open Question resolved. §9 "split audit" superseded at runtime by edge-case discipline (one primary type; other component noted for a separate audit). Plan: `2610161852-dispatcher-rubric-consistency-plan.md`. |

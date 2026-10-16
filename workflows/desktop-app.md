@@ -9,8 +9,6 @@ This workflow replaces workflows/generic.md for Type 6 subjects. After
 producing findings here, return to SKILL.md Step N for the shared verdict
 tree and report shape. The Audit Coverage table and audit-confidence
 assertion are owned by the dispatcher — do not duplicate them here.
-
-Phase 4 / M4.1 — sixth subject-specific workflow (first Phase 4).
 -->
 
 # Desktop App Workflow (Type 6)

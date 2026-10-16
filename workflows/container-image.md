@@ -8,8 +8,6 @@ This workflow replaces workflows/generic.md for Type 4 subjects. After
 producing findings here, return to SKILL.md Step N for the shared verdict
 tree and report shape. The Audit Coverage table and audit-confidence
 assertion are owned by the dispatcher — do not duplicate them here.
-
-Phase 3 / M3.2 — third subject-specific workflow (second Phase 3).
 -->
 
 # Container Image Workflow (Type 4)

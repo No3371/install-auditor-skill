@@ -8,8 +8,6 @@ This workflow replaces workflows/generic.md for Type 1 subjects. After
 producing findings here, return to SKILL.md Step N for the shared verdict
 tree and report shape. The Audit Coverage table and audit-confidence
 assertion are owned by the dispatcher — do not duplicate them here.
-
-Phase 2 / M2.1 — first subject-specific workflow.
 -->
 
 # Registry Package Workflow (Type 1)

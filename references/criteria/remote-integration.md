@@ -1,6 +1,6 @@
 <!-- Remote-integration criteria addendum. Supplements references/criteria.md
      for Type 9 subjects. When guidance here conflicts with the shared rubric,
-     this more-specific addendum wins. Phase 4 / M4.4. -->
+     this more-specific addendum wins. -->
 
 # Remote Integration — Criteria Addendum
 

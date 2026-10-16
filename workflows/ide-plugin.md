@@ -8,8 +8,6 @@ This workflow replaces workflows/generic.md for Type 3 subjects. After
 producing findings here, return to SKILL.md Step N for the shared verdict
 tree and report shape. The Audit Coverage table and audit-confidence
 assertion are owned by the dispatcher - do not duplicate them here.
-
-Phase 3 / M3.4 - fifth subject-specific workflow (fourth Phase 3).
 -->
 
 # IDE Plugin Workflow (Type 3)

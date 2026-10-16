@@ -1,11 +1,14 @@
 # Dispatcher Rubric Consistency — Red Flags, Verdict-Tree Terms, Shipped Classifier Reference
 
-> **Status:** In Progress
+> **Status:** Complete
 > **Author:** Claude (Opus)
 > **Parent:** Orchestrator
 > **Source:** Direct request (orchestrated: "It's been a while. What can we do to improve this?" → "orchestarte it"; items 3a, 3b, 5, 7a + conflict survey)
 > **Related Projex:** 2604070218-install-auditor-subject-typed-redesign-nav.md | 2604070300-install-auditor-subject-type-taxonomy-def.md | 2604082335-dispatcher-refactor-m11-m12-plan.md (origin of `.projex` link-back) | 2604151500-cli-binary-workflow-m42-plan.md (Homebrew boundary) | 2604172000-stewardship-cadence-m63-plan.md (`STEWARDSHIP.md`: rubric changes via plan-projex) | siblings: 2610161849-python-script-ports-plan.md, 2610161850-eval-runner-harness-plan.md
 > **Worktree:** Yes
+> **Completed:** 2026-10-16
+> **Walkthrough:** 2610161852-dispatcher-rubric-consistency-walkthrough.md
+> **Log:** 2610161852-dispatcher-rubric-consistency-log.md
 
 ---
 
