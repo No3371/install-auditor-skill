@@ -3,10 +3,13 @@
     Typosquat Check — algorithmic similarity detection for registry packages.
 
 .DESCRIPTION
-    Fetches a popular-package baseline from the npm search API, computes
-    Levenshtein edit distance between the queried name and popular packages,
-    detects combosquat patterns (prefix/suffix overlap), compares download
-    counts, and emits a structured JSON risk assessment to stdout.
+    Loads the bundled popular-package baseline (data/npm-popular.tsv: unscoped
+    npm packages ranked by weekly downloads), computes Levenshtein edit distance
+    between the queried name and baseline packages, detects combosquat patterns
+    (prefix/suffix overlap), compares live download counts, and emits a
+    structured JSON risk assessment to stdout. A queried name that is itself in
+    the baseline is reported low risk. Refresh the baseline with
+    data/refresh-npm-popular.py.
 
     npm v1 — other ecosystems will be added in future versions.
 
@@ -20,14 +23,14 @@
     Optional. Known legitimate package name to compare against directly.
 
 .PARAMETER Size
-    Number of popular packages to fetch from the search API baseline.
-    Default: 250.
+    Number of baseline packages to use, from the top of data/npm-popular.tsv.
+    Default: 1000.
 
 .PARAMETER CacheHours
-    Hours to cache the popular-package baseline. Default: 24.
+    Ignored. Accepted so existing invocations keep working (the baseline is a bundled file).
 
 .PARAMETER NoCache
-    Skip cache — always fetch fresh baseline from the API.
+    Ignored. Accepted so existing invocations keep working (the baseline is a bundled file).
 
 .EXAMPLE
     .\typosquat-check.ps1 -Ecosystem npm -Name "expresss"
@@ -47,7 +50,7 @@ param(
     [string]$CompareTo,
 
     [Parameter()]
-    [int]$Size = 250,
+    [int]$Size = 1000,
 
     [Parameter()]
     [int]$CacheHours = 24,
@@ -122,75 +125,22 @@ function Get-LevenshteinDistance {
     return $prev[$n]
 }
 
-# ─── Cache ──────────────────────────────────────────────────────────────
-
-function Get-CachePath {
-    $cacheDir = Join-Path $PSScriptRoot '.typosquat-cache'
-    if (-not (Test-Path $cacheDir)) {
-        New-Item -ItemType Directory -Path $cacheDir -Force | Out-Null
-    }
-    $dayBucket = (Get-Date).ToString('yyyy-MM-dd')
-    $key = "$Ecosystem-$Size-$dayBucket"
-    return Join-Path $cacheDir "$key.json"
-}
-
-function Get-CachedBaseline {
-    if ($NoCache) { return $null }
-    $path = Get-CachePath
-    if (-not (Test-Path $path)) { return $null }
-    $fileAge = (Get-Date) - (Get-Item $path).LastWriteTime
-    if ($fileAge.TotalHours -gt $CacheHours) { return $null }
-    try {
-        $raw = Get-Content -Path $path -Raw
-        return ($raw | ConvertFrom-Json)
-    } catch {
-        return $null
-    }
-}
-
-function Set-CachedBaseline {
-    param($Data)
-    $path = Get-CachePath
-    try {
-        $Data | ConvertTo-Json -Depth 6 | Set-Content -Path $path -Force
-    } catch {
-        # Cache write failure is non-fatal
-    }
-}
-
 # ─── npm Baseline Fetch ─────────────────────────────────────────────────
 
 function Get-NpmPopularBaseline {
-    $cached = Get-CachedBaseline
-    if ($cached) { return $cached }
-
-    # Fetch popular packages via npm search API sorted by popularity
-    $url = "https://registry.npmjs.org/-/v1/search?text=boost-exact:false&size=$Size&popularity=1.0"
-    $searchResult = Invoke-Api $url
-    if (-not $searchResult -or -not $searchResult.objects) {
-        # Return empty baseline on API failure
-        return @()
+    # Returns the first $Size rows of the bundled baseline as @{ name; downloads }; empty if unreadable.
+    # The leading comma keeps a 0- or 1-row result an array instead of letting the pipeline unroll it.
+    $path = Join-Path (Join-Path $PSScriptRoot 'data') 'npm-popular.tsv'
+    if (-not (Test-Path $path)) { return ,@() }
+    $rows = foreach ($line in (Get-Content -Path $path -Encoding UTF8)) {
+        $t = $line.Trim()
+        if (-not $t -or $t.StartsWith('#')) { continue }
+        $f = $t -split "`t", 2
+        $dl = [long]0
+        if ($f.Count -gt 1) { [void][long]::TryParse($f[1].Trim(), [ref]$dl) }
+        @{ name = $f[0].Trim(); downloads = $dl }
     }
-
-    $baseline = @()
-    foreach ($obj in $searchResult.objects) {
-        $pkg = $obj.package
-        $downloads = 0
-        if ($obj.score -and $obj.score.detail -and $obj.score.detail.popularity) {
-            # Popularity is a 0-1 score; we'll fetch actual downloads for close matches
-            $downloads = [math]::Floor($obj.score.detail.popularity * 10000000)
-        }
-        $baseline += @{
-            name      = $pkg.name
-            downloads = $downloads
-        }
-    }
-
-    # Sort by downloads descending (approximation from popularity score)
-    $baseline = @($baseline | Sort-Object { $_.downloads } -Descending)
-
-    Set-CachedBaseline $baseline
-    return $baseline
+    return ,@($rows | Select-Object -First ([math]::Max($Size, 0)))
 }
 
 # ─── npm Download Count ─────────────────────────────────────────────────
@@ -205,6 +155,22 @@ function Get-NpmWeeklyDownloads {
     return $null
 }
 
+function Test-NpmPackageExists {
+    # $true if the registry has the package, $false on HTTP 404, $null when the registry is unreachable.
+    param([string]$PackageName)
+    $encoded = [Uri]::EscapeDataString($PackageName)
+    try {
+        Invoke-WebRequest -Uri "https://registry.npmjs.org/$encoded" -Method Head -UseBasicParsing `
+            -Headers @{ 'User-Agent' = 'install-auditor/1.0' } -TimeoutSec 15 | Out-Null
+        return $true
+    } catch {
+        $status = $null
+        if ($_.Exception.Response) { $status = [int]$_.Exception.Response.StatusCode }
+        if ($status -eq 404) { return $false }
+        return $null
+    }
+}
+
 # ─── Core Analysis ──────────────────────────────────────────────────────
 
 function Invoke-TyposquatAnalysis {
@@ -215,6 +181,13 @@ function Invoke-TyposquatAnalysis {
     if (-not $baseline -or $baseline.Count -eq 0) {
         # API failure fallback: still check CompareTo if provided
         $baseline = @()
+    }
+
+    # Exact raw-name match, not the normalized token: "@evil/chalk" normalizes to "chalk"
+    # but is not the baseline package.
+    $knownPopular = $false
+    foreach ($b in $baseline) {
+        if ($b.name -eq $Name) { $knownPopular = $true; break }
     }
 
     # If -CompareTo is provided, ensure it's in the candidate list
@@ -291,7 +264,7 @@ function Invoke-TyposquatAnalysis {
         $bestCompare = $closestMatches[0].name
     }
 
-    if ($bestCompare) {
+    if ($bestCompare -and -not $knownPopular) {
         $queriedDl = Get-NpmWeeklyDownloads $Name
         $closestDl = Get-NpmWeeklyDownloads $bestCompare
         if ($null -ne $queriedDl -and $null -ne $closestDl -and $queriedDl -ge 0) {
@@ -374,17 +347,31 @@ function Invoke-TyposquatAnalysis {
         $riskReasons += "Combosquat pattern detected: name overlaps with $($combosquatHints -join ', ')"
     }
 
-    # Package existence check: if queried name does not resolve on npm, note it
-    $queriedExists = $null -ne (Get-NpmWeeklyDownloads $Name)
+    if ($knownPopular) {
+        # Baseline members sit within edit distance 2 of each other (chalk/chai, react/redux)
+        # and prefix each other (react/react-dom); scoring them would flag every popular package.
+        $riskLevel       = 'low'
+        $riskReasons     = @()
+        $combosquatHints = @()
+    }
+
+    $queriedExists = if ($knownPopular) { $true } else { Test-NpmPackageExists $Name }
 
     # Build human-readable summary
-    $details = if ($riskReasons.Count -gt 0) {
+    $details = if ($knownPopular) {
+        "'$Name' is in the bundled top-$($baseline.Count) popular npm package baseline; distance and combosquat signals are not scored. "
+    } elseif ($riskReasons.Count -gt 0) {
         "Risk factors: $($riskReasons -join '; '). "
     } else {
-        "No close matches found in top-$Size popular packages. "
+        "No close matches found in top-$($baseline.Count) popular packages. "
     }
-    if (-not $queriedExists) {
-        $details += "Note: '$Name' does not appear to exist on npm (0 download data). "
+    if ($baseline.Count -eq 0) {
+        $details += "Popular-package baseline (data/npm-popular.tsv) missing or unreadable; only -CompareTo was checked. "
+    }
+    if ($queriedExists -eq $false) {
+        $details += "Note: '$Name' does not exist on npm (registry returned 404). "
+    } elseif ($null -eq $queriedExists) {
+        $details += "Note: could not confirm '$Name' exists on npm (registry unreachable). "
     }
     if ($combosquatHints.Count -gt 0) {
         $details += "Combosquat hints: $($combosquatHints -join ', '). "

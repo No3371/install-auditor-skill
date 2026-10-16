@@ -1,11 +1,14 @@
 # Lookup Script Correctness Fixes
 
-> **Status:** In Progress
+> **Status:** Complete
 > **Author:** Claude (Opus)
 > **Parent:** 2610161849-python-script-ports-walkthrough.md
 > **Source:** Direct request (orchestrator) — follow-ups recorded in 2610161849-python-script-ports-walkthrough.md § Immediate Follow-ups
 > **Related Projex:** 2610161849-python-script-ports-plan.md | 2610161849-python-script-ports-walkthrough.md | 2610161850-eval-runner-harness-plan.md | 2610161910-dispatcher-lean-report-and-trigger-plan.md (executed; no file overlap)
 > **Worktree:** Yes
+> **Completed:** 2026-10-16
+> **Walkthrough:** 2610161926-lookup-script-correctness-fixes-walkthrough.md
+> **Log:** 2610161926-lookup-script-correctness-fixes-log.md
 
 ---
 

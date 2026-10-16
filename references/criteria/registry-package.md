@@ -226,6 +226,13 @@ python3 scripts/typosquat-check.py -Ecosystem npm -Name "<exact name>"
 Add `-CompareTo "<known legitimate name>"` when the user or context supplies a
 canonical package name to compare against.
 
+The baseline is a bundled snapshot of the 1,000 most-downloaded unscoped npm
+packages (`scripts/data/npm-popular.tsv`; refresh with
+`python3 scripts/data/refresh-npm-popular.py`). A queried name that is itself in
+the baseline is reported `low` without distance or combosquat scoring. Scoped
+names are compared by unscoped basename only -- verify scope ownership manually
+(see below).
+
 ### Interpreting script output
 
 The script emits a JSON object with:
@@ -233,7 +240,7 @@ The script emits a JSON object with:
 | Field | Meaning |
 |-------|---------|
 | `riskLevel` | `low` / `medium` / `high` / `critical` -- algorithmic risk assessment |
-| `closestMatches` | Top packages by edit distance, with distance and download counts |
+| `closestMatches` | Top packages by edit distance, with distance and weekly downloads (baseline snapshot; the best match gets the live count when the npm downloads API answers) |
 | `combosquatHints` | Popular package names that are a prefix/suffix of the queried name |
 | `downloadRatio` | Weekly downloads of queried vs closest match (ratio > 100x is suspicious) |
 | `details` | Human-readable summary of risk factors |

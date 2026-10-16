@@ -68,6 +68,8 @@ Without `claude -p` credentials, an agent session can execute instead: run each 
 
 New eval cases must carry `workflow` and the type's param (`exact_match`/`verdict_check` → `expected`, `contains_string` → `value`, `file_exists` → `glob`, `line_count_max` → `max`); `validate` enforces this. Self-test: `python3 -m unittest discover -s evals -p "test_*.py"`.
 
+Lookup-script tests: `python3 -m unittest discover -s tests -p "test_*.py"` (offline fixtures; the `.ps1` twin tests run only when `pwsh` is on PATH, otherwise they are skipped). The npm typosquat baseline `scripts/data/npm-popular.tsv` is a dated snapshot: regenerate it with `python3 scripts/data/refresh-npm-popular.py` (needs registry.npmjs.org) during each scheduled registry-package review and commit the diff.
+
 Trigger evals: `evals/trigger-evals.json` (should / should-not trigger queries for the `SKILL.md` `description`). After editing the description, run skill-creator's `scripts/run_eval.py --eval-set evals/trigger-evals.json --skill-path .` (needs `claude -p` auth); add near-miss queries when a false trigger is reported.
 
 ---

@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """Typosquat Check: algorithmic similarity detection for registry packages.
 
-Fetches a popular-package baseline from the npm search API, computes Levenshtein
-edit distance between the queried name and popular packages, detects combosquat
-patterns (prefix/suffix overlap), compares download counts and emits a structured
-JSON risk assessment to stdout. npm only.
+Loads the bundled popular-package baseline (data/npm-popular.tsv: unscoped npm
+packages ranked by weekly downloads), computes Levenshtein edit distance between
+the queried name and baseline packages, detects combosquat patterns (prefix/suffix
+overlap), compares live download counts and emits a structured JSON risk
+assessment to stdout. A queried name that is itself in the baseline is reported
+low risk. npm only. Refresh the baseline with data/refresh-npm-popular.py.
 
 Python twin of typosquat-check.ps1: same flags, same JSON keys. Change both together.
-Intentional divergences from the .ps1: arrays are always emitted as arrays (the
-.ps1 collapses one-element results to scalars and empty ones to null).
 
 Examples:
     python3 typosquat-check.py -Ecosystem npm -Name expresss
@@ -18,20 +18,17 @@ Examples:
 import argparse
 import gzip
 import json
-import math
 import os
 import re
 import sys
-import time
 import urllib.error
 import urllib.parse
 import urllib.request
-from datetime import datetime
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 USER_AGENT = "install-auditor/1.0"
 ECOSYSTEMS = ["npm"]
-CACHE_DIR = ".typosquat-cache"
+BASELINE_PATH = os.path.join(SCRIPT_DIR, "data", "npm-popular.tsv")
 
 
 def http_json(url, method="GET", body=None, headers=None, timeout=15):
@@ -59,31 +56,6 @@ def invoke_api(url, timeout=15):
         return http_json(url, timeout=timeout)
     except Exception:
         return None
-
-
-def cache_path(dirname, key):
-    d = os.path.join(SCRIPT_DIR, dirname)
-    os.makedirs(d, exist_ok=True)
-    return os.path.join(d, key + ".json")
-
-
-def read_cache(dirname, key, ttl_hours):
-    try:
-        p = cache_path(dirname, key)
-        if time.time() - os.path.getmtime(p) > ttl_hours * 3600:
-            return None
-        with open(p, encoding="utf-8-sig") as f:  # -sig: tolerate BOM from Windows PowerShell writes
-            return json.load(f)
-    except Exception:
-        return None
-
-
-def write_cache(dirname, key, data):
-    try:
-        with open(cache_path(dirname, key), "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=2, ensure_ascii=False)
-    except Exception:
-        pass  # non-fatal, as in the .ps1
 
 
 def emit(obj):
@@ -127,32 +99,21 @@ def _ieq(a, b):
     return a is not None and b is not None and str(a).lower() == str(b).lower()
 
 
-def get_npm_popular_baseline(size, cache_hours, no_cache):
-    """Return [{name, downloads}] sorted by downloads desc; [] on API failure."""
-    key = "npm-%s-%s" % (size, datetime.now().strftime("%Y-%m-%d"))
-    if not no_cache:
-        cached = read_cache(CACHE_DIR, key, cache_hours)
-        if cached:
-            return cached
-
-    url = "https://registry.npmjs.org/-/v1/search?text=boost-exact:false&size=%s&popularity=1.0" % size
-    result = invoke_api(url)
-    if not result or not result.get("objects"):
-        return []
-
+def get_npm_popular_baseline(size):
+    """Return the first `size` rows of the bundled baseline as [{name, downloads}]; [] if unreadable."""
     baseline = []
-    for obj in result["objects"]:
-        pkg = obj.get("package") or {}
-        downloads = 0
-        popularity = ((obj.get("score") or {}).get("detail") or {}).get("popularity")
-        if popularity:
-            # Popularity is a 0-1 score, not a download count; scaled as an approximation.
-            downloads = int(math.floor(popularity * 10000000))
-        baseline.append({"name": pkg.get("name"), "downloads": downloads})
-
-    baseline.sort(key=lambda b: b["downloads"], reverse=True)
-    write_cache(CACHE_DIR, key, baseline)
-    return baseline
+    try:
+        with open(BASELINE_PATH, encoding="utf-8-sig") as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
+                name, _, weekly = line.partition("\t")
+                weekly = weekly.strip()
+                baseline.append({"name": name.strip(), "downloads": int(weekly) if weekly.isdigit() else 0})
+    except OSError:
+        return []
+    return baseline[:max(size, 0)]
 
 
 def get_npm_weekly_downloads(package_name):
@@ -162,10 +123,26 @@ def get_npm_weekly_downloads(package_name):
     return None
 
 
-def invoke_typosquat_analysis(ecosystem, name, compare_to, size, cache_hours, no_cache):
+def npm_package_exists(package_name):
+    """True if the registry has the package, False on HTTP 404, None when the registry is unreachable."""
+    req = urllib.request.Request("https://registry.npmjs.org/" + urllib.parse.quote(package_name, safe=""),
+                                 method="HEAD", headers={"User-Agent": USER_AGENT})
+    try:
+        with urllib.request.urlopen(req, timeout=15):
+            return True
+    except urllib.error.HTTPError as e:
+        return False if e.code == 404 else None
+    except Exception:
+        return None
+
+
+def invoke_typosquat_analysis(ecosystem, name, compare_to, size):
     normalized_name = get_comparison_token(name)
 
-    baseline = get_npm_popular_baseline(size, cache_hours, no_cache) or []
+    baseline = get_npm_popular_baseline(size)
+    # Exact raw-name match, not the normalized token: "@evil/chalk" normalizes to "chalk"
+    # but is not the baseline package.
+    known_popular = any(_ieq(b.get("name"), name) for b in baseline)
 
     # An explicit -CompareTo is always a candidate, even when the baseline lacks it.
     candidates = []
@@ -216,7 +193,7 @@ def invoke_typosquat_analysis(ecosystem, name, compare_to, size, cache_hours, no
     elif closest_matches:
         best_compare = closest_matches[0]["name"]
 
-    if best_compare:
+    if best_compare and not known_popular:
         queried_dl = weekly(name)
         closest_dl = weekly(best_compare)
         if queried_dl is not None and closest_dl is not None and queried_dl >= 0:
@@ -272,14 +249,27 @@ def invoke_typosquat_analysis(ecosystem, name, compare_to, size, cache_hours, no
             risk_level = "medium"
         risk_reasons.append("Combosquat pattern detected: name overlaps with " + ", ".join(combosquat_hints))
 
-    queried_exists = weekly(name) is not None
+    if known_popular:
+        # Baseline members sit within edit distance 2 of each other (chalk/chai, react/redux)
+        # and prefix each other (react/react-dom); scoring them would flag every popular package.
+        risk_level = "low"
+        risk_reasons = []
+        combosquat_hints = []
 
-    if risk_reasons:
+    queried_exists = True if known_popular else npm_package_exists(name)
+
+    if known_popular:
+        details = "'%s' is in the bundled top-%d popular npm package baseline; distance and combosquat signals are not scored. " % (name, len(baseline))
+    elif risk_reasons:
         details = "Risk factors: %s. " % "; ".join(risk_reasons)
     else:
-        details = "No close matches found in top-%s popular packages. " % size
-    if not queried_exists:
-        details += "Note: '%s' does not appear to exist on npm (0 download data). " % name
+        details = "No close matches found in top-%d popular packages. " % len(baseline)
+    if not baseline:
+        details += "Popular-package baseline (data/npm-popular.tsv) missing or unreadable; only -CompareTo was checked. "
+    if queried_exists is False:
+        details += "Note: '%s' does not exist on npm (registry returned 404). " % name
+    elif queried_exists is None:
+        details += "Note: could not confirm '%s' exists on npm (registry unreachable). " % name
     if combosquat_hints:
         details += "Combosquat hints: %s. " % ", ".join(combosquat_hints)
 
@@ -304,20 +294,19 @@ def build_parser():
                    help="exact package name to check (e.g. 'expresss', '@scope/pkg')")
     p.add_argument("-CompareTo", "--compare-to", dest="compare_to",
                    help="known legitimate package name to compare against directly")
-    p.add_argument("-Size", "--size", dest="size", type=int, default=250,
-                   help="number of popular packages to fetch as baseline (default: 250)")
+    p.add_argument("-Size", "--size", dest="size", type=int, default=1000,
+                   help="number of baseline packages to use, from the top of data/npm-popular.tsv (default: 1000)")
     p.add_argument("-CacheHours", "--cache-hours", dest="cache_hours", type=int, default=24,
-                   help="hours to cache the popular-package baseline (default: 24)")
+                   help="ignored; accepted so existing invocations keep working (the baseline is a bundled file)")
     p.add_argument("-NoCache", "--no-cache", dest="no_cache", action="store_true",
-                   help="skip cache reads; always fetch a fresh baseline")
+                   help="ignored; accepted so existing invocations keep working (the baseline is a bundled file)")
     return p
 
 
 def main(argv=None):
     args = build_parser().parse_args(argv)
     try:
-        result = invoke_typosquat_analysis(args.ecosystem, args.name, args.compare_to, args.size,
-                                           args.cache_hours, args.no_cache)
+        result = invoke_typosquat_analysis(args.ecosystem, args.name, args.compare_to, args.size)
         emit(result)
     except Exception as e:
         emit({

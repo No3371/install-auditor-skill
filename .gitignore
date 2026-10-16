@@ -2,3 +2,4 @@
 scripts/.typosquat-cache/
 scripts/.vuln-cache/
 scripts/.dep-scan-cache/
+__pycache__/

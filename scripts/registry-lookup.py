@@ -5,8 +5,7 @@ Queries npm, PyPI, crates.io, RubyGems, NuGet and OpenSSF Scorecard to gather
 hard data for install audits (downloads, maintainers, publish dates, etc.).
 
 Python twin of registry-lookup.ps1: same flags, same JSON keys. Change both together.
-Intentional divergences from the .ps1: arrays are always emitted as arrays (the
-.ps1 collapses one-element results to scalars); dates are computed in UTC.
+Intentional divergence from the .ps1: dates are computed in UTC.
 
 Examples:
     python3 registry-lookup.py npm lodash

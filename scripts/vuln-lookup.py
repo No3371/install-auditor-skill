@@ -10,10 +10,6 @@ If unset or rate-limited, GHSA is skipped and OSV-only results are returned.
 Cache: scripts/.vuln-cache/<eco>-<name>[-<ver>].json, TTL 24 hr.
 
 Python twin of vuln-lookup.ps1: same flags, same JSON keys. Change both together.
-Intentional divergences from the .ps1: arrays are always emitted as arrays (the
-.ps1 collapses one-element results to a scalar/object and empty ones to null, and
-then reports osvCount as the dictionary key count); this port reports true lists
-and counts.
 
 Output (JSON to stdout):
     {ecosystem, package, osvResults: [{id, aliases, summary, severity, affectedVersions}],
@@ -175,10 +171,10 @@ def test_osv_version_affected(ver, ranges, versions_list):
                 if compare_semver(ver, introduced) >= 0 and compare_semver(ver, event["last_affected"]) <= 0:
                     return True
                 introduced = None
-        # Open-ended range (introduced, no fixed)
+        # Open-ended range (introduced, no fixed/last_affected). introduced "0" is OSV's
+        # "every version" marker; it must not be compared as a version.
         if introduced is not None:
-            floor = -1 if introduced == "0" else compare_semver(ver, introduced)
-            if floor >= 0:
+            if introduced == "0" or compare_semver(ver, introduced) >= 0:
                 return True
     return False
 

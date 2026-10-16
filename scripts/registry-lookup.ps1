@@ -82,8 +82,9 @@ function Lookup-Npm {
     $dl = Invoke-Api "https://api.npmjs.org/downloads/point/last-week/$([Uri]::EscapeDataString($Name))"
     if ($dl) { $weeklyDownloads = $dl.downloads }
 
-    # Maintainers
-    $maintainers = @($pkg.maintainers | ForEach-Object { $_.name }) | Where-Object { $_ }
+    # Maintainers. The filter sits inside @(): piping @(...) on to Where-Object unrolls a
+    # single maintainer to a bare string.
+    $maintainers = @($pkg.maintainers | ForEach-Object { $_.name } | Where-Object { $_ })
 
     # Install scripts
     $scripts = $versionData.scripts
@@ -117,7 +118,8 @@ function Lookup-Npm {
         weeklyDownloads  = $weeklyDownloads
         versionCount     = @($pkg.versions.PSObject.Properties).Count
         deprecated       = if ($versionData.deprecated) { $versionData.deprecated } else { $null }
-        installScripts   = if ($installScripts.Count -gt 0) { $installScripts } else { $null }
+        # `if` used as a value unrolls its output; the leading comma keeps a lone hook a 1-element array.
+        installScripts   = if ($installScripts.Count -gt 0) { ,$installScripts } else { $null }
         dependencies     = $deps
         dependencyCount  = $deps.Count
         engines          = $versionData.engines
@@ -143,8 +145,8 @@ function Lookup-Pypi {
     $stats = Invoke-Api "https://pypistats.org/api/packages/$([Uri]::EscapeDataString($Name))/recent"
     if ($stats -and $stats.data) { $monthlyDownloads = $stats.data.last_month }
 
-    # Maintainers
-    $maintainers = @($info.author, $info.maintainer) | Where-Object { $_ }
+    # Maintainers (filter inside @(), as in Lookup-Npm)
+    $maintainers = @(@($info.author, $info.maintainer) | Where-Object { $_ })
 
     # Dependencies
     $deps = @()

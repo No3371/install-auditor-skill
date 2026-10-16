@@ -155,10 +155,10 @@ function Test-OsvVersionAffected($Ver, $Ranges, $VersionsList) {
                     $introduced = $null
                 }
             }
-            # Open-ended range (introduced, no fixed)
+            # Open-ended range (introduced, no fixed/last_affected). introduced '0' is OSV's
+            # "every version" marker; it must not be compared as a version.
             if ($null -ne $introduced) {
-                $floor = if ($introduced -eq '0') { -1 } else { Compare-SemVer $Ver $introduced }
-                if ($floor -ge 0) { return $true }
+                if ($introduced -eq '0' -or (Compare-SemVer $Ver $introduced) -ge 0) { return $true }
             }
         }
     }
@@ -198,7 +198,10 @@ function Invoke-OsvQuery {
         -Headers @{ 'User-Agent' = 'install-auditor/1.0' } -TimeoutSec 20
 
     $results = @()
-    if (-not $resp.vulns) { return $results }
+    # Leading comma on every return: a bare `return $results` lets the pipeline unroll a
+    # 1-element array to its dictionary (so .Count reads the key count, 5) and an empty
+    # array to $null.
+    if (-not $resp.vulns) { return ,$results }
 
     foreach ($v in $resp.vulns) {
         $affectedRanges   = @()
@@ -223,7 +226,7 @@ function Invoke-OsvQuery {
             }
         }
     }
-    return $results
+    return ,$results
 }
 
 # ─── GHSA query ──────────────────────────────────────────────────────────────
@@ -271,7 +274,10 @@ function Invoke-GhsaQuery {
                 }
             }
         }
-        return $results
+        # Leading comma as in Invoke-OsvQuery. Wrapping the call site in @() instead would
+        # turn this function's $null (query failed) into a 1-element array, and an
+        # unwrapped empty result would read as $null, i.e. "GHSA skipped".
+        return ,$results
     } catch {
         return $null   # graceful degradation
     }
