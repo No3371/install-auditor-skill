@@ -1,11 +1,14 @@
 # IDE-Plugin Rubric Refresh
 
-> **Status:** In Progress
+> **Status:** Complete
+> **Completed:** 2026-10-16
+> **Walkthrough:** 2610162003-ide-plugin-rubric-refresh-walkthrough.md
 > **Author:** Claude (Opus)
 > **Parent:** 2610161927-browser-extension-ide-plugin-stewardship-review-eval.md
 > **Source:** 2610161927-browser-extension-ide-plugin-stewardship-review-eval.md (F1, F3, F4, F6, F7, F8, F10-IDE, F11 Cursor row) | 2610161941-shared-version-integrity-floor-plan.md (Hand-off rows "browser-extension / ide-plugin" + "§4.3 plug-in") | human decision C6 (via orchestrator)
 > **Related Projex:** 2610161941-shared-version-integrity-floor-plan.md (Requires; the §4.6 / §4.3 contract) | 2610161927-agent-extension-stewardship-review-eval.md (agent-extension owns the 8a/8c rubric this plan cross-links) | 2610161927-registry-package-and-ci-action-stewardship-review-eval.md (registry plan owns other `references/registries.md` rows) | 2604070218-install-auditor-subject-typed-redesign-nav.md
 > **Worktree:** Yes
+> **Log:** 2610162003-ide-plugin-rubric-refresh-log.md
 
 ---
 

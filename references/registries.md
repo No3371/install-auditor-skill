@@ -69,7 +69,8 @@
 | JetBrains Marketplace | Medium-High (JetBrains review process) |
 | Vim-Plug / GitHub-sourced Vim plugins | Low-Medium (no central review) |
 | Emacs MELPA | Low-Medium (community-maintained) |
-| Cursor extensions (VS Code compatible) | Same as VS Code Marketplace |
+| Open VSX (open-vsx.org) | Low-Medium (Eclipse-operated; operator-configured publish checks; confirm the namespace is *verified*) |
+| VS Code forks (Cursor, Windsurf, VSCodium, …) | Trust of the registry the fork installs from — usually Open VSX, **not** VS Code Marketplace (see `references/criteria/ide-plugin.md`) |
 
 ### CI/CD
 | Source | Trust |

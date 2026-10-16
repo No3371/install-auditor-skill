@@ -1,8 +1,8 @@
 <!--
 workflows/ide-plugin.md - Type 3 subject-specific workflow.
-Handles IDE/editor plugins from VS Code Marketplace, Open VSX, JetBrains
-Marketplace, Sublime Package Control, and Neovim plugin managers.
-VS Code Marketplace-first in v1.
+Handles IDE/editor plugins from VS Code Marketplace, Open VSX (incl. VS
+Code forks such as Cursor), JetBrains Marketplace, Sublime Package
+Control, and Neovim plugin managers. VS Code Marketplace-first.
 
 This workflow replaces workflows/generic.md for Type 3 subjects. After
 producing findings here, return to SKILL.md Step N for the shared verdict
@@ -13,10 +13,11 @@ assertion are owned by the dispatcher - do not duplicate them here.
 # IDE Plugin Workflow (Type 3)
 
 This workflow handles **Type 3: ide-plugin** subjects from VS Code
-Marketplace, Open VSX, JetBrains Marketplace, Sublime Package Control,
-and Neovim plugin managers (lazy.nvim, vim-plug, packer). Primary depth
-in v1 is VS Code Marketplace because it is the largest ecosystem and
-the repo's trust references are VS Code-heavy.
+Marketplace, Open VSX (usually the registry behind VS Code forks such as
+Cursor, Windsurf and VSCodium), JetBrains Marketplace, Sublime Package
+Control, and Neovim plugin managers (lazy.nvim, vim-plug, built-in
+`vim.pack`). Primary depth is VS Code Marketplace because it is the
+largest ecosystem and the repo's trust references are VS Code-heavy.
 
 After completing all sections below, return to `SKILL.md` Step N for the
 shared verdict tree and audit-coverage report shape.
@@ -26,7 +27,8 @@ Subject Rubric / Subject Verdict Notes**.
 
 Use `references/criteria/ide-plugin.md` for ide-plugin-specific tiering
 and scoring. When it conflicts with the shared rubric, the more specific
-ide-plugin guidance wins.
+ide-plugin guidance wins, except that it can only tighten the
+`references/criteria.md` §4.6 version-integrity floor.
 
 ## Identify
 
@@ -36,6 +38,7 @@ ide-plugin guidance wins.
 |-------------|-------------|-----------------|
 | VS Code Marketplace | `marketplace.visualstudio.com/items?itemName=*` | Install count |
 | Open VSX | `open-vsx.org/extension/*/*` | Install count |
+| VS Code fork (Cursor, Windsurf, VSCodium, …) | Editor's extension view, usually backed by Open VSX | Install count on that registry |
 | JetBrains Marketplace | `plugins.jetbrains.com/plugin/*` | Downloads |
 | Sublime Package Control | `packagecontrol.io/packages/*` | Installs (approx) |
 | Neovim (GitHub) | `github.com/<owner>/<repo>` | Stars + forks |
@@ -45,6 +48,12 @@ If the user provides a marketplace URL, extract the plugin name and
 publisher from the listing page. If they provide a name only, search
 the relevant marketplace.
 
+**Resolve the install registry.** Only the trust signals on the registry
+the target editor installs from count. For a VS Code fork, find its
+configured registry (usually Open VSX) and look the plugin up there by
+the same ID; a VS Code Marketplace listing alone is no evidence for a
+fork install. Record both listings when both exist.
+
 ### 2. Extract plugin name and metadata
 
 - **Plugin name**: Exact name as listed
@@ -52,9 +61,11 @@ the relevant marketplace.
   (JetBrains), or GitHub owner (Neovim/Sublime)
 - **Plugin ID**: VS Code uses `publisher.extensionName`; JetBrains uses
   numeric plugin ID; Sublime uses package name; Neovim uses `owner/repo`
-- **Version**: Current marketplace version
-- **Marketplace badges**: VS Code "Verified" publisher, JetBrains
-  "JetBrains" / verified vendor
+- **Version**: Exact version to be installed and its publish date on the
+  install registry, plus the prior version's (for §4.6 V1/V3)
+- **Marketplace badges**: VS Code "Verified" publisher, Open VSX
+  *verified* / *unverified* namespace state, JetBrains "JetBrains" /
+  vendor
 - **Install count and rating**: Primary adoption metric
 
 ### 3. Gather required context
@@ -69,7 +80,8 @@ Collect before proceeding:
    `ext install`, JetBrains plugin manager, Sublime Package Control,
    lazy.nvim/vim-plug spec, or manual VSIX/ZIP sideload
 4. **Stated purpose** — what the user needs this plugin for
-5. **Target editor** — VS Code, Cursor, JetBrains IDE (which one),
+5. **Target editor** — VS Code, a VS Code fork (Cursor, Windsurf,
+   VSCodium, …; note its extension registry), JetBrains IDE (which one),
    Sublime Text, Neovim, other
 6. **Capability scope** — what the plugin declares it can do (contributes,
    extension points, commands) — obtained during research if not
@@ -83,6 +95,7 @@ Gather marketplace listing data via web search:
 - Install count, rating, review count
 - Publisher name and verification badges
 - First listed date (if available)
+- Publish date of the version to be installed (§4.6 V1)
 - Brief search for "[plugin name] malware OR removed OR security OR
   vulnerability" for prior incidents
 
@@ -91,9 +104,11 @@ Apply the ide-plugin-specific tier thresholds from
 
 ### Tier 1 - Quick Audit (well-known, high-trust)
 
-Use when ALL Tier 1 criteria from the addendum are met: >= 500K installs,
-verified publisher, known company/project, proportional capabilities,
-no opaque binaries, no incidents, listed >= 1 year.
+Use when ALL Tier 1 criteria from the addendum are met: >= 500K installs
+and identity credit on the install registry, known company/project,
+proportional capabilities, no opaque binaries, no dependencies/packs or AI
+surface beyond the addendum's limits, no incidents, listed >= 1 year, and
+`references/criteria.md` §4.6 raises nothing.
 
 Quick audit scope: confirm marketplace presence + publisher verification,
 note capabilities at a glance, check for incidents, verify publisher.
@@ -108,7 +123,9 @@ binary inspection, incident search, source code spot-check if open source.
 
 Any Tier 3 trigger from the addendum: low installs, sideloaded, unknown
 publisher, runtime binary download, ownership change, prior removal,
-broad activation with unclear justification.
+broad activation with unclear justification, Open VSX namespace
+mismatch, AI-key collection by an unknown publisher, dependency on an
+unverified publisher's extension.
 
 Deep audit scope: full capability review + binary provenance audit +
 source code review (if available) + activation event analysis + network
@@ -122,30 +139,44 @@ Answer every question that applies to the assigned tier:
 
 1. **Who publishes this plugin?** Company, individual, or open-source
    project? Is the publisher the same entity on VS Code Marketplace and
-   Open VSX? Check for impersonation (same name, different publisher).
+   Open VSX, and is the Open VSX namespace *verified* and owned by that
+   entity? Check for impersonation (same name or ID, different
+   publisher).
 2. **What capabilities does the plugin declare?** Read `package.json`
    `contributes` (VS Code), `plugin.xml` extension points (JetBrains),
    or equivalent. Cross-reference against the capability risk
-   classification in `references/criteria/ide-plugin.md`.
+   classification in `references/criteria/ide-plugin.md`. Include the AI
+   surface (`languageModelTools`, `mcpServerDefinitionProviders`, chat
+   contributions, `languageModelChatProviders`). For MCP servers, apply
+   `workflows/agent-extension.md` 8a signals as a sub-rubric without
+   re-routing.
 3. **Does the capability set match the stated purpose?** A theme plugin
    registering `debuggers` + `taskDefinitions` is suspicious. A language
    server registering `languages` + `debuggers` is expected.
 4. **Does the plugin bundle or download binaries?** Check for:
    - Compiled binaries in the VSIX/package
-   - `postInstall` or activation-time download logic
+   - Activation-time download logic (VS Code has no install hook: code
+     first runs at activation; `scripts.vscode:uninstall` runs on
+     uninstall)
    - Language server binaries (LSP), formatters, linters
    - If yes: what is the binary, where does it come from, is it
      checksummed or signed?
-5. **Is the plugin on multiple marketplaces?** Cross-listing (VS Code
-   Marketplace + Open VSX, or VS Code + JetBrains equivalent) increases
-   confidence.
+5. **Is the plugin on multiple marketplaces?** Cross-listing is a
+   consistency check, not a trust boost: the same ID must name the same
+   publisher (Open VSX namespace owner = Marketplace publisher) and a
+   comparable version. A mismatch is the addendum's `namespace mismatch`
+   flag.
 6. **Are there known security incidents?** Search for prior marketplace
-   removals, malware reports, supply-chain compromises.
+   removals, malware reports, supply-chain compromises. Rate any hit by
+   version scope (`references/criteria.md` §4.6 V4).
 7. **What is the update cadence?** Frequent updates = active maintenance.
    Stale (>2 years) with active dependency on external tools/APIs is
    a concern.
 8. **Is the source code available?** Open-source plugins can be audited.
    Note the repo URL. Closed-source = note as a data point.
+9. **Does the plugin handle AI-provider API keys or tokens?** If it asks
+   for one, where is it sent? Only the provider's documented API is
+   expected.
 
 ### How to research
 
@@ -169,11 +200,16 @@ Obtain `package.json` (VS Code) or `plugin.xml` (JetBrains) via:
 
 Inspect these keys (VS Code `package.json`):
 - `contributes` — commands, debuggers, languages, taskDefinitions,
-  terminal, customEditors, webviews, configuration
-- `activationEvents` — `*` (always active), `onLanguage:*`,
-  `onCommand:*`, `onStartupFinished`, `workspaceContains:*`
+  terminal, customEditors, webviews, configuration; AI surface:
+  languageModelTools, mcpServerDefinitionProviders, chatParticipants,
+  chatAgents, chatInstructions, chatPromptFiles, chatSkills,
+  languageModelChatProviders
+- `activationEvents` — `*` and `onStartupFinished` (both always active),
+  `onLanguage:*`, `onCommand:*`, `workspaceContains:*`
 - `extensionDependencies` — other extensions this plugin requires
-- `extensionPack` — bundled extensions
+- `extensionPack` — bundled extensions (whenever either key is present,
+  review each listed extension, at every tier)
+- `scripts` — `vscode:uninstall` (runs a Node script on uninstall)
 - `engines.vscode` — minimum VS Code version
 
 For JetBrains `plugin.xml`:
@@ -192,11 +228,19 @@ If the plugin ships or downloads a binary:
 - Verify the binary version matches a known release
 - For compiled-from-source: review the build script
 
+**Version integrity** (all tiers): apply `references/criteria.md` §4.6
+with the addendum's plug-ins: publish dates, identity on the install
+registry, and (Tier 2/3) the manifest diff against the prior release.
+Source review (Tier 3, or Tier 2 when the diff is unexplained): look for
+minified-only code with no source, invisible Unicode (zero-width,
+variation selectors) hiding code, and network calls at activation.
+
 **Incident and reputation search** (all tiers, depth varies):
 
 Web search queries:
 - `"<plugin name>" malware OR removed OR security OR vulnerability`
 - `"<plugin name>" compromise OR supply-chain`
+- `"<plugin name>" <version>` (version-specific advisories)
 - `"<publisher name>" extension OR plugin OR malware`
 - For Tier 3: `"<plugin name>" site:reddit.com` and
   `"<plugin name>" site:github.com`
@@ -207,16 +251,27 @@ Map evidence to the Audit Coverage rows expected by `SKILL.md` Step N:
 
 | Check | Tier 1 | Tier 2 | Tier 3 |
 |-------|--------|--------|--------|
-| Marketplace listing / metadata | Required | Required | Required |
-| Publisher verification | Required | Required | Required |
+| Marketplace listing / metadata (install registry) | Required | Required | Required |
+| Publisher verification (install registry) | Required | Required | Required |
+| Typosquat / impersonation check | Required | Required | Required |
+| Version integrity (§4.6) | Required | Required | Required |
 | Capability / activation analysis | Brief | Required | Required |
+| AI / agent surface | If present | Required if present | Required if present |
 | Bundled binary / download review | If present | Required | Required |
-| CVE / advisories | Required | Required | Required |
+| CVE / advisories (incl. KEV) | Required | Required | Required |
+| License compatibility | Required | Required | Required |
 | Web search - incidents & removal | Brief | Required | Required |
 | Source code review | Tier-skip | If open source | Required |
 | Cross-marketplace listing check | Optional | Required | Required |
-| Extension dependency review | Tier-skip | If present | Required |
+| Extension dependency review | Required if present | Required if present | Required if present |
 | OpenSSF Scorecard | Optional | If repo known | Required |
+
+Other canonical rows map here: `Registry / metadata lookup` → marketplace
+listing; `Maintainer / activity / health` → §4.2 below; `Permissions` →
+capability / activation analysis; `Dependency tree` → extension
+dependency review + bundled libraries; `Install script review` →
+`N/A (no install hook)` for VS Code, else capability / activation
+analysis.
 
 ## Subject Rubric - Evaluate
 
@@ -231,8 +286,11 @@ below specialize the shared criteria for IDE plugin context.
 - **Publisher identity**: Can the publisher be linked to a real company
   or known open-source project? Check the marketplace publisher page,
   linked website, and GitHub org.
-- **Verified publisher badge**: VS Code "Verified" (DNS-linked namespace),
-  JetBrains first-party or verified vendor, Open VSX namespace ownership.
+- **Verified publisher badge**: VS Code "Verified" (domain ownership +
+  ≥ 6 months good standing), JetBrains first-party or vendor account,
+  Open VSX *verified* namespace. Identity only: credit per the addendum's
+  Scoring impact and `references/criteria.md` §4.6 V2, and only on the
+  registry the editor installs from.
 - **Impersonation check**: Are there similarly-named plugins by different
   publishers? Search the marketplace for the plugin name and check for
   copycats.
@@ -256,8 +314,11 @@ below specialize the shared criteria for IDE plugin context.
 
 - **Marketplace removal history**: Has this plugin been removed for
   policy violations?
-- **CVEs**: IDE plugins rarely have formal CVEs, but check GHSA and NVD
-  for the plugin name and bundled dependencies.
+- **CVEs**: Check GHSA, NVD and OSV for the plugin name and bundled
+  dependencies, and CISA KEV for every CRITICAL (a hijacked extension
+  release can get a CVE and a KEV entry). Classify own code vs
+  third-party per the addendum's `## CVE Scope (§4.3)`; the verdict
+  follows `SKILL.md` "Blocking CVE".
 - **Supply-chain incidents**: Has the publisher had other plugins
   compromised? Has the bundled binary's upstream project had incidents?
 - **Dependency vulnerabilities**: Check `package.json` dependencies
@@ -270,8 +331,12 @@ no granular permission model like browser extensions. The risk axes are:
 
 - **Capability scope**: What features does the plugin contribute?
   Score against the capability risk classification in the addendum.
-- **Activation breadth**: Does it activate on `*` (every editor start)
-  or only on specific triggers?
+- **Activation breadth**: Does it activate on `*` or `onStartupFinished`
+  (every editor start) or only on specific triggers?
+- **AI / agent surface**: Does it give the chat agent tools or MCP
+  servers, inject prompts or instructions, or route prompts to its own
+  model backend? The agent can invoke those tools and servers, so
+  prompt-injected content can reach them.
 - **Binary execution**: Does it spawn processes, download executables,
   or invoke system tools? This is the dominant risk surface.
 - **Network access**: Does the plugin make network calls? To what
@@ -288,9 +353,11 @@ no granular permission model like browser extensions. The risk axes are:
   Are those dependencies well-maintained?
 - **Binary compatibility**: If the plugin bundles binaries, are they
   available for the user's OS/architecture?
-- **Auto-update behavior**: Marketplace plugins auto-update by default.
-  Same risk pattern as browser extensions — new owner can push
-  malicious update to entire install base.
+- **Auto-update behavior**: Marketplace plugins auto-update by default;
+  a hijacked publisher account or new owner can push a malicious update
+  to the whole install base within hours. The verdict covers the audited
+  version only (`references/criteria.md` §4.6 V5); name the addendum's V5
+  update controls in the Recommendation.
 
 ### 4.6 Alternatives (ide-plugin-specialized)
 
@@ -319,20 +386,31 @@ Any one of these pushes strongly toward REJECTED:
 - **Recent acquisition + capability escalation**: plugin acquired by
   new entity and simultaneously added high-risk capabilities
 - **Impersonation**: plugin name/icon mimics a well-known plugin but
-  from a different, unverified publisher
+  from a different, unverified publisher, including an Open VSX / fork
+  listing under a namespace the well-known plugin's publisher does not
+  own (addendum `namespace mismatch`)
+- **Version in a confirmed compromise range**: `references/criteria.md`
+  §4.6 V4 case (a)
 
 ### Toward CONDITIONAL
 
 - **Broad capabilities with justification**: language server needing
   debugger + task + terminal integration — Condition: understand scope;
-  re-audit on ownership changes
+  hold updates at the audited version (addendum V5 controls); re-audit on
+  any §4.6 V5 trigger
 - **Bundled binary from known upstream with no checksum**: Condition:
-  verify binary matches upstream release; monitor for supply-chain
-  incidents
-- **Closed-source with broad activation**: Condition: monitor for
-  incidents; identify open-source alternative
-- **Single developer with no org backing**: Condition: monitor for
-  acquisition; re-audit if publisher changes
+  verify binary matches upstream release; hold updates at the audited
+  version
+- **Closed-source with broad activation**: Condition: hold updates at the
+  audited version; identify open-source alternative
+- **Single developer with no org backing**: Condition: hold updates at
+  the audited version; re-audit if publisher changes
+- **Agent-reachable AI surface that fits the stated purpose**: Condition:
+  review the tool / server list; keep per-call confirmation (no "Always
+  Allow") for tools that write files, run commands or send data off-host
+- **AI-provider key entry, known publisher**: Condition: use a scoped,
+  revocable key with a spend limit; confirm traffic goes only to the
+  provider's API
 - **Neovim/Sublime plugin from low-star GitHub repo**: Condition:
   review source code before use; pin to specific commit/tag
 - **3+ MEDIUM flags accumulated**: cumulative risk per shared
@@ -343,10 +421,12 @@ Any one of these pushes strongly toward REJECTED:
 All of the following support APPROVED:
 
 - All tier-appropriate checks completed with no flags
-- Listed on a major marketplace with verified publisher badge
+- Listed on the registry the target editor installs from, with identity
+  credit there (addendum Scoring impact)
 - Capabilities proportional to stated purpose
 - Publisher is identified (company or known project)
-- No known incidents or marketplace removals
+- No known incidents or marketplace removals; no §4.6 flag above LOW on
+  the audited version
 - No opaque binary downloads
 - Open source (bonus, not required)
 - Healthy maintenance signals (recent updates, active repo)
