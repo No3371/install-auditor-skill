@@ -1,14 +1,15 @@
 ---
 name: install-auditor
 description: >
-  Mandatory security and reliability audit for any installable in software development environments.
-  Use this skill whenever an employee, developer, or agent wants to install, add, or enable anything
-  to a development system — including browser extensions, VS Code/IDE plugins, npm/pip/gem packages,
-  desktop applications, CLI tools, Docker images, GitHub Actions, or any third-party software.
-  Trigger this skill before allowing any installation to proceed. Also trigger when someone asks
-  "is it safe to install X", "can I add X to my dev environment", "should I use X package",
-  or "audit this extension/plugin/tool". This skill produces a structured PASS/CONDITIONAL/FAIL
-  audit report that must be reviewed before installation is approved.
+  Security and reliability audit to run before any new third-party installable enters a dev
+  environment. Use it whenever a user or agent is about to add an npm/pip/cargo/gem/go/nuget/maven
+  dependency, browser extension, IDE plugin, desktop app, CLI tool or curl-pipe-to-shell installer,
+  Docker image, CI action, MCP server, Claude Code plugin or skill, or OAuth/API-key integration;
+  for a major-version upgrade or maintainer change of an existing dependency; and when asked
+  "is X safe to install", "should we use X", or "audit this extension/plugin/tool". Skip it when only
+  reinstalling what a lockfile or manifest already pins (npm ci, pip install -r with nothing new),
+  for first-party or workspace packages, and for debugging package-manager errors. Produces an
+  APPROVED/CONDITIONAL/REJECTED audit report to review before installing.
 ---
 
 # Install Auditor
@@ -118,79 +119,48 @@ All criteria pass? ────────────────────�
 
 **Coverage gaps:** if **two or more** checks are **Not available** (failed API / 404 / timeout — **not** tier-skipped, **not** `N/A`), add a sentence to Recommendation that the audit has **reduced coverage**. Do **not** change the verdict label for coverage alone — the verdict still follows the tree above. Tier-skipped checks do not count toward this threshold.
 
-### Report Skeleton
+### Report
 
-Write the report to `audit-<package-name>.md`. Adapt depth to audit tier — a Tier 1 quick audit doesn't need every section filled out.
+**Location:** if the user or calling prompt names an output file or directory, write there. Otherwise write to `.install-audits/` at the project root (`git rev-parse --show-toplevel` from the current directory; outside a repo, the current directory), creating the folder if needed. File name: `audit-<name>-<version>.md`, lowercased, with `@`, `/`, `:` and spaces turned into `-` and no leading `-` (`@types/node` 20.11.0 → `audit-types-node-20.11.0.md`); drop `-<version>` when the subject has none. Do not edit `.gitignore` or commit the report. Finish by telling the user the verdict, the report path, and any conditions.
 
-```
-# Install Audit: <name> v<version>
+**Shape:** by final tier, after any mid-audit escalation. Tier 1 (Quick) uses the Quick skeleton below; keep it under 80 lines. Tier 2 and Tier 3 read `references/report-template.md` and fill its full skeleton. Every report keeps the verdict line, the `## Audit Coverage` heading, and the `**Audit confidence (coverage):**` line exactly as written; graders and tooling parse them.
 
-**Verdict: [APPROVED ✅ | CONDITIONAL ⚠️ | REJECTED ❌]**
-**Audit tier:** [Quick | Standard | Deep]
-**Subject type:** <from Step 0 classifier output>
-**Date:** <today's date>
-
-## Summary
-<2–4 sentences: what this is, who makes it, key finding.>
-
-## Security
-| Area | Finding |
-|------|---------|
-| CVEs / Advisories | None found · or · list with IDs and severity |
-| Supply Chain Risk | Low / Medium / High — reason |
-| Permissions | Acceptable · or · Concerns: list |
-| Telemetry/Privacy | None · Opt-out · Always-on |
-| Dependency Risk | Low / Medium / High — reason |
-
-## Reliability
-| Area | Finding |
-|------|---------|
-| Maintenance | Active / Stale / Abandoned / Archived |
-| Last Release | date |
-| Publisher Trust | Verified / Unverified / Anonymous |
-| Adoption | downloads/week, stars, etc. |
-| License | SPDX — Compatible / Review needed / Incompatible |
-
-## Audit Coverage
-
-**Audit confidence (coverage):** [ High | Moderate | Low ] — [short reason: e.g., "7/9 checks Done, 2 Skipped (Tier 1)"]
-
-Audit confidence measures **how completely the tier-appropriate checklist was executed** — **not** whether the installable is free of vulnerabilities. Unknown issues remain possible even when coverage is High.
-
-| Check | Status | Source or notes |
-|-------|--------|-----------------|
-| Registry / metadata lookup | Done | e.g., registry-lookup.ps1 / npm API |
-| Typosquat / name verification | Done | compared to `<legitimate name>` |
-| CVE / advisories | Done, 0 results | OSV, GHSA |
-| OpenSSF Scorecard | Not available | no repo for Scorecard API |
-| Deep web / incident search | Skipped (Tier 1) | — |
-| *(add rows from `references/criteria.md` for this tier; Tier 1: keep to ~3–6 rows — minimal set only)* | | |
-
-**Rules of thumb for confidence**
+**Audit confidence** measures how completely the tier-appropriate checklist was executed, not whether the installable is free of vulnerabilities. Rate it:
 
 - **High:** All tier-required checks are Done, legitimately **N/A**, or **Skipped (Tier N)** by design; at most one **Not available** on a non-critical row.
 - **Moderate:** One–two **Not available** rows that are not solely tier-skips, or a critical-adjacent gap.
 - **Low:** Three or more **Not available**, or any tier-required check missing without a valid **Skipped** / **N/A** reason — especially **CVE / advisories** unavailable for Tier 2 or Tier 3.
 
+**Quick skeleton (Tier 1):**
+
+```
+# Install Audit: <name> v<version>
+
+**Verdict: [APPROVED ✅ | CONDITIONAL ⚠️ | REJECTED ❌]**
+**Audit tier:** Quick
+**Subject type:** <from Step 0 classifier output>
+**Date:** <today's date>
+
+## Summary
+<2–3 sentences: what this is, who makes it, key finding.>
+
+## Audit Coverage
+
+**Audit confidence (coverage):** [ High | Moderate | Low ] — [short reason: e.g., "4/4 Tier 1 checks Done"]
+
+| Check | Status | Source or notes |
+|-------|--------|-----------------|
+| Registry / metadata lookup | Done | e.g., registry-lookup / npm API |
+| Typosquat / name verification | Done | compared to `<legitimate name>` |
+| CVE / advisories | Done, 0 results | OSV, GHSA |
+| License compatibility | Done | SPDX — Compatible |
+| *(Tier 1 minimal set from `references/criteria.md`, ~3–6 rows; deeper rows `Skipped (Tier 1)` or omitted)* | | |
+
 ## Risk Flags
-<List each, or "None identified">
-- [CRITICAL/HIGH/MEDIUM/LOW] description
-
-## Alternatives
-<1–3 alternatives if concerning, or "No better alternative identified">
-
-## Conditions (CONDITIONAL verdict only)
-<Specific conditions that must be met before installation>
+<"None identified", or one line per flag: - [HIGH/MEDIUM/LOW] description>
 
 ## Recommendation
-<1–3 sentences. Clear guidance on what to do.>
-
-## Post-Install Checklist (APPROVED/CONDITIONAL only)
-- [ ] Pin to exact audited version (<package>@<version>)
-- [ ] Verify checksum/signature if provided
-- [ ] Check lock file for unexpected entries after install
-- [ ] Review post-install script output if applicable
-- [ ] Re-audit on major version bump or maintainer change
+<1–2 sentences. CONDITIONAL: list the conditions. APPROVED/CONDITIONAL: pin to <package>@<version>; re-audit on major version bump or maintainer change.>
 
 **Sources:** <URLs consulted>
 ```
@@ -223,27 +193,11 @@ Subject-independent. Each applies only when its full condition holds; partial ma
 
 ### Reference Files
 
-- `workflows/generic.md` — Low-confidence fallback (subject probe + user clarification + defensive minimum audit)
-- `workflows/registry-package.md` — Type 1 registry-package workflow
-- `workflows/browser-extension.md` — Type 2 browser-extension workflow
-- `workflows/container-image.md` — Type 4 container-image workflow
-- `workflows/ci-action.md` — Type 5 ci-action workflow
-- `workflows/ide-plugin.md` — Type 3 ide-plugin workflow
-- `workflows/desktop-app.md` — Type 6 desktop-app workflow
-- `workflows/cli-binary.md` — Type 7 cli-binary workflow
-- `workflows/agent-extension.md` — Type 8 agent-extension workflow
-- `workflows/remote-integration.md` — Type 9 remote-integration workflow
-- `references/criteria.md` — Shared tier-aware scoring rubric
-- `references/criteria/registry-package.md` — Registry-package criteria addendum (ecosystem trust signals, tier thresholds, install script patterns)
-- `references/criteria/browser-extension.md` — Browser-extension criteria addendum (store trust, permission classification, content-script reach, auto-update risk)
-- `references/criteria/container-image.md` — Container-image criteria addendum (registry trust, signing standards, SBOM, layer risk, runtime privilege, tag/digest pinning)
-- `references/criteria/ci-action.md` — CI-action criteria addendum (publisher trust, pinning, trigger/secret exposure, transitive audit)
-- `references/criteria/ide-plugin.md` — IDE-plugin criteria addendum (marketplace trust, capability risk, bundled-binary provenance, tier thresholds)
-- `references/criteria/desktop-app.md` — Desktop-app criteria addendum (distribution channel trust, code signing, installer risk, sandboxing, tier thresholds)
-- `references/criteria/cli-binary.md` — CLI-binary criteria addendum (distribution channel trust, signature/checksum standards, install-script risk, provenance, tier thresholds)
-- `references/criteria/agent-extension.md` — Agent-extension criteria addendum (distribution/discovery channel trust, capability scope classification, transport & isolation, prompt/behavioral risk, tier thresholds)
-- `references/criteria/remote-integration.md` — Remote-integration criteria addendum (OAuth scope & permission assessment, data residency & compliance, terms of service & data sharing, breach history & security posture, tier thresholds)
+- `workflows/<type>.md` — per-type workflow, one per Dispatch Table row; `workflows/generic.md` is the low-confidence fallback (subject probe + user clarification + defensive minimum audit)
+- `references/classifier.md` — Full classifier rule: tie-breaking, routing overrides, extended signals, worked hybrid examples, edge-case discipline
+- `references/criteria.md` — Shared tier-aware scoring rubric and canonical Audit Coverage rows
+- `references/criteria/<type>.md` — Per-type criteria addendum (types 1–9); each workflow names its own and when to read it
+- `references/report-template.md` — Full report skeleton for Tier 2 / Tier 3 audits
 - `references/licenses.md` — License compatibility matrix
 - `references/registries.md` — Trusted vs. untrusted registries per ecosystem
 - `scripts/registry-lookup.py` | `typosquat-check.py` | `vuln-lookup.py` | `dep-scan.py` — registry metadata, npm typosquat, OSV+GHSA CVE, and dependency-CVE lookups; JSON to stdout. Run: `python3 scripts/<script>.py -Ecosystem <eco> -Name <name> [-Version <ver>]` (Python ≥3.8, stdlib only; Windows: `py -3`). PowerShell hosts: same-named `.ps1` twin, identical arguments. Neither available → query APIs directly (npm: `registry.npmjs.org/<pkg>`, PyPI: `pypi.org/pypi/<pkg>/json`, CVEs: POST `api.osv.dev/v1/query` with `{"package":{"name":"<pkg>","ecosystem":"<eco>"}}`, etc.).
-- `references/classifier.md` — Full classifier rule: tie-breaking, routing overrides, extended signals, worked hybrid examples, edge-case discipline

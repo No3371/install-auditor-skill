@@ -1,11 +1,14 @@
 # Dispatcher Lean Report, Output Location & Trigger Tuning
 
-> **Status:** In Progress
+> **Status:** Complete
 > **Author:** Claude (Opus 5.5), plan-projex subagent
 > **Parent:** Orchestrator
 > **Source:** Direct request (orchestrated: "It's been a while. What can we do to improve this?" → "orchestrate it"; candidates 6, 7b, 7c + deferred `SKILL.md:156`)
 > **Related Projex:** 2604170511-measure-read-cost-f7-m53-findings.md (Option 2 "dispatcher compression", deferred) | 2604070218-install-auditor-subject-typed-redesign-nav.md (§ Priorities "Dispatcher compression … future enhancement") | 2610161852-dispatcher-rubric-consistency-plan.md + its walkthrough (Red Flags / tree terms / Reference Files text on base; "later compression plan must carry … forward") | 2610161849-python-script-ports-plan.md (owns `SKILL.md` Step 1 sentence + Reference Files script bullet; deferred `SKILL.md:156` here) | 2610161850-eval-runner-harness-plan.md + walkthrough (landed: `evals/run_evals.py` graders parse report strings)
 > **Worktree:** Yes
+> **Completed:** 2026-10-16
+> **Walkthrough:** 2610161910-dispatcher-lean-report-and-trigger-walkthrough.md
+> **Log:** 2610161910-dispatcher-lean-report-and-trigger-log.md
 
 ---
 

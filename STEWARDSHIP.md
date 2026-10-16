@@ -68,6 +68,8 @@ Without `claude -p` credentials, an agent session can execute instead: run each 
 
 New eval cases must carry `workflow` and the type's param (`exact_match`/`verdict_check` → `expected`, `contains_string` → `value`, `file_exists` → `glob`, `line_count_max` → `max`); `validate` enforces this. Self-test: `python3 -m unittest discover -s evals -p "test_*.py"`.
 
+Trigger evals: `evals/trigger-evals.json` (should / should-not trigger queries for the `SKILL.md` `description`). After editing the description, run skill-creator's `scripts/run_eval.py --eval-set evals/trigger-evals.json --skill-path .` (needs `claude -p` auth); add near-miss queries when a false trigger is reported.
+
 ---
 
 ## Record-Keeping

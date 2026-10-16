@@ -1,0 +1,22 @@
+[
+  {"query": "can you add zod to the api package? I want schema validation on the POST /orders handler in src/routes/orders.ts", "should_trigger": true},
+  {"query": "found a chrome extension called JSON Viewer Pro that pretty-prints API responses — ok to put it on my work laptop?", "should_trigger": true},
+  {"query": "wire up the postgres MCP server from github.com/somedev/postgres-mcp in my claude config so you can query staging", "should_trigger": true},
+  {"query": "bump react from 17 to 18 in apps/web and fix whatever breaks", "should_trigger": true},
+  {"query": "their README says run curl -fsSL https://get.tooldev.sh/install.sh | sh to get the CLI. should I?", "should_trigger": true},
+  {"query": "add peaceiris/actions-gh-pages to .github/workflows/deploy.yml so the docs publish on merge", "should_trigger": true},
+  {"query": "pull bitnami/redis:latest and add it to docker-compose.yml for local dev", "should_trigger": true},
+  {"query": "IT says we can self-install Insomnia with brew install --cask insomnia on our macs — anything to check before I do?", "should_trigger": true},
+  {"query": "install the GitLens and Error Lens VS Code extensions in our .devcontainer/devcontainer.json for the team", "should_trigger": true},
+  {"query": "our lead wants to connect Linear to the GitHub org through their OAuth app — what access does it get and is it safe?", "should_trigger": true},
+  {"query": "npm install fails with ERESOLVE unable to resolve dependency tree after I pulled main — can you fix it?", "should_trigger": false},
+  {"query": "just cloned the repo — run npm ci and then the jest suite and tell me what fails", "should_trigger": false},
+  {"query": "pip install -r requirements.txt into the venv, then run pytest -k checkout", "should_trigger": false},
+  {"query": "remove moment from package.json, switch the two call sites in src/utils/date.ts to Intl.DateTimeFormat, and update the lockfile", "should_trigger": false},
+  {"query": "add our internal workspace package @acme/ui-tokens as a dependency of apps/web in the pnpm monorepo", "should_trigger": false},
+  {"query": "change the cron in .github/workflows/nightly.yml to run at 02:00 UTC instead of midnight", "should_trigger": false},
+  {"query": "how do I publish my own npm package with provenance enabled from GitHub Actions?", "should_trigger": false},
+  {"query": "uninstall eslint-plugin-foo and delete its rules from .eslintrc.json", "should_trigger": false},
+  {"query": "point npm at our internal Artifactory registry by editing .npmrc, keep the auth token in an env var", "should_trigger": false},
+  {"query": "what is the difference between npm install and npm ci, and when should CI use each?", "should_trigger": false}
+]

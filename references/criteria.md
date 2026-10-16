@@ -12,7 +12,7 @@ The `scripts/registry-lookup.py` script provides hard data for many of these che
 
 ## Audit Coverage Checklist (Canonical)
 
-Reports must include an **Audit Coverage** table (see `SKILL.md` Step 6). Row labels below should match the **Check** column unless you add an ecosystem-specific row — do **not** omit tier-required rows.
+Reports must include an **Audit Coverage** table (see `SKILL.md` Step N → Report; Tier 2/3 skeleton in `references/report-template.md`). Row labels below should match the **Check** column unless you add an ecosystem-specific row — do **not** omit tier-required rows.
 
 ### Status vocabulary
 
