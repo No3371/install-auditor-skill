@@ -1,6 +1,6 @@
 # Browser-Extension Rubric Refresh
 
-> **Status:** Ready
+> **Status:** In Progress
 > **Author:** Claude (Opus)
 > **Parent:** 2610161927-browser-extension-ide-plugin-stewardship-review-eval.md
 > **Source:** 2610161927-browser-extension-ide-plugin-stewardship-review-eval.md (F1, F2, F4, F5, F6, F7, F8, F11-storage; F10 → eval plan) | shared contract 2610161941-shared-version-integrity-floor-plan.md (Hand-off row "browser-extension / ide-plugin") | human decision C6 (via orchestrator)
