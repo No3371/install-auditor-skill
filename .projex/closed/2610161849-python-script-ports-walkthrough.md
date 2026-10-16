@@ -307,6 +307,7 @@ None. (Plan's "no `.ps1`/`evals/`/`.gitignore` edits" honored.)
 - [ ] Patch `Test-OsvVersionAffected` / `test_osv_version_affected`: `introduced: "0"` + no fix must be affected (both impls).
 - [ ] Plan: typosquat popularity baseline query broken in both impls (`text=boost-exact:false` returns text matches for "boost"); needs curated top-N list or `objects[].downloads.weekly` sort.
 - [ ] Patch `.ps1` single-result array counting (`@(...)` wraps): `osvResults`/`ghsaResults`/`summary.osvCount`, `registry-lookup` `maintainers`.
+- → First three items planned (with a committed offline test suite): 2610161926-lookup-script-correctness-fixes-plan.md
 - [ ] First host with OSV/GHSA access: run `vuln-lookup.py -Ecosystem npm -Name lodash -Version 4.17.20` (expect CVE-2021-23337) and `dep-scan.py -Ecosystem npm -Name mkdirp -Version 0.5.1 -Tier 2` (expect minimist HIGH).
 
 ### Future Considerations
