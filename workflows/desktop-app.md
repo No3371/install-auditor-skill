@@ -27,7 +27,9 @@ Subject Rubric / Subject Verdict Notes**.
 
 Use `references/criteria/desktop-app.md` for desktop-app-specific
 tiering and scoring. When it conflicts with the shared rubric, the more
-specific desktop-app guidance wins.
+specific desktop-app guidance wins — except over the version-integrity
+floor (`references/criteria.md` §4.6) and the §4.3 CVE verdict classes,
+which the addendum only fills.
 
 ## Identify
 
@@ -37,7 +39,8 @@ specific desktop-app guidance wins.
 |---------|---------------------|-----------------|
 | Microsoft Store | `apps.microsoft.com/detail/*`, `ms-windows-store://pdp/*` | Ratings + install count |
 | Mac App Store | `apps.apple.com/*/app/*` | Ratings + install count |
-| Homebrew Cask | `brew install --cask <name>`, `formulae.brew.sh/cask/*` | GitHub stars on cask formula |
+| Homebrew Cask (official) | `brew install --cask <name>`, `formulae.brew.sh/cask/*` | Install analytics on formulae.brew.sh |
+| Homebrew Cask (third-party tap) | `brew install --cask <user>/<tap>/<name>`, `brew tap <user>/<tap>` | Tap repo activity |
 | winget | `winget install <id>`, `winget.run/pkg/*` | Manifest presence + community activity |
 | Chocolatey | `choco install <name>`, `community.chocolatey.org/packages/*` | Download count |
 | Snap Store | `snap install <name>`, `snapcraft.io/<name>` | Install count |
@@ -56,9 +59,14 @@ an app name only, determine the intended distribution channel.
 
 - **App name**: Exact name as listed in store/package manager/vendor site
 - **Publisher/vendor**: Company or individual behind the app
-- **Version**: Current version (if determinable)
+- **Version**: Exact version + installer hash where the channel shows one
+  (the §4.6 version unit; see the addendum's Version & Update Integrity)
 - **Distribution channel**: From the table above
-- **Code signing status**: Signed (by whom), notarized (macOS), or unsigned
+- **Code signing status**: Signed (signer: Team ID / certificate subject /
+  key fingerprint), notarized (macOS), or unsigned — plus the vendor's
+  expected identity and where it is documented
+- **Store package kind** (Microsoft Store): MSIX AppContainer, MSIX full
+  trust, or unpackaged Win32 (MSI/EXE); unknown → treat as unpackaged
 - **Installer type**: MSI, MSIX, EXE, DMG, PKG, AppImage, snap, flatpak,
   .deb, .rpm, or other
 
@@ -91,11 +99,14 @@ Apply the desktop-app-specific tier thresholds from
 ### Tier 1 — Quick Audit (well-known, high-trust)
 
 Use when ALL Tier 1 criteria from the addendum are met: official store or
-well-known package manager, code signed, known publisher, available >= 1
-year, no incidents, low-risk installer type.
+well-known package manager, code signed with the identity verified
+(`references/criteria.md` §4.6 V2), known publisher, available >= 1 year,
+no incidents, low-risk installer type — and §4.6 leaves Tier 1 available
+for this version.
 
-Quick audit scope: confirm distribution channel + code signing status,
-verify publisher identity, check for incidents. Proceed to Subject Verdict
+Quick audit scope: confirm distribution channel + signer identity against
+the vendor's documented identity (channel binding suffices; see the
+addendum's V2), check for incidents. Proceed to Subject Verdict
 Notes with minimal ceremony.
 
 ### Tier 2 — Standard Audit (default)
@@ -106,9 +117,10 @@ auto-update review.
 
 ### Tier 3 — Deep Audit (any red flag)
 
-Any Tier 3 trigger from the addendum: unsigned, unknown source, third-party
-mirror, EXE installer without signing, shared via chat, recent acquisition,
-prior removal, admin privilege request, bundleware reports.
+Any Tier 3 trigger from the addendum: unsigned or not notarized, unknown
+source, third-party mirror, EXE installer without signing, shared via chat,
+recent acquisition, signer change, Gatekeeper/SmartScreen bypass
+instructions, prior removal, admin privilege request, bundleware reports.
 
 Deep audit scope: full signing verification + installer behavior analysis +
 source code review (if open source) + network behavior assessment +
@@ -123,23 +135,27 @@ Answer every question that applies to the assigned tier:
 1. **Who publishes this app?** Known company, individual, or open-source
    project? Can the publisher be verified through the distribution channel,
    code signing certificate, or website?
-2. **Is the app code-signed?** What type of signing (Authenticode EV/
-   standard, Apple Developer ID + notarization, distro GPG, vendor GPG)?
-   Cross-reference against the code signing standards in
-   `references/criteria/desktop-app.md`.
+2. **Is the app code-signed, and by whom?** Signing type (Authenticode
+   EV/OV, Artifact Signing, Apple Developer ID + notarization, distro or
+   vendor GPG) and the signer it names. Does the signer match the
+   vendor's documented or prior-release identity, and is the signature
+   still valid (not revoked)? Cross-reference the code signing standards
+   and the V2 plug-in in `references/criteria/desktop-app.md`.
 3. **What is the installer type?** MSI/MSIX/EXE/DMG/PKG/AppImage/snap/
    flatpak/.deb/.rpm? Cross-reference against the installer type risk
    classification in the addendum.
 4. **What distribution channel delivers the app?** Official store, package
    manager, vendor download, or third-party mirror? Is the download URL
    the vendor's official domain?
-5. **Does the app run sandboxed?** App Sandbox (macOS App Store), MSIX
-   container, Flatpak sandbox, Snap strict confinement, or unsandboxed?
+5. **Does the app run sandboxed?** App Sandbox (Mac App Store), MSIX
+   AppContainer (full-trust MSIX is not sandboxed), Flatpak sandbox, Snap
+   strict confinement, or unsandboxed?
 6. **What privileges does the app request?** Does it need admin/root for
    install or runtime? Does it install system services, kernel extensions,
    or drivers?
-7. **How does the app update?** Store-managed, signed auto-updater, vendor-
-   hosted updater, manual download, or no updates?
+7. **How does the app update?** Store-managed, signed auto-updater (which
+   framework and version?), vendor-hosted updater, manual download, or no
+   updates? Does the updater verify signatures?
 8. **Are there known security incidents?** Search for store removals,
    malware reports, bundleware/adware reports, data breaches, privacy
    violations.
@@ -162,18 +178,27 @@ Web search for the app on official stores and package managers. Extract:
 **Code signing inspection** (Tier 2 and Tier 3):
 
 Determine signing status via:
-- Store listing (MS Store / Mac App Store apps are signed by definition)
-- Package manager metadata (Homebrew cask checksums, winget manifests,
-  Chocolatey verification)
+- Store listing: Mac App Store and Microsoft Store MSIX packages are
+  store-signed; Microsoft Store unpackaged Win32 installers are signed by
+  the publisher and fetched from the publisher's URL — verify that signer
+  as for a direct download
+- Package manager metadata (Homebrew cask `url` + checksum, winget
+  manifest `Publisher` + `InstallerUrl`, Chocolatey verification). A
+  checksum proves the file matches the manifest, not who built it
 - Web search for "[app name] code signing" or "authenticode" or
   "notarized"
-- Vendor documentation or security page
+- Vendor documentation or security page (source of the expected
+  identity: Team ID, certificate subject, key fingerprint)
+- When the file is at hand: the addendum's V2 commands (`codesign`,
+  `spctl`, `pkgutil`, `Get-AuthenticodeSignature`); otherwise list them
+  in the Post-Install Checklist as a before-first-launch step
 
 **Installer behavior assessment** (Tier 2 and Tier 3):
 
 - Identify installer type from file extension and distribution channel
 - For EXE installers: is the installer framework known (NSIS, Inno Setup,
-  WiX)? Does it bundle third-party software (toolbars, adware)?
+  WiX)? Is it signed by the matched publisher? Does it bundle third-party
+  software (toolbars, adware)?
 - For PKG/.deb/.rpm: does it run pre/post-install scripts? What do they do?
 - For snap/flatpak: what interfaces/permissions are declared?
 
@@ -198,12 +223,24 @@ Map evidence to the Audit Coverage rows expected by `SKILL.md` Step N:
 | Installer type assessment | Brief | Required | Required |
 | Sandboxing evaluation | Brief | Required | Required |
 | CVE / advisories | Required | Required | Required |
+| Version integrity (§4.6) | Required | Required | Required |
 | Web search — incidents & bundleware | Brief | Required | Required |
 | Auto-update mechanism review | Tier-skip | Required | Required |
 | Telemetry / data collection | Tier-skip | Note | Required |
 | Source code review | Tier-skip | If open source | Required |
 | Privilege escalation assessment | Tier-skip | If elevated | Required |
-| OpenSSF Scorecard | Optional | If repo known | Required |
+| OpenSSF Scorecard | Optional | Required (N/A if no public repo) | Required |
+| Impersonation / name verification | Required | Required | Required |
+| License compatibility | Required | Required | Required |
+| Maintainer / activity / health | Brief | Required | Required |
+| Bundled runtimes / dependencies | Tier-skip | Required | Required |
+
+Canonical row names (`references/criteria.md` Audit Coverage): Registry /
+metadata lookup = Distribution channel verification; Typosquat / name
+verification = Impersonation / name verification; Install script review =
+Installer type assessment; Permissions / least privilege = Sandboxing
+evaluation + Privilege escalation assessment; Dependency tree = Bundled
+runtimes / dependencies. Either name may label the report row.
 
 ## Subject Rubric — Evaluate
 
@@ -219,9 +256,10 @@ below specialize the shared criteria for desktop app context.
 - **Publisher identity**: Can the publisher be linked to a real company
   or known open-source project? Check the store listing, code signing
   certificate subject, and vendor website.
-- **Code signing certificate chain**: Who issued the certificate? Is it
-  EV or standard (Windows)? Is it notarized (macOS)? Is it a distro
-  maintainer key (Linux)?
+- **Signer identity**: Who signed (Team ID, certificate subject, key
+  fingerprint), and does it match the vendor's documented or prior-release
+  identity (`references/criteria.md` §4.6 V2)? EV, OV or Artifact Signing
+  (Windows)? Notarized (macOS)? Distro maintainer key (Linux)?
 - **Impersonation check**: Are there similarly-named apps from different
   publishers? Repackaged versions on third-party download sites?
 - **Cross-channel consistency**: If available on multiple channels (e.g.,
@@ -245,14 +283,16 @@ below specialize the shared criteria for desktop app context.
 - **Store removal history**: Has this app been removed from any store for
   policy violations, malware, or bundleware?
 - **CVEs**: Check NVD, GHSA, and vendor security advisories for the app
-  name and version.
+  version and its bundled runtimes (Electron/Chromium, Qt, Java, .NET).
+  Rate per the addendum's CVE Scope (§4.3) and `SKILL.md` Blocking CVE.
 - **Bundleware / adware history**: Has the installer been reported to
   bundle unwanted software? Check web search + VirusTotal community
   reports.
 - **Data breach history**: Has the vendor suffered data breaches affecting
   user data collected by the app?
 - **Supply-chain incidents**: Has the vendor's signing key been
-  compromised? Has the update mechanism been hijacked?
+  compromised? Has the update mechanism been hijacked? Scope any hit by
+  version or update window per `references/criteria.md` §4.6 V4.
 
 ### 4.4 Permissions & Access (desktop-app-specialized)
 
@@ -272,8 +312,9 @@ axes differ from browser extensions (manifest permissions) and IDE plugins
 - **Kernel extensions / drivers**: Does the app install kernel-level
   components (Windows filter drivers, macOS kexts/system extensions)?
   This is the highest-privilege surface.
-- **Sandboxing**: Is the app sandboxed (App Sandbox, MSIX, Flatpak, Snap
-  strict)? If not, note as an unrestricted-privilege data point.
+- **Sandboxing**: Is the app sandboxed (App Sandbox, MSIX AppContainer,
+  Flatpak, Snap strict)? Full-trust MSIX and Snap classic are not. If not
+  sandboxed, note as an unrestricted-privilege data point.
 
 ### 4.5 Reliability & Compatibility (desktop-app-specialized)
 
@@ -286,9 +327,10 @@ axes differ from browser extensions (manifest permissions) and IDE plugins
 - **Uninstall cleanliness**: Does the app uninstall cleanly (MSIX/Flatpak/
   Snap = yes by design; EXE installers vary)?
 - **Auto-update reliability**: Does the auto-updater work without admin
-  privileges? Does it verify update signatures?
+  privileges? Does it verify update signatures, and is its framework
+  version free of known signature-bypass advisories?
 
-### 4.6 Alternatives (desktop-app-specialized)
+### Alternatives (desktop-app-specialized)
 
 - Is there a store-distributed version of the same app (if the user is
   installing via direct download)?
@@ -310,8 +352,9 @@ Any one of these pushes strongly toward REJECTED:
 - **Known malware / store removal for malicious behavior**: app removed
   from store for data exfiltration, cryptomining, credential theft,
   or bundleware
-- **Unsigned binary from unknown source**: no code signing, no store
-  listing, no verifiable publisher identity
+- **Unsigned or unmatched binary from unknown source**: no code signing,
+  or a signature (even notarized) whose identity cannot be tied to the
+  vendor; no store listing; no verifiable publisher identity
 - **Third-party repackaged installer**: app downloaded from a mirror or
   file-sharing site rather than the vendor's official channel, with no
   way to verify binary integrity
@@ -321,21 +364,42 @@ Any one of these pushes strongly toward REJECTED:
   or kernel extensions without established vendor trust
 - **Recent acquisition + privilege escalation**: app acquired by new
   entity and simultaneously added elevated-privilege requirements
+- **Gatekeeper / SmartScreen bypass lure**: install instructions from a
+  source whose identity does not verify tell the user to override OS
+  protection (`xattr -d com.apple.quarantine`, "Open Anyway", a Terminal
+  command "to verify", SmartScreen "Run anyway") — CRITICAL
+- **Revoked signer or notarization**: the signature no longer validates
+  because Apple or the CA revoked it — CRITICAL unless the vendor
+  documents the revocation and ships a re-signed build
+- **Compromised release or update channel**: the version or update path
+  the user would get falls in a confirmed compromise's affected range or
+  window (`references/criteria.md` §4.6 V4 case a)
 
 ### Toward CONDITIONAL
 
 - **Unsigned but from known vendor via official channel**: Condition:
   verify download URL is vendor's official domain; monitor for signing
   adoption
-- **EXE installer from known vendor**: Condition: verify installer is
-  signed; check for bundleware; prefer MSI/MSIX if available
+- **EXE installer, signer not matched**: unsigned, or signed by someone
+  other than the vendor's documented publisher. Condition: obtain a build
+  whose signer matches; check for bundleware; prefer MSI/MSIX if
+  available. A signed EXE whose signer matches the vendor (winget or
+  vendor site) is a note, not a condition
+- **macOS app not notarized**: HIGH flag. Condition: use a notarized
+  build, the Mac App Store version or an official cask; never bypass
+  Gatekeeper
+- **Update channel without verified signatures** (unsigned vendor
+  updater, or an updater version with a known bypass advisory): HIGH
+  flag. Condition: turn off in-app auto-update and update through a
+  verified channel
 - **Broad system access with justification**: antivirus, backup, VPN
   apps legitimately need deep system access — Condition: understand
   scope; verify vendor trust
 - **Closed-source with network access**: Condition: review privacy policy;
   monitor for incidents; note telemetry behavior
-- **Direct download when store version exists**: Condition: prefer the
-  store version for sandboxing and update guarantees
+- **Direct download when a sandboxed store version exists** (Mac App
+  Store, Microsoft Store MSIX AppContainer): Condition: prefer the store
+  version for sandboxing and update guarantees
 - **Snap classic confinement**: Condition: understand why strict was not
   used; evaluate if alternatives with sandboxing exist
 - **3+ MEDIUM flags accumulated**: cumulative risk per shared verdict tree
@@ -346,12 +410,15 @@ All of the following support APPROVED:
 
 - All tier-appropriate checks completed with no flags
 - Distributed via official store or well-known package manager
-- Code signed (Authenticode, Apple Developer ID + notarization, distro GPG)
+- Code signed, signer identity verified per `references/criteria.md`
+  §4.6 V2 (Authenticode subject, Team ID + notarization, distro GPG)
 - Publisher is identified (known company or project)
 - No known incidents, store removals, or bundleware reports
 - Installer type is low-risk or justified
-- Sandboxed if distributed via store (bonus for non-store)
+- Sandboxed if the store package is sandboxed (Mac App Store, MSIX
+  AppContainer); bonus for non-store
 - Healthy maintenance signals (recent updates, active development)
+- `references/criteria.md` §4.6 raises no flag for this version
 
 After completing the Subject Rubric and noting verdict-relevant findings,
 **return to `SKILL.md` Step N** for the shared verdict tree, report
