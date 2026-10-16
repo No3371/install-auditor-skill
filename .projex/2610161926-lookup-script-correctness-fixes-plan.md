@@ -1,6 +1,6 @@
 # Lookup Script Correctness Fixes
 
-> **Status:** Ready
+> **Status:** In Progress
 > **Author:** Claude (Opus)
 > **Parent:** 2610161849-python-script-ports-walkthrough.md
 > **Source:** Direct request (orchestrator) — follow-ups recorded in 2610161849-python-script-ports-walkthrough.md § Immediate Follow-ups
