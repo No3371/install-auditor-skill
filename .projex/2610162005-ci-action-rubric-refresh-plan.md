@@ -1,6 +1,6 @@
 # ci-action Rubric Refresh
 
-> **Status:** Ready
+> **Status:** In Progress
 > **Author:** Claude (Opus)
 > **Parent:** 2610161927-registry-package-and-ci-action-stewardship-review-eval.md
 > **Source:** 2610161927-registry-package-and-ci-action-stewardship-review-eval.md (CI-1–CI-6, CI-8; EV-1 and EV-2 noted for the eval plan) | shared contract 2610161941-shared-version-integrity-floor-plan.md (§4.6 plug-ins, Hand-off row "ci-action")
