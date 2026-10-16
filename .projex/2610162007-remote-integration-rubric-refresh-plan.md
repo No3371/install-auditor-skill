@@ -1,6 +1,6 @@
 # Remote-Integration Rubric Refresh
 
-> **Status:** Ready
+> **Status:** In Progress
 > **Author:** Claude (Opus)
 > **Parent:** 2610161927-remote-integration-generic-stewardship-review-eval.md
 > **Source:** 2610161927-remote-integration-generic-stewardship-review-eval.md (Plan A: RI-1..RI-7, RI-9, RI-10) | shared contract 2610161941-shared-version-integrity-floor-plan.md (§4.6 plug-ins, coverage-row contract) | human decision C6 (via orchestrator)
