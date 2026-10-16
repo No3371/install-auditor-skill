@@ -1,11 +1,14 @@
 # ci-action Rubric Refresh
 
-> **Status:** In Progress
+> **Status:** Complete
+> **Completed:** 2026-10-16
+> **Walkthrough:** 2610162005-ci-action-rubric-refresh-walkthrough.md
 > **Author:** Claude (Opus)
 > **Parent:** 2610161927-registry-package-and-ci-action-stewardship-review-eval.md
 > **Source:** 2610161927-registry-package-and-ci-action-stewardship-review-eval.md (CI-1–CI-6, CI-8; EV-1 and EV-2 noted for the eval plan) | shared contract 2610161941-shared-version-integrity-floor-plan.md (§4.6 plug-ins, Hand-off row "ci-action")
 > **Related Projex:** 2610161941-shared-version-integrity-floor-plan.md (contract; merged to base as `20843cc`) | 2610161852-dispatcher-rubric-consistency-walkthrough.md (Red Flag "Mutable CI ref with privileged access"; ci-action alignment kept) | 2604070218-install-auditor-subject-typed-redesign-nav.md | 2610162010-registry-package-rubric-refresh-plan.md (sibling; also edits `references/registries.md`, other sections) | later eval-refresh plan (see Notes → Eval hand-off)
 > **Worktree:** Yes
+> **Log:** 2610162005-ci-action-rubric-refresh-log.md
 
 ---
 

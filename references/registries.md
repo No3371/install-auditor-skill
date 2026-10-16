@@ -77,13 +77,13 @@
 |---|---|
 | GitHub Actions (actions/) official | High |
 | GitHub Actions marketplace (verified creator) | Medium-High |
-| GitHub Actions marketplace (unverified) | Medium — pin to SHA |
+| GitHub Actions marketplace (unverified) | Medium-Low — pin to SHA |
 | CircleCI Orbs (certified) | Medium-High |
 | CircleCI Orbs (community) | Medium |
 | Jenkins plugins (official) | Medium |
 | Custom/third-party scripts | Low — code review required |
 
-**Critical rule for GitHub Actions:** Any action that accesses `secrets.*` MUST be pinned to a commit SHA, not a tag. Tags can be moved. Example: `uses: actions/checkout@v4` → should be `uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683`.
+**Critical rule for GitHub Actions:** pin any action or reusable workflow that runs in a job holding secrets, a write-scoped token, `id-token: write`, or publish rights to a full commit SHA from the action's own repo (not a fork); tags and branches can be moved. Format: `uses: <owner>/<action>@<40-char SHA> # v<x.y.z>`. Ratings, immutable releases and lockfiles: `workflows/ci-action.md` and `references/criteria/ci-action.md`. The auto-REJECT case is the `SKILL.md` Red Flag "Mutable CI ref with privileged access".
 
 ## Untrusted / Always-Flag Sources
 - Direct downloads from personal websites with no code signing
