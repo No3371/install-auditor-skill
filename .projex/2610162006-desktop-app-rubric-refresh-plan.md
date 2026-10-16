@@ -1,6 +1,6 @@
 # Desktop-App Rubric Refresh
 
-> **Status:** Ready
+> **Status:** In Progress
 > **Author:** Claude (Opus)
 > **Parent:** 2610161928-stewardship-review-container-cli-desktop-eval.md
 > **Source:** 2610161928-stewardship-review-container-cli-desktop-eval.md (D1–D9; X1/X2 subject parts) | 2610161941-shared-version-integrity-floor-plan.md Hand-off rows "desktop-app" + "§4.3 plug-in … bundled runtimes" | human decision C6 (relayed by orchestrator 2026-10-16)
