@@ -35,11 +35,11 @@ lookup APIs, trust signals, and install-script patterns apply.
 
 | Ecosystem | Registry URL pattern | Script support |
 |-----------|---------------------|----------------|
-| npm | `npmjs.com/package/*`, `npm install <pkg>` | `registry-lookup.ps1 -Ecosystem npm` |
-| PyPI | `pypi.org/project/*`, `pip install <pkg>` | `registry-lookup.ps1 -Ecosystem pypi` |
-| crates.io | `crates.io/crates/*`, `cargo add <pkg>` | `registry-lookup.ps1 -Ecosystem crates` |
-| RubyGems | `rubygems.org/gems/*`, `gem install <pkg>` | `registry-lookup.ps1 -Ecosystem rubygems` |
-| NuGet | `nuget.org/packages/*`, `dotnet add package <pkg>` | `registry-lookup.ps1 -Ecosystem nuget` |
+| npm | `npmjs.com/package/*`, `npm install <pkg>` | `registry-lookup -Ecosystem npm` |
+| PyPI | `pypi.org/project/*`, `pip install <pkg>` | `registry-lookup -Ecosystem pypi` |
+| crates.io | `crates.io/crates/*`, `cargo add <pkg>` | `registry-lookup -Ecosystem crates` |
+| RubyGems | `rubygems.org/gems/*`, `gem install <pkg>` | `registry-lookup -Ecosystem rubygems` |
+| NuGet | `nuget.org/packages/*`, `dotnet add package <pkg>` | `registry-lookup -Ecosystem nuget` |
 | Maven Central | `search.maven.org`, `mvnrepository.com` | Not yet in script -- query API manually |
 | Go modules | `pkg.go.dev/*`, `go get <module>` | Not yet in script -- query `pkg.go.dev` API |
 | Hex.pm | `hex.pm/packages/*`, `mix deps.get` | Not yet in script -- query `hex.pm/api` |
@@ -47,7 +47,7 @@ lookup APIs, trust signals, and install-script patterns apply.
 | Ansible Galaxy | `galaxy.ansible.com`, `ansible-galaxy install` | Not yet in script -- query Galaxy API |
 | Helm (Artifact Hub) | `artifacthub.io/packages/helm/*` | Not yet in script -- query Artifact Hub API |
 
-> **Script coverage note:** `scripts/registry-lookup.ps1` currently supports
+> **Script coverage note:** `scripts/registry-lookup.py` (`.ps1` twin) currently supports
 > npm, pypi, crates, rubygems, and nuget. For Go, Maven, Hex, and IaC
 > registries, query their APIs directly or use web search. File an
 > enhancement request if you need script support for these ecosystems.
@@ -91,14 +91,16 @@ presence increases trust.
 **Run the registry lookup script first** to get hard data:
 
 ```
-.\scripts\registry-lookup.ps1 -Ecosystem <eco> -Name "<name>"
+python3 scripts/registry-lookup.py -Ecosystem <eco> -Name "<name>"
 ```
+
+> **PowerShell hosts:** each `scripts/<script>.py` has a `scripts/<script>.ps1` twin taking identical arguments (e.g. `.\scripts\vuln-lookup.ps1 -Ecosystem npm -Name "lodash"`).
 
 **For npm packages, run the typosquat check** immediately after the name is
 known:
 
 ```
-.\scripts\typosquat-check.ps1 -Ecosystem npm -Name "<exact name>"
+python3 scripts/typosquat-check.py -Ecosystem npm -Name "<exact name>"
 ```
 
 If the user supplied a canonical name to compare against (or context strongly
@@ -173,7 +175,7 @@ The goal is to answer these questions with *current* data (not training data
 alone), specialized for registry package risk:
 
 1. **Is this the real package?** For npm, start with the algorithmic check:
-   review `typosquat-check.ps1` output (`riskLevel`, `closestMatches`,
+   review `typosquat-check` output (`riskLevel`, `closestMatches`,
    `combosquatHints`, `downloadRatio`). Then supplement with manual checks:
    compare name character by character against the legitimate package, check
    for homoglyphs, dash insertion/removal, scope impersonation. See
@@ -205,14 +207,14 @@ maintainer count, last publish date, dependency list, and vulnerability data
 from official APIs.
 
 ```
-.\scripts\registry-lookup.ps1 -Ecosystem <eco> -Name "<name>"
+python3 scripts/registry-lookup.py -Ecosystem <eco> -Name "<name>"
 ```
 
 **Then run the structured CVE lookup** for supported ecosystems (npm, PyPI,
 crates, RubyGems, NuGet, Go, Maven, Hex):
 
 ```
-.\scripts\vuln-lookup.ps1 -Ecosystem <eco> -Name "<name>" [-Version "<version>"]
+python3 scripts/vuln-lookup.py -Ecosystem <eco> -Name "<name>" [-Version "<version>"]
 ```
 
 Review `riskLevel` and `summary.highestSeverity`. Check `discrepancies` -- an
@@ -226,12 +228,12 @@ DBs (maintainer compromise, registry removal, behavioral reports).
 
 For Tier 2 — direct deps only (default):
 ```
-.\scripts\dep-scan.ps1 -Ecosystem <eco> -Name "<name>" [-Version "<version>"] -Tier 2
+python3 scripts/dep-scan.py -Ecosystem <eco> -Name "<name>" [-Version "<version>"] -Tier 2
 ```
 
 For Tier 3 — full tree (npm); falls back to Tier 2 if npm is unavailable:
 ```
-.\scripts\dep-scan.ps1 -Ecosystem <eco> -Name "<name>" [-Version "<version>"] -Tier 3
+python3 scripts/dep-scan.py -Ecosystem <eco> -Name "<name>" [-Version "<version>"] -Tier 3
 ```
 
 Record `riskLevel`, `directDepCount`, and any HIGH/CRITICAL `findings` in the
@@ -272,22 +274,22 @@ As you run each check, record its outcome for the **Audit Coverage** table
 - **Tier-skipped** checks are not the same as **Not available** -- the latter
   means you tried and could not get data.
 - **Typosquat row (npm)**: When the ecosystem is npm, reference
-  `typosquat-check.ps1` output in the Source/notes column -- e.g.,
-  `typosquat-check.ps1: low risk` or `typosquat-check.ps1: high risk,
+  `typosquat-check` output in the Source/notes column -- e.g.,
+  `typosquat-check: low risk` or `typosquat-check: high risk,
   investigated and confirmed legitimate`. For non-npm ecosystems, note manual
   comparison was used.
 
-- **CVE / vulnerability databases row**: Reference `vuln-lookup.ps1` output --
-  e.g., `Done -- vuln-lookup.ps1: none found (OSV, GHSA)` or
-  `Done -- vuln-lookup.ps1: 2 CVEs (OSV: CVE-2021-23337, GHSA:
+- **CVE / vulnerability databases row**: Reference `vuln-lookup` output --
+  e.g., `Done -- vuln-lookup: none found (OSV, GHSA)` or
+  `Done -- vuln-lookup: 2 CVEs (OSV: CVE-2021-23337, GHSA:
   GHSA-29mw-wpgm-hmr9, checked: OSV, GHSA)`. If GHSA was skipped:
-  `Done -- vuln-lookup.ps1: none found (OSV only -- GHSA skipped)`. For IaC
+  `Done -- vuln-lookup: none found (OSV only -- GHSA skipped)`. For IaC
   registries (not yet script-supported), use web search and note it:
   `Done -- web search: no advisories found`.
 
-- **Transitive dependencies row**: Reference `dep-scan.ps1` output -- e.g.,
-  `Done -- dep-scan.ps1 T2: 8 deps, none HIGH+ (OSV)` or
-  `Done -- dep-scan.ps1 T2: 1 HIGH CVE in minimist@0.0.8 (CVE-2020-7598, OSV)`.
+- **Transitive dependencies row**: Reference `dep-scan` output -- e.g.,
+  `Done -- dep-scan T2: 8 deps, none HIGH+ (OSV)` or
+  `Done -- dep-scan T2: 1 HIGH CVE in minimist@0.0.8 (CVE-2020-7598, OSV)`.
   If T3 fell back: note `T3→T2 fallback: <reason>`.
   For Tier 1: `Skipped -- Tier 1 quick audit`.
 
@@ -299,11 +301,11 @@ dependency tree audit, and install script review.
 
 **Tier 2 (Standard):** All of the above plus: full web search for incidents,
 maintainer/activity assessment, OpenSSF Scorecard lookup, dependency tree
-scan (`dep-scan.ps1 -Tier 2`), install script existence check (flag if
+scan (`dep-scan -Tier 2`), install script existence check (flag if
 scripts exist, but full source review is Tier 3).
 
 **Tier 3 (Deep):** Everything in Standard plus: full dep tree scan
-(`dep-scan.ps1 -Tier 3`), install script source code review with red-flag
+(`dep-scan -Tier 3`), install script source code review with red-flag
 pattern matching, behavioral analysis of source code (credential harvesting,
 network calls, obfuscation), and explicit alternatives comparison.
 
@@ -364,8 +366,8 @@ sections below specialize the shared criteria for registry package context.
   Apply the risk patterns from `references/criteria/registry-package.md`
   "Install Script Risk Patterns". Any network fetch, env var harvesting, or
   obfuscated code in install scripts is a HIGH flag.
-- **Transitive dependency risk**: Run `dep-scan.ps1 -Tier 2` (Tier 2) or
-  `dep-scan.ps1 -Tier 3` (Tier 3). Skip for Tier 1.
+- **Transitive dependency risk**: Run `dep-scan -Tier 2` (Tier 2) or
+  `dep-scan -Tier 3` (Tier 3). Skip for Tier 1.
   Flag HIGH+ CVEs in transitive dependencies. See transitive guidance in
   addendum.
 

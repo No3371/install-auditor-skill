@@ -150,18 +150,20 @@ Flag and document any of the following:
 
 ## Transitive Dependency Scanning
 
-Run `scripts/dep-scan.ps1` to check direct (Tier 2) or full transitive (Tier 3, npm only)
+Run `scripts/dep-scan.py` to check direct (Tier 2) or full transitive (Tier 3, npm only)
 dependencies for known CVEs via the OSV batch API. No package installation required.
 
 ### Invocation
 
 ```
 # Tier 2 — direct deps from registry metadata (all ecosystems):
-.\scripts\dep-scan.ps1 -Ecosystem <eco> -Name "<name>" [-Version "<version>"] -Tier 2
+python3 scripts/dep-scan.py -Ecosystem <eco> -Name "<name>" [-Version "<version>"] -Tier 2
 
 # Tier 3 — full tree resolution (npm only; auto-falls back to Tier 2):
-.\scripts\dep-scan.ps1 -Ecosystem <eco> -Name "<name>" [-Version "<version>"] -Tier 3
+python3 scripts/dep-scan.py -Ecosystem <eco> -Name "<name>" [-Version "<version>"] -Tier 3
 ```
+
+> **PowerShell hosts:** each `scripts/<script>.py` has a `scripts/<script>.ps1` twin taking identical arguments (e.g. `.\scripts\vuln-lookup.ps1 -Ecosystem npm -Name "lodash"`).
 
 Skip for Tier 1 packages.
 
@@ -205,10 +207,10 @@ escalation — report it and let the reviewer weigh reachability. Tier 2 always 
 
 For the **Transitive dependencies** row in the Audit Coverage table:
 
-- `Done -- dep-scan.ps1 T2: 8 deps, none HIGH+ (OSV)`
-- `Done -- dep-scan.ps1 T2: 1 HIGH CVE in minimist@0.0.8 (CVE-2020-7598, OSV)`
-- `Done -- dep-scan.ps1 T3: 12 direct, 147 transitive, riskLevel: none (OSV)`
-- `Done -- dep-scan.ps1 T3→T2 fallback (npm CLI unavailable): 8 deps, none HIGH+ (OSV)`
+- `Done -- dep-scan T2: 8 deps, none HIGH+ (OSV)`
+- `Done -- dep-scan T2: 1 HIGH CVE in minimist@0.0.8 (CVE-2020-7598, OSV)`
+- `Done -- dep-scan T3: 12 direct, 147 transitive, riskLevel: none (OSV)`
+- `Done -- dep-scan T3→T2 fallback (npm CLI unavailable): 8 deps, none HIGH+ (OSV)`
 - `Skipped -- Tier 1 quick audit`
 
 ---
@@ -218,7 +220,7 @@ For the **Transitive dependencies** row in the Audit Coverage table:
 For **npm** packages, run the algorithmic typosquat check before manual review:
 
 ```
-.\scripts\typosquat-check.ps1 -Ecosystem npm -Name "<exact name>"
+python3 scripts/typosquat-check.py -Ecosystem npm -Name "<exact name>"
 ```
 
 Add `-CompareTo "<known legitimate name>"` when the user or context supplies a
@@ -267,8 +269,8 @@ scoped packages and names with non-ASCII characters.
 For the **Typosquat / name verification** row in the Audit Coverage table:
 
 - **npm packages**: Status should reference the script: e.g.,
-  `Done — typosquat-check.ps1: low risk` or
-  `Done — typosquat-check.ps1: high risk, manual review confirms squat`.
+  `Done — typosquat-check: low risk` or
+  `Done — typosquat-check: high risk, manual review confirms squat`.
 - **Other ecosystems**: Until script support is added, use manual comparison:
   `Done — manual character-by-character check`.
 
@@ -276,20 +278,20 @@ For the **Typosquat / name verification** row in the Audit Coverage table:
 
 ## Multi-Database CVE Correlation
 
-Run `scripts/vuln-lookup.ps1` before web search to query structured vulnerability
+Run `scripts/vuln-lookup.py` before web search to query structured vulnerability
 databases for registry packages.
 
 ### Invocation
 
 ```
-.\scripts\vuln-lookup.ps1 -Ecosystem <eco> -Name "<name>" [-Version "<version>"]
+python3 scripts/vuln-lookup.py -Ecosystem <eco> -Name "<name>" [-Version "<version>"]
 ```
 
 **Supported ecosystems:** npm, pypi, crates, rubygems, nuget, go, maven, hex.
 IaC registries (Terraform, Ansible, Helm): fall back to web search — OSV/GHSA
 ecosystem mapping for these is not yet established.
 
-**GITHUB_TOKEN:** Set `$env:GITHUB_TOKEN` to raise GHSA rate limit from 60/hr to
+**GITHUB_TOKEN:** Set `GITHUB_TOKEN` (`export GITHUB_TOKEN=…`; PowerShell: `$env:GITHUB_TOKEN = '…'`) to raise GHSA rate limit from 60/hr to
 5,000/hr. If unset or rate-limited, the script continues with OSV only (`sources:
 ["OSV"]`). The audit is never blocked by token absence.
 
@@ -326,9 +328,9 @@ specified version.
 
 For the **CVE / vulnerability databases** row in the Audit Coverage table:
 
-- Reference `vuln-lookup.ps1` output: e.g.,
-  `Done -- vuln-lookup.ps1: none found (OSV, GHSA)` or
-  `Done -- vuln-lookup.ps1: 2 CVEs (OSV: CVE-2021-23337, checked: OSV, GHSA)`.
-- If GHSA was skipped: `Done -- vuln-lookup.ps1: none found (OSV only -- GHSA skipped)`.
+- Reference `vuln-lookup` output: e.g.,
+  `Done -- vuln-lookup: none found (OSV, GHSA)` or
+  `Done -- vuln-lookup: 2 CVEs (OSV: CVE-2021-23337, checked: OSV, GHSA)`.
+- If GHSA was skipped: `Done -- vuln-lookup: none found (OSV only -- GHSA skipped)`.
 - For IaC registries (script not yet supported): use web search and note it:
   `Done -- web search: no advisories found`.

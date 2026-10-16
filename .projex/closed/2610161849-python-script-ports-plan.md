@@ -1,11 +1,14 @@
 # Python Ports of Lookup Scripts
 
-> **Status:** In Progress
+> **Status:** Complete
 > **Author:** Claude (Opus 5.5)
 > **Parent:** Orchestrator
 > **Source:** Direct request (orchestrator improvement candidate: "lookup scripts usable on hosts without PowerShell")
 > **Related Projex:** 2604021200-reliability-accuracy-improvements-imagine.md (seed: "Multi-platform registry-lookup") | 2604070217-subject-typed-audit-dispatch-eval.md (§3.3 soft constraint "PowerShell remains the scripting language" — relaxed here: `.ps1` kept, Python twin added) | 2604070218-install-auditor-subject-typed-redesign-nav.md (roadmap) | 2604021815-algorithmic-typosquat-detection-plan.md, 2604101000-multi-db-cve-correlation-plan.md, 2604110900-transitive-dep-scan-plan.md (origin plans of the ported scripts) | siblings: 2610161850-eval-runner-harness-plan.md, 2610161852-dispatcher-rubric-consistency-plan.md
 > **Worktree:** Yes
+> **Completed:** 2026-10-16
+> **Walkthrough:** 2610161849-python-script-ports-walkthrough.md
+> **Log:** 2610161849-python-script-ports-log.md
 
 ---
 

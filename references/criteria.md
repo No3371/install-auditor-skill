@@ -6,7 +6,7 @@
 - **Tier 2 (Standard):** Score all sections below. This is the default depth.
 - **Tier 3 (Deep):** Score all sections below AND review source code for behavioral signals (install scripts, obfuscation, credential access patterns).
 
-The `scripts/registry-lookup.ps1` script provides hard data for many of these checks (downloads, maintainer count, publish date, dependencies). Use it before manual research.
+The `scripts/registry-lookup.py` script provides hard data for many of these checks (downloads, maintainer count, publish date, dependencies). Use it before manual research. On PowerShell hosts use the same-named `.ps1` twin (identical arguments); this applies to every script named below.
 
 ---
 
@@ -36,7 +36,7 @@ Each row is **Required** (must appear in the table), **Tier-skip** (Tier 1 uses 
 
 | Check | Tier 1 | Tier 2 | Tier 3 | Notes |
 |-------|--------|--------|--------|-------|
-| Registry / metadata lookup | Required | Required | Required | e.g., `registry-lookup.ps1` or registry API |
+| Registry / metadata lookup | Required | Required | Required | e.g., `registry-lookup` or registry API |
 | Typosquat / name verification | Required | Required | Required | Character-by-character vs legitimate name |
 | CVE / advisories (requested version) | Required | Required | Required | OSV, GHSA, registry advisory APIs — **critical** for T2/T3 |
 | License compatibility | Required | Required | Required | See `references/licenses.md` |
@@ -60,7 +60,7 @@ Each row is **Required** (must appear in the table), **Tier-skip** (Tier 1 uses 
 
 ### Typosquatting Check (CRITICAL)
 
-For **npm registry packages**, run `scripts/typosquat-check.ps1` first to get
+For **npm registry packages**, run `scripts/typosquat-check.py` first to get
 algorithmic edit-distance, download-ratio, and combosquat analysis. See
 `references/criteria/registry-package.md` "Typosquat Detection" for full
 interpretation guidance and risk-level thresholds.
@@ -148,15 +148,15 @@ Sources to check: Sonatype blog, Snyk security advisories, Socket.dev, npm secur
 ### Vulnerability Database Lookup (registry packages)
 
 For registry packages (npm, PyPI, crates, RubyGems, NuGet, Go, Maven, Hex), run
-`scripts/vuln-lookup.ps1` for structured OSV + GHSA queries before web search. See
+`scripts/vuln-lookup.py` for structured OSV + GHSA queries before web search. See
 `references/criteria/registry-package.md` "Multi-Database CVE Correlation" for
 risk-level thresholds and coverage row format.
 
 ### Transitive Dependency Scan (registry packages)
 
-Run `scripts/dep-scan.ps1` to check direct (Tier 2) or full transitive (Tier 3, npm only)
+Run `scripts/dep-scan.py` to check direct (Tier 2) or full transitive (Tier 3, npm only)
 dependencies for known CVEs via the OSV batch API — no package installation required.
-Invoke after `vuln-lookup.ps1` in the Evidence step for supported ecosystems. Tier 1
+Invoke after `vuln-lookup` in the Evidence step for supported ecosystems. Tier 1
 packages skip this step. Full risk-level-to-verdict guidance and output field reference
 in `references/criteria/registry-package.md` §Transitive Dependency Scanning.
 

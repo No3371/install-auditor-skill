@@ -84,7 +84,7 @@ Sub-rubric:     <Type 8 only: 8a | 8b | 8c>
 
 ## Step 1 — Load and Follow the Routed Workflow
 
-Read `workflows/<type>.md` per the dispatch table. Follow its **Identify / Evidence / Subject Rubric / Subject Verdict Notes** sections to produce per-subject findings. Workflows defer to `references/criteria.md` (shared tier-aware rubric), `references/licenses.md` (SPDX compatibility), `references/registries.md` (per-ecosystem trust), and may invoke `scripts/registry-lookup.ps1`. Then return here for Step N.
+Read `workflows/<type>.md` per the dispatch table. Follow its **Identify / Evidence / Subject Rubric / Subject Verdict Notes** sections to produce per-subject findings. Workflows defer to `references/criteria.md` (shared tier-aware rubric), `references/licenses.md` (SPDX compatibility), `references/registries.md` (per-ecosystem trust), and may invoke the lookup scripts in `scripts/` (see Reference Files). Then return here for Step N.
 
 ---
 
@@ -245,5 +245,5 @@ Subject-independent. Each applies only when its full condition holds; partial ma
 - `references/criteria/remote-integration.md` — Remote-integration criteria addendum (OAuth scope & permission assessment, data residency & compliance, terms of service & data sharing, breach history & security posture, tier thresholds)
 - `references/licenses.md` — License compatibility matrix
 - `references/registries.md` — Trusted vs. untrusted registries per ecosystem
-- `scripts/registry-lookup.ps1` — Automated registry data lookup. Run: `powershell -File scripts/registry-lookup.ps1 <ecosystem> <name> [version]`. If PowerShell is unavailable, query registry APIs directly (npm: `registry.npmjs.org/<pkg>`, PyPI: `pypi.org/pypi/<pkg>/json`, etc.).
+- `scripts/registry-lookup.py` | `typosquat-check.py` | `vuln-lookup.py` | `dep-scan.py` — registry metadata, npm typosquat, OSV+GHSA CVE, and dependency-CVE lookups; JSON to stdout. Run: `python3 scripts/<script>.py -Ecosystem <eco> -Name <name> [-Version <ver>]` (Python ≥3.8, stdlib only; Windows: `py -3`). PowerShell hosts: same-named `.ps1` twin, identical arguments. Neither available → query APIs directly (npm: `registry.npmjs.org/<pkg>`, PyPI: `pypi.org/pypi/<pkg>/json`, CVEs: POST `api.osv.dev/v1/query` with `{"package":{"name":"<pkg>","ecosystem":"<eco>"}}`, etc.).
 - `references/classifier.md` — Full classifier rule: tie-breaking, routing overrides, extended signals, worked hybrid examples, edge-case discipline
