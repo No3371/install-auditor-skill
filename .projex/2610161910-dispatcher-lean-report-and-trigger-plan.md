@@ -1,6 +1,6 @@
 # Dispatcher Lean Report, Output Location & Trigger Tuning
 
-> **Status:** Ready
+> **Status:** In Progress
 > **Author:** Claude (Opus 5.5), plan-projex subagent
 > **Parent:** Orchestrator
 > **Source:** Direct request (orchestrated: "It's been a while. What can we do to improve this?" → "orchestrate it"; candidates 6, 7b, 7c + deferred `SKILL.md:156`)
