@@ -209,10 +209,10 @@ Look for these in source code or security reports:
 - Encoded/obfuscated strings in source → obfuscation red flag
 
 ### Docker Image Permissions
-- `USER root` with no later `USER` switch → flag
-- `--privileged` in run instructions → flag
-- Mounting `/var/run/docker.sock` → CRITICAL (container escape)
-- Capabilities: `SYS_ADMIN`, `NET_ADMIN` → flag unless justified
+Ratings live in `references/criteria/container-image.md` (Layer Risk Patterns, Runtime Privilege Classification); summary:
+- Root at runtime (`USER root`, or no `USER` and no verified entrypoint privilege drop) → LOW note on a dev workstation; HIGH flag → CONDITIONAL in production or other non-dev use
+- Critical-risk runtime flag (`--privileged`, `--cap-add=SYS_ADMIN`, mounting `/var/run/docker.sock` or host `/`, `/etc`, `/proc`, `/sys`, `/dev`) → CRITICAL on an image whose identity does not verify (§4.6 V2); HIGH flag → CONDITIONAL on a verified-publisher image
+- Other added capabilities (`NET_ADMIN`, `SYS_PTRACE`, `DAC_OVERRIDE`, …) and host namespaces → flag unless justified
 
 ---
 
