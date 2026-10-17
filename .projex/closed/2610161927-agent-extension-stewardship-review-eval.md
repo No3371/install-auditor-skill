@@ -1,6 +1,6 @@
 # Agent-Extension Rubric — Stewardship Review (2026-10-16)
 
-> **Status:** Draft
+> **Status:** Complete
 > **Author:** Claude (Opus)
 > **Parent:** Orchestrator
 > **Subject:** `workflows/agent-extension.md` + `references/criteria/agent-extension.md` (8a MCP / 8b Claude Code plugin / 8c Claude Code skill)

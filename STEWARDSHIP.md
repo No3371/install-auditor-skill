@@ -10,16 +10,16 @@ This document defines a periodic re-evaluation cadence for the install-auditor s
 
 | Workflow File | Criteria File | Interval | Rationale | Last Reviewed | Next Due |
 |---|---|---|---|---|---|
-| `registry-package.md` | `references/criteria/registry-package.md` | 90 days | Fast-moving: npm provenance, PyPI attestations, new supply-chain attack patterns | — | — |
-| `browser-extension.md` | `references/criteria/browser-extension.md` | 90 days | Manifest V3 migration deadlines, store policy shifts, permission model changes | — | — |
-| `container-image.md` | `references/criteria/container-image.md` | 120 days | OCI spec changes, registry security features (Sigstore, SLSA levels) | — | — |
-| `ci-action.md` | `references/criteria/ci-action.md` | 120 days | Marketplace verification requirements, pinning best practices evolve | — | — |
-| `ide-plugin.md` | `references/criteria/ide-plugin.md` | 120 days | Marketplace policies, extension sandboxing model changes | — | — |
-| `desktop-app.md` | `references/criteria/desktop-app.md` | 120 days | Code-signing ecosystem changes, notarization requirement updates | — | — |
-| `cli-binary.md` | `references/criteria/cli-binary.md` | 120 days | Binary distribution standards, provenance attestation tooling | — | — |
-| `agent-extension.md` | `references/criteria/agent-extension.md` | 60 days | Fastest-moving: MCP spec evolution, new agent frameworks, tool-permission models | — | — |
-| `remote-integration.md` | `references/criteria/remote-integration.md` | 120 days | OAuth/API security standards, data residency rules, webhook verification | — | — |
-| `generic.md` | *(none — fallback only)* | 180 days | Low-confidence fallback; changes only when dispatch logic or probe structure changes | — | — |
+| `registry-package.md` | `references/criteria/registry-package.md` | 90 days | Fast-moving: npm provenance, PyPI attestations, new supply-chain attack patterns | 2026-10-16 | 2027-01-14 |
+| `browser-extension.md` | `references/criteria/browser-extension.md` | 90 days | Manifest V3 migration deadlines, store policy shifts, permission model changes | 2026-10-16 | 2027-01-14 |
+| `container-image.md` | `references/criteria/container-image.md` | 120 days | OCI spec changes, registry security features (Sigstore, SLSA levels) | 2026-10-16 | 2027-02-13 |
+| `ci-action.md` | `references/criteria/ci-action.md` | 120 days | Marketplace verification requirements, pinning best practices evolve | 2026-10-16 | 2027-02-13 |
+| `ide-plugin.md` | `references/criteria/ide-plugin.md` | 120 days | Marketplace policies, extension sandboxing model changes | 2026-10-16 | 2027-02-13 |
+| `desktop-app.md` | `references/criteria/desktop-app.md` | 120 days | Code-signing ecosystem changes, notarization requirement updates | 2026-10-16 | 2027-02-13 |
+| `cli-binary.md` | `references/criteria/cli-binary.md` | 120 days | Binary distribution standards, provenance attestation tooling | 2026-10-16 | 2027-02-13 |
+| `agent-extension.md` | `references/criteria/agent-extension.md` | 60 days | Fastest-moving: MCP spec evolution, new agent frameworks, tool-permission models | 2026-10-16 | 2026-12-15 |
+| `remote-integration.md` | `references/criteria/remote-integration.md` | 120 days | OAuth/API security standards, data residency rules, webhook verification | 2026-10-16 | 2027-02-13 |
+| `generic.md` | *(none — fallback only)* | 180 days | Low-confidence fallback; changes only when dispatch logic or probe structure changes | 2026-10-16 | 2027-04-14 |
 
 **Interval rationale summary:** agent-extension (60 d) is on the shortest cycle because MCP tooling is evolving rapidly. registry-package and browser-extension (90 d) are next — both ecosystems have active security infrastructure work. All other subject-specific workflows (120 d) move at a moderate pace. generic.md (180 d) is a static fallback that changes rarely.
 

@@ -1,6 +1,6 @@
 # Stewardship Review — container-image, cli-binary, desktop-app
 
-> **Status:** Draft
+> **Status:** Complete
 > **Author:** Claude (Opus)
 > **Parent:** Orchestrator
 > **Subject:** `workflows/container-image.md` + `references/criteria/container-image.md` | `workflows/cli-binary.md` + `references/criteria/cli-binary.md` | `workflows/desktop-app.md` + `references/criteria/desktop-app.md`

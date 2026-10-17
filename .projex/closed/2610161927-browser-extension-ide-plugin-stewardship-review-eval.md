@@ -1,6 +1,6 @@
 # Browser-Extension + IDE-Plugin Stewardship Review
 
-> **Status:** Draft
+> **Status:** Complete
 > **Author:** Claude (Opus)
 > **Parent:** Orchestrator
 > **Subject:** `workflows/browser-extension.md`, `references/criteria/browser-extension.md`, `workflows/ide-plugin.md`, `references/criteria/ide-plugin.md` — first scheduled `STEWARDSHIP.md` review pass (checklist steps 1–3; step 4 offline only)
