@@ -1,11 +1,14 @@
 # Registry-Package Rubric Refresh
 
-> **Status:** In Progress
+> **Status:** Complete
 > **Author:** Claude (Opus)
 > **Parent:** 2610161927-registry-package-and-ci-action-stewardship-review-eval.md
 > **Source:** 2610161927-registry-package-and-ci-action-stewardship-review-eval.md (RP-1, RP-2, RP-4, RP-5, RP-6, RP-7 npm part, RP-9) + Hand-off row "registry-package" of 2610161941-shared-version-integrity-floor-plan.md (C6 alignment, §4.3 / §4.6 plug-ins) + human decision on Tier 1 identity (2026-10-17, via orchestrator; see Revision Log)
 > **Related Projex:** 2610161941-shared-version-integrity-floor-walkthrough.md (contract this builds on; closed `20843cc`) | 2610161926-lookup-script-correctness-fixes-walkthrough.md (last edit to the addendum + scripts) | 2604070218-install-auditor-subject-typed-redesign-nav.md | siblings in flight: 2610162005-ci-action-rubric-refresh-plan.md (owns `references/registries.md` §CI/CD) · 2610162003-ide-plugin-rubric-refresh-plan.md (owns Cursor row) · 2610162004-container-image-rubric-refresh-plan.md (owns §Container Images)
 > **Worktree:** Yes
+> **Completed:** 2026-10-17
+> **Walkthrough:** 2610162010-registry-package-rubric-refresh-walkthrough.md
+> **Log:** 2610162010-registry-package-rubric-refresh-log.md
 
 ---
 

@@ -90,6 +90,43 @@ def _ieq(a, b):
     return a is not None and b is not None and str(a).lower() == str(b).lower()
 
 
+def _npm_identity(version_data):
+    """Publisher account, trusted-publisher config and provenance type of one version."""
+    user = version_data.get("_npmUser")
+    user = user if isinstance(user, dict) else {}
+    tp = user.get("trustedPublisher")
+    att = (version_data.get("dist") or {}).get("attestations")
+    prov = att.get("provenance") if isinstance(att, dict) else None
+    return {
+        "publisher": user.get("name"),
+        "trustedPublisher": {"id": tp.get("id"), "oidcConfigId": tp.get("oidcConfigId")} if isinstance(tp, dict) else None,
+        "provenance": prov.get("predicateType") if isinstance(prov, dict) else None,
+    }
+
+
+def _npm_previous_version(versions, time_map, current):
+    """The still-served version published immediately before `current`.
+
+    Prereleases are skipped unless `current` is one: canary builds often come from a
+    different pipeline, so comparing a stable release with one reports false identity
+    breaks. Versions missing from `versions` (unpublished or removed by the registry)
+    are skipped because their metadata is gone; `removedVersions` lists them instead.
+    """
+    cur = _parse_dt(time_map.get(current))
+    if cur is None:
+        return None
+    best = None
+    for v, t in time_map.items():
+        if v in ("created", "modified") or v == current or v not in versions:
+            continue
+        if "-" in v and "-" not in current:
+            continue
+        d = _parse_dt(t)
+        if d is not None and d < cur and (best is None or d > best[1]):
+            best = (v, d)
+    return best[0] if best else None
+
+
 def lookup_npm(name, version):
     pkg = invoke_api("https://registry.npmjs.org/" + _enc(name))
     if not pkg:
@@ -118,6 +155,23 @@ def lookup_npm(name, version):
     repo = pkg.get("repository")
     repository = repo if isinstance(repo, str) else (repo.get("url") if isinstance(repo, dict) else None)
 
+    identity = _npm_identity(version_data)
+    previous_version = None
+    prev = _npm_previous_version(versions, time_map, latest)
+    if prev:
+        prev_data = versions.get(prev) or {}
+        prev_scripts = prev_data.get("scripts") or {}
+        prev_identity = _npm_identity(prev_data)
+        previous_version = {
+            "version": prev,
+            "publishedAt": format_date_str(time_map.get(prev)),
+            "publisher": prev_identity["publisher"],
+            "trustedPublisher": prev_identity["trustedPublisher"],
+            "provenance": prev_identity["provenance"],
+            "installHooks": [h for h in ("preinstall", "install", "postinstall") if prev_scripts.get(h)],
+        }
+    removed_versions = [v for v in time_map if v not in ("created", "modified") and v not in versions]
+
     return {
         "ecosystem": "npm",
         "name": pkg.get("name"),
@@ -139,6 +193,11 @@ def lookup_npm(name, version):
         "dependencies": deps,
         "dependencyCount": len(deps),
         "engines": version_data.get("engines"),
+        "publisher": identity["publisher"],
+        "trustedPublisher": identity["trustedPublisher"],
+        "provenance": identity["provenance"],
+        "previousVersion": previous_version,
+        "removedVersions": removed_versions,
     }
 
 

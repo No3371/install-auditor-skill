@@ -3,39 +3,39 @@
 ## Trusted Registries by Ecosystem
 
 ### JavaScript / Node.js
-- **npmjs.com** — Official registry. Medium baseline trust. Verified publishers (scoped packages from known orgs) are higher trust.
+- **npmjs.com** — Official registry. Medium baseline trust. Verified publishers (scoped packages from known orgs) are higher trust. Trusted publishing and provenance show which CI workflow published a version — origin, not safety; check continuity across versions (`references/criteria/registry-package.md`).
 - **GitHub Packages (npm)** — Packages tied to GitHub org identity. Higher trust for known orgs.
 - **jsr.io** — Deno/JSR registry. Newer, requires GitHub auth, moderate trust.
 - **Unpkg / CDN links** — Never install from CDN links directly in package.json; flag immediately.
 
-**Red flags:** Packages with install scripts (`preinstall`, `postinstall`, `install`) that aren't from a known tool (e.g., node-gyp, esbuild). Always review what these scripts do.
+**Red flags:** Packages with install scripts (`preinstall`, `postinstall`, `install`, or an implicit `binding.gyp` build) that aren't from a known tool (e.g., node-gyp, esbuild). Always review what these scripts do — npm ≥ 12 and pnpm ≥ 10 block dependency scripts until the user approves them, so the approval request is the decision point. A version that drops the trusted publishing or provenance its predecessor had.
 
 ### Python
-- **pypi.org** — Official. Medium baseline. No mandatory publishing auth; typosquatting common.
+- **pypi.org** — Official. Medium baseline. 2FA mandatory for all accounts; Trusted Publishers with PEP 740 attestations show which CI workflow uploaded a file. Typosquatting common.
 - **conda-forge** — Community-reviewed conda packages. Higher trust.
 - **Anaconda repository** — Curated. Higher trust.
 - **GitHub releases (wheel/sdist)** — Acceptable if from verified org; check checksums.
 - **Direct git installs (`pip install git+...`)** — Flag; commit SHA pinning required.
 
-**Red flags:** `setup.py` with `os.system()` calls, packages that shadow stdlib names.
+**Red flags:** `setup.py` with `os.system()` calls, packages that shadow stdlib names, `.pth` files in wheels (run at every interpreter start), projects marked `quarantined`.
 
 ### Ruby
-- **rubygems.org** — Official. Similar trust profile to PyPI.
+- **rubygems.org** — Official. Medium baseline. MFA required for top gems; trusted publishing available.
 
 ### Rust
-- **crates.io** — Requires GitHub auth to publish. Higher baseline trust than npm/PyPI.
+- **crates.io** — Requires GitHub auth to publish. Higher baseline trust than npm/PyPI. Trusted publishing (`trustpub_data` per version) names the publishing repo + commit. `build.rs` runs at build time.
 
 ### Go
-- **pkg.go.dev / go get** — Module proxy validates checksums via sumdb. High trust for modules in the index. Direct VCS installs bypass this — flag.
+- **pkg.go.dev / go get** — Module proxy + checksum DB (`sum.golang.org`) guarantee everyone gets the same bytes for a version: consistency, not author identity or safety (the proxy keeps serving a cached version even if it is malicious). Medium-High baseline. `GOSUMDB=off`, or a `GONOSUMDB` / `GOPRIVATE` pattern covering public modules, disables checksum verification — flag (`GOINSECURE` does not).
 
 ### Java / JVM
-- **Maven Central** — Requires GPG signing. High trust.
+- **Maven Central** — Requires PGP signing (Sigstore bundles optional) and namespace verification. High trust. A signature proves the key holder, not safety — check key continuity across versions.
 - **JCenter** — Deprecated (shut down); any dependency still pointing here is a flag.
 - **Custom Artifactory/Nexus** — Organization-controlled; verify org controls it.
 - **Jitpack** — Builds from GitHub directly. Lower trust.
 
 ### .NET
-- **NuGet.org** — Microsoft-operated. Medium-high trust. Package signing available; check for signed packages.
+- **NuGet.org** — Microsoft-operated. Medium-high trust. Author signatures and trusted publishing (CI OIDC) identify the publisher — check the author certificate subject matches earlier versions.
 
 ### Container Images
 | Source | Trust |

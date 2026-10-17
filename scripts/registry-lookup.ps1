@@ -69,6 +69,56 @@ function Format-DateStr {
 
 # ─── npm ─────────────────────────────────────────────────────────────────
 
+function ConvertTo-UtcDate {
+    # ConvertFrom-Json already turns ISO-8601 strings into [DateTime], but a registry
+    # that serves another shape still arrives as a string; parsing only strings would
+    # silently drop every [DateTime] and find no previous version.
+    param($Value)
+    if ($null -eq $Value) { return $null }
+    if ($Value -is [DateTime]) { return $Value.ToUniversalTime() }
+    try {
+        return ([DateTimeOffset]::Parse([string]$Value, [Globalization.CultureInfo]::InvariantCulture)).UtcDateTime
+    } catch {
+        return $null
+    }
+}
+
+function Get-NpmIdentity {
+    param($VersionData)
+    $user = $VersionData.'_npmUser'
+    $tp = if ($user) { $user.trustedPublisher } else { $null }
+    $prov = if ($VersionData.dist -and $VersionData.dist.attestations) { $VersionData.dist.attestations.provenance } else { $null }
+    return [ordered]@{
+        publisher        = if ($user) { $user.name } else { $null }
+        trustedPublisher = if ($tp) { [ordered]@{ id = $tp.id; oidcConfigId = $tp.oidcConfigId } } else { $null }
+        provenance       = if ($prov) { $prov.predicateType } else { $null }
+    }
+}
+
+function Get-NpmPreviousVersion {
+    # Prereleases are skipped unless $Current is one: canary builds often come from a
+    # different pipeline, so comparing a stable release with one reports false identity
+    # breaks. Versions no longer served are skipped because their metadata is gone.
+    param($Pkg, [string]$Current)
+    if (-not $Current -or -not $Pkg.time) { return $null }
+    $curT = ConvertTo-UtcDate $Pkg.time.$Current
+    if (-not $curT) { return $null }
+    $best = $null
+    $bestT = $null
+    foreach ($p in $Pkg.time.PSObject.Properties) {
+        $v = $p.Name
+        if ($v -in @('created','modified') -or $v -eq $Current) { continue }
+        if (-not $Pkg.versions.PSObject.Properties[$v]) { continue }
+        if ($v.Contains('-') -and -not $Current.Contains('-')) { continue }
+        $t = ConvertTo-UtcDate $p.Value
+        if ($t -and $t -lt $curT -and (-not $bestT -or $t -gt $bestT)) {
+            $best = $v
+            $bestT = $t
+        }
+    }
+    return $best
+}
+
 function Lookup-Npm {
     $pkg = Invoke-Api "https://registry.npmjs.org/$([Uri]::EscapeDataString($Name))"
     if (-not $pkg) { throw "Package '$Name' not found on npm" }
@@ -101,6 +151,26 @@ function Lookup-Npm {
         $deps = @($versionData.dependencies.PSObject.Properties.Name)
     }
 
+    $identity = Get-NpmIdentity $versionData
+    $previousVersion = $null
+    $prev = Get-NpmPreviousVersion $pkg $latest
+    if ($prev) {
+        $prevData = $pkg.versions.$prev
+        $prevIdentity = Get-NpmIdentity $prevData
+        $previousVersion = [ordered]@{
+            version          = $prev
+            publishedAt      = Format-DateStr $time.$prev
+            publisher        = $prevIdentity.publisher
+            trustedPublisher = $prevIdentity.trustedPublisher
+            provenance       = $prevIdentity.provenance
+            installHooks     = @(@('preinstall','install','postinstall') | Where-Object { $prevData.scripts.$_ })
+        }
+    }
+    $removedVersions = @()
+    if ($time) {
+        $removedVersions = @($time.PSObject.Properties.Name | Where-Object { $_ -notin @('created','modified') -and -not $pkg.versions.PSObject.Properties[$_] })
+    }
+
     return [ordered]@{
         ecosystem        = 'npm'
         name             = $pkg.name
@@ -123,6 +193,11 @@ function Lookup-Npm {
         dependencies     = $deps
         dependencyCount  = $deps.Count
         engines          = $versionData.engines
+        publisher        = $identity.publisher
+        trustedPublisher = $identity.trustedPublisher
+        provenance       = $identity.provenance
+        previousVersion  = $previousVersion
+        removedVersions  = $removedVersions
     }
 }
 

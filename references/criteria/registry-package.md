@@ -3,7 +3,8 @@
 Per-subject scoring extensions for **Type 1: registry-package** audits. This
 addendum layers on top of the shared rubric in `references/criteria.md`. When
 a criterion below conflicts with the shared rubric, the more specific
-(registry-package) guidance wins.
+(registry-package) guidance wins -- except `references/criteria.md` §4.6,
+which this file only tightens or fills, and the §4.3 verdict classes.
 
 Covers: npm, PyPI, crates.io, RubyGems, NuGet, Maven Central, Go modules,
 Hex.pm, and IaC module registries (Terraform Registry, Ansible Galaxy,
@@ -13,34 +14,48 @@ Helm/Artifact Hub).
 
 ## Ecosystem Trust Signals
 
-Each registry has its own verification and provenance mechanisms. Presence of
-these signals raises trust; absence does not automatically lower it but should
-be noted.
+Each registry has its own identity mechanisms. They prove **who published** a
+version (origin), never that its code is safe (`references/criteria.md` §4.6
+V2). Credit one only when it is **verified**: present on the version to be
+installed **and** naming the same identity as the previous release or the
+project's documented release setup.
 
-| Ecosystem | Trust Signal | What it proves |
-|-----------|-------------|----------------|
-| npm | **Provenance attestation** (`--provenance` flag, Sigstore) | Build artifact traces to a specific CI run and source commit |
-| npm | Verified publisher badge / scope owner | Org identity confirmed by npm |
-| PyPI | **Trusted Publisher** (OIDC from GitHub/GitLab CI) | Upload was automated from a known repo, not a local machine |
-| PyPI | PGP/Sigstore signature on sdist/wheel | Artifact integrity (rare but strong) |
-| crates.io | GitHub-linked ownership | Publish requires authenticated GitHub account; crate owners are public |
-| crates.io | `cargo vet` audits by other orgs | Third-party attestation of reviewed source |
-| RubyGems | **MFA required on privileged operations** | Account takeover resistance (mandatory for top gems since 2022) |
-| RubyGems | Gem signing (rare) | Artifact integrity |
-| NuGet | **Signed packages** (author + repository signing) | Package has not been tampered with post-build |
-| NuGet | Verified owner / reserved prefix | Org identity confirmed by NuGet |
-| Maven Central | PGP-signed artifacts (mandatory) | All Central artifacts are signed; verify key continuity |
-| Maven Central | Namespace (groupId) ownership verification | Publisher controls the domain/org behind the groupId |
-| Go modules | `GONOSUMCHECK` bypass absent, checksum DB match | Module integrity verified by `sum.golang.org` |
-| Hex.pm | Hex package signing | Artifact integrity for Elixir/Erlang packages |
-| Terraform Registry | Verified publisher badge | HashiCorp-reviewed org identity |
-| Ansible Galaxy | Namespace ownership | Collection publisher controls the namespace |
+| Ecosystem | Identity signal | Where to check | What it proves |
+|-----------|-----------------|----------------|----------------|
+| npm | **Trusted publishing** (CI OIDC, no long-lived token) | `registry-lookup` `trustedPublisher` (`id`, `oidcConfigId`); npmjs.com package page | Version was published by the configured CI workflow |
+| npm | **Provenance attestation** (Sigstore, SLSA) | `registry-lookup` `provenance`; source repo + workflow in the attestation (npmjs.com provenance panel or `dist.attestations.url`); `npm audit signatures` after install | Tarball was built by a named repo + workflow run |
+| npm | Registry signatures | `npm audit signatures` | Tarball is what the registry signed; says nothing about the publisher |
+| npm | Verified org / scope owner | npmjs.com org page | Org controls the scope |
+| PyPI | **Trusted Publisher** + **PEP 740 attestations** | Simple API JSON (`Accept: application/vnd.pypi.simple.v1+json`): `files[].provenance` URL → `attestation_bundles[].publisher` (`kind`, `repository`, `workflow`) | File was uploaded by a named CI repo + workflow |
+| PyPI | Mandatory 2FA | -- | Account-takeover resistance only |
+| crates.io | **Trusted publishing** | `crates.io/api/v1/crates/<name>/<version>` `trustpub_data` (`provider`, `repository`, `sha`); `published_by` for token publishes | Version was published from a named repo + commit |
+| crates.io | `cargo vet` audits by other orgs | audit imports | Third-party review of the source |
+| RubyGems | **MFA required** on privileged operations (top gems); trusted publishing available | rubygems.org gem page | Account-takeover resistance; CI-published when TP is used |
+| RubyGems | Gem signing (rare) | `gem cert` | Artifact integrity |
+| NuGet | **Signed packages** (author + repository signatures); trusted publishing available | `dotnet nuget verify`; nuget.org package page | Unchanged since signing; author certificate subject |
+| NuGet | Verified owner / reserved prefix | nuget.org package page | Org identity confirmed by NuGet |
+| Maven Central | PGP-signed artifacts (mandatory); Sigstore bundles optional | `.asc` / `.sigstore.json` next to each artifact | Key holder signed it; check key continuity across versions |
+| Maven Central | Namespace (groupId) ownership verification | central.sonatype.com | Publisher controls the domain/org behind the groupId |
+| Go modules | Checksum database (`sum.golang.org`) | `go.sum`; `GOSUMDB` not `off`; no `GONOSUMDB` / `GOPRIVATE` pattern covering public modules | Everyone gets the same bytes for a version (consistency). **Not** identity or safety: the proxy keeps serving a cached version even if it is malicious |
+| Hex.pm | Hex package signing | -- | Artifact integrity for Elixir/Erlang packages |
+| Terraform Registry | Verified publisher badge | registry page | HashiCorp-reviewed org identity |
+| Ansible Galaxy | Namespace ownership | Galaxy page | Collection publisher controls the namespace |
 
 ### Scoring impact
 
-- **Provenance attestation present** (npm provenance, PyPI Trusted Publisher, NuGet signing): +1 trust on Provenance (4.1). This is a strong positive signal.
-- **Provenance mechanism available for ecosystem but not used**: Note as a minor negative. Not auto-flag, but mention in report.
-- **No provenance mechanism exists for the ecosystem**: Neutral -- do not penalize.
+- **Verified** (matched to the previous release or project docs): positive
+  note. Never lifts a §4.6 flag, and never enough on its own for Tier 1 or
+  APPROVED.
+- **Present but unmatched** (no previous release, attestation not opened):
+  note only, no credit.
+- **Dropped or changed** versus the previous release: §4.6 V3 HIGH, which
+  bars Tier 1 and triggers Tier 3 (see "Version & Update Integrity (§4.6)"
+  below).
+- **Mechanism exists, package never used it**: minor note in the report; no
+  flag, no condition, and it does not block Tier 1.
+- **No mechanism in the ecosystem**: neutral.
+- **Typosquats can carry valid provenance** from their own repo: the identity
+  must match the *legitimate* project's repo, not merely exist.
 
 ---
 
@@ -56,20 +71,32 @@ subjects. They specialize the generic tiers in `workflows/generic.md`.
 | Criterion | Threshold |
 |-----------|-----------|
 | Registry | Official public registry (npm, PyPI, crates.io, RubyGems, NuGet, Maven Central, Go proxy, Hex.pm, Terraform Registry) |
-| Weekly downloads (npm-equivalent) | >1M npm / >500K PyPI / >100K crates / >50K gems / >100K NuGet / equivalent high adoption |
+| Adoption | Above the Tier 1 bar in the adoption table below |
 | Publisher | Verified org or well-known individual maintainer |
 | CVEs in requested version | None (CRITICAL or HIGH) |
 | Recent maintainer change | None in last 90 days |
 | Package age | First publish >1 year ago |
-| Provenance | Attestation present OR ecosystem has no mechanism |
+| Version age (§4.6 V1) | Version to be installed published ≥ 7 days ago (`daysSincePublish` ≥ 7) |
+| Identity (§4.6 V2) | Not required: missing trusted publishing or provenance does not block Tier 1. Present identity evidence earns no Tier 1 credit on its own |
+| Continuity (§4.6 V3) | No change of signer, trusted-publisher config or publisher from the previous release, and no other V3 item |
+| History (§4.6 V4) | No past compromise (V4 case c) |
 
-**Cross-ecosystem download equivalence** (rough): 1M npm weekly ~ 500K PyPI
-monthly ~ 100K crates.io all-time ~ 50K gems weekly ~ 100K NuGet weekly. Use
-judgment for ecosystems without direct weekly counts.
+**Adoption bars** use the field `registry-lookup` emits, in that field's own
+time window. Do not convert between windows.
+
+| Ecosystem | Field (window) | Tier 1 bar | Tier 3 trigger below |
+|-----------|----------------|------------|----------------------|
+| npm | `weeklyDownloads` (7 d) | > 1M | 1K |
+| PyPI | `monthlyDownloads` (30 d, pypistats) | > 500K | 500 |
+| crates.io | `recentDownloads` (90 d) | > 10M | 10K |
+| RubyGems | `totalDownloads` (all time) | > 50M | 50K |
+| NuGet | nuget.org total downloads (no script field) | > 50M | 50K |
+| Others | the registry's own count | judgment: top few hundred of the ecosystem | judgment |
 
 **Tier 1 examples:** `express`, `lodash`, `react`, `requests` (Python),
 `flask`, `django`, `serde`, `tokio`, `rails`, `Newtonsoft.Json`,
-`hashicorp/aws` (Terraform).
+`hashicorp/aws` (Terraform). Each still needs the per-version rows above
+(age ≥ 7 d, no change from the previous release) at audit time.
 
 ### Tier 2 -- Standard Audit (default)
 
@@ -77,7 +104,7 @@ The package has *some* trust signals but does not meet all Tier 1 criteria:
 
 | Criterion | Range |
 |-----------|-------|
-| Weekly downloads (npm-equivalent) | 1K--1M npm / proportional in other ecosystems |
+| Adoption | Between the Tier 3 trigger and the Tier 1 bar (adoption table above) |
 | Publisher | Identifiable individual or small org with history |
 | CVEs | None unpatched in requested version (patched older CVEs acceptable) |
 | Package age | First publish >30 days ago |
@@ -91,7 +118,7 @@ This is the **default tier**. When in doubt, use Tier 2.
 
 | Trigger | Rationale |
 |---------|-----------|
-| Weekly downloads <1K (npm-equivalent) and not a known niche tool | Insufficient community vetting |
+| Adoption below the Tier 3 trigger (adoption table) and not a known niche tool | Insufficient community vetting |
 | First publish <30 days ago | Too new to have track record |
 | Single anonymous/pseudonymous maintainer, new account (<6 months) | Account takeover or sockpuppet risk |
 | Name similarity to a top-1000 package (edit distance <=2) | Typosquat candidate |
@@ -100,6 +127,119 @@ This is the **default tier**. When in doubt, use Tier 2.
 | Package has `preinstall`/`postinstall` scripts with network or exec calls | Install-time code execution risk |
 | Recent maintainer transfer from established to unknown account | Possible account compromise |
 | Will run in CI/CD with access to secrets or production credentials | High blast radius |
+| Version to be installed has a §4.6 V3 HIGH (identity dropped or changed, new install hook) or a publisher change from the previous release (V3 plug-in below) | Possible hijacked publish |
+
+---
+
+## CVE Scope (§4.3)
+
+- **Own code** = the package's published contents: its own source plus any
+  library it vendors into its tarball / wheel. An advisory filed against the
+  package name is an own-code advisory, even when a vendored library is the
+  root cause.
+- **Third-party component** = everything resolved as a separate package:
+  direct and transitive dependencies (`dep-scan` findings), and system
+  libraries the package links against at runtime.
+- **Scan sources:** `vuln-lookup` (OSV + GHSA) for own code, `dep-scan` for
+  dependencies. Always pass `-Version` with the version to be installed;
+  without it `riskLevel` covers every version.
+- **KEV:** check CRITICALs from either source against the CISA KEV catalog.
+- **VEX:** registry packages rarely publish VEX. Accept `not_affected` only on
+  the §4.3 terms (publisher or component maintainer, names this version,
+  gives a justification).
+
+## Version & Update Integrity (§4.6)
+
+Registry plug-ins for `references/criteria.md` §4.6. The version unit for
+V1–V3 is the published version string. Registries never let a publisher
+replace a published version's files, with one exception: PyPI accepts *new*
+files for an existing release (see V1).
+
+- **V1** -- publish time and cooldown.
+  - npm, PyPI, crates.io, NuGet: `registry-lookup -Version <v>` `publishedAt` /
+    `daysSincePublish`. Whole days, floored: 0–2 = < 72 h, 3–6 = 72 h – 7 d.
+    For an unpinned request run it without `-Version`; it reports the version
+    `latest` resolves to.
+  - PyPI: the script dates a release by its first file. A file added later
+    to an old release (e.g. a new platform wheel) is fresh: check the
+    `upload-time` of the file the installer will pick (simple API JSON).
+  - RubyGems: the script ignores `-Version` and reports the latest version.
+    For a pinned version use `rubygems.org/api/v1/versions/<gem>.json`
+    `created_at`.
+  - Go: `proxy.golang.org/<module>/@v/<version>.info` `Time`. Maven, Hex, IaC
+    registries: the registry page or API publish date.
+  - Cooldown to cite in a `fresh version` condition (7 days):
+
+    | Client | Setting | Unit | Since |
+    |--------|---------|------|-------|
+    | npm | `min-release-age=7` (`.npmrc`) | days | 11.10.0 |
+    | pnpm | `minimumReleaseAge: 10080` (`pnpm-workspace.yaml`) | minutes | 10.16.0 (current pnpm also has a non-strict built-in 1440-minute default) |
+    | Yarn (berry) | `npmMinimalAgeGate: 7d` (`.yarnrc.yml`) | duration | 4.10.x |
+    | Bun | `minimumReleaseAge = 604800` (`bunfig.toml` `[install]`) | seconds | 1.3.0 |
+    | uv | `exclude-newer = "7 days"` (or `--exclude-newer "7 days"`) | duration | checked in 0.11.32 |
+    | pip | `--uploaded-prior-to P7D` | ISO-8601 days | 26.1 (26.0 takes a datetime only) |
+    | cargo, gem, NuGet, Go, Maven | none known: exact pin + lockfile, plus the date the version turns 7 days old | -- | -- |
+
+- **V2** -- identity mechanisms and verification: "Ecosystem Trust Signals"
+  above.
+  - **Expected identity** = the previous release's identity (`previousVersion`
+    for npm; the previous release's attestation publisher on PyPI; the
+    previous version's `trustpub_data` on crates.io), else the repository the
+    project documents. A trusted publisher with the same `oidcConfigId` as
+    the previous version counts as matched.
+  - Absence is never a flag when the package never used the mechanism, and
+    never blocks Tier 1. Only a change from the previous release counts
+    (V3).
+  - Verify command: `npm audit signatures` (registry signatures and
+    provenance of installed packages; run it in a scratch project).
+- **V3** -- diff against the previous release.
+  - npm: compare `trustedPublisher`, `provenance`, `publisher` and
+    `installScripts` with `previousVersion`. Trusted publisher or provenance
+    present before and absent now, or a different `oidcConfigId` or
+    attestation repo → HIGH.
+  - Install hooks: a hook in `installScripts` missing from
+    `previousVersion.installHooks` → HIGH unless the changelog explains it;
+    explained → MEDIUM. A new `binding.gyp`, a new `.pth` file, or a new
+    dependency with install scripts counts as a new hook.
+  - **Publisher change** = the publishing account had never published this
+    package before, or the maintainer/owner list changed. At least MEDIUM,
+    and always a Tier 3 trigger (deep audit). Another long-standing
+    maintainer pressing publish is not a change. Established → unknown
+    account → HIGH.
+  - PyPI, crates.io: same comparison by hand on attestation
+    `publisher.repository` / `workflow` and on `trustpub_data.repository`.
+  - Go: `.info` `Origin` names the VCS ref + hash. A version with no
+    matching upstream tag → HIGH ("no matching upstream source tag").
+  - Client guard to cite: pnpm `trustPolicy: no-downgrade` (10.21.0+) refuses
+    versions whose trust evidence is weaker than earlier releases'.
+  - **Release-pipeline exposure** (Tier 3, when provenance names a repo +
+    workflow): skim the release workflow with the `workflows/ci-action.md`
+    lens: `pull_request_target`, a shared cache restored in the publish job,
+    unpinned actions in a job with `id-token: write`. Any → MEDIUM flag
+    `release pipeline exposure`. A poisonable pipeline still produces valid
+    provenance.
+- **V4** -- incident sources (in addition to web search).
+  - `vuln-lookup` `osvResults` with an `id` starting `MAL-` (OSV
+    malicious-package record): case (a) when the version is in range, case
+    (b) when the whole package is malicious.
+  - npm "security holding package" (version `0.0.1-security`) → Red Flag
+    "Removed for cause".
+  - npm `removedVersions` (in `time`, no longer served): a removed version
+    inside an advisory's range is evidence the bad versions were taken down
+    (case c). It is not proof of remediation, so still cite the advisory.
+  - PyPI simple API JSON `project-status` `quarantined` → case (a) while it
+    lasts.
+  - Case (c) lockfile check: `npm ls <pkg>`, `pip freeze`,
+    `cargo tree -i <crate>`.
+- **V5** -- triggers and update controls.
+  - Subject triggers, added to the defaults: new install hook | identity drop
+    | maintainer added or removed | deprecation or transfer notice.
+  - Update controls: exact version + lockfile (`npm ci`,
+    `pnpm install --frozen-lockfile`, `pip install --require-hashes`,
+    `uv lock`, `Cargo.lock`, `go.sum`); the V1 cooldown; pnpm
+    `trustPolicy: no-downgrade`. npm script approvals stay version-pinned
+    (`allowScripts` `pkg@x.y.z`), so each new version's scripts need a fresh
+    approval: keep it that way.
 
 ---
 
@@ -107,6 +247,32 @@ This is the **default tier**. When in doubt, use Tier 2.
 
 Registry packages can execute arbitrary code at install time. These patterns
 warrant scrutiny at Tier 2 and mandatory review at Tier 3.
+
+### Client execution model
+
+Whether install-time code runs depends on the client, so record the client
+and version (workflow Identify, item 7).
+
+| Client | Dependency install scripts by default | Approval mechanism |
+|--------|---------------------------------------|--------------------|
+| npm ≥ 12 | **Blocked** (`preinstall`, `install`, `postinstall`; `prepare` for non-registry sources) | `allowScripts` in `package.json` via `npm approve-scripts <pkg>` (writes version-pinned `pkg@x.y.z` entries); global installs and `npx`: `--allow-scripts=<pkg>` |
+| npm ≤ 11, Yarn classic | Run | `--ignore-scripts` suppresses them |
+| pnpm ≥ 10 | **Blocked** | `pnpm approve-builds` (writes `allowBuilds` in current pnpm) |
+| Bun | Blocked except `trustedDependencies` (plus Bun's built-in default list) | `trustedDependencies` in `package.json` |
+| pip / uv | sdist: the build backend runs on install; wheel: no install hook | `--only-binary :all:` avoids sdist builds |
+
+- **Blocked by default → the decision is "will the user approve this
+  package's scripts?"** Rate the scripts as if approved when the package needs
+  them to work (native addons). Condition: approve only this package, pinned
+  to the audited version. Never use name-only or blanket approval
+  (`--no-allow-scripts-pin`, `npm approve-scripts --all`,
+  `dangerouslyAllowAllBuilds`).
+- **Client unknown → assume scripts run.**
+- npm ≥ 12 defaults `allow-git` and `allow-remote` to `none`. If this package
+  needs an opt-in for a git or URL dependency → MEDIUM flag: git dependencies
+  can bring configuration the project does not control.
+- Blocking scripts does not stop import-time or runtime code (`.pth` files,
+  `__init__.py`, module top level, `bin` entries the user runs).
 
 ### npm lifecycle scripts
 
@@ -116,6 +282,7 @@ warrant scrutiny at Tier 2 and mandatory review at Tier 3.
 | `install` | MEDIUM | Typically used for native addon compilation (node-gyp); verify it only compiles bundled source |
 | `postinstall` | HIGH | Most common vector for supply chain attacks; check for `curl`, `wget`, encoded strings, `eval()` |
 | `prepare` | LOW | Runs on `git` installs; usually build step |
+| `binding.gyp` in package root, no `install`/`preinstall` | MEDIUM | npm and pnpm synthesize `install: node-gyp rebuild`; build code runs and needs approval like any `install` script. `gypfile: false` disables it |
 
 ### PyPI setup hooks
 
@@ -124,6 +291,8 @@ warrant scrutiny at Tier 2 and mandatory review at Tier 3.
 | `setup.py` with `cmdclass` override | HIGH | Arbitrary code during `pip install`; check for network calls, file reads outside package dir |
 | `pyproject.toml` build backends | MEDIUM | Less surface area than raw `setup.py` but still executes build code |
 | `__init__.py` import-time side effects | MEDIUM | Code runs on first import, not install -- but still a supply chain vector |
+| `.pth` file in a wheel (`*.pth` in the wheel's `RECORD`) | HIGH | Lines starting with `import` run at **every** Python interpreter start, not only on import or install. Any `.pth` beyond plain path entries needs a stated reason |
+| sdist only (no wheel for the target platform) | MEDIUM | pip / uv run the build backend on the user's machine |
 
 ### Other ecosystems
 
@@ -145,6 +314,13 @@ Flag and document any of the following:
 - **File system scanning**: `readdir` on `~`, `~/.ssh`, `~/.aws`, `~/.npmrc`
 - **Process spawning**: `child_process.exec()`, `subprocess.run()`, `os.system()` with dynamic input
 - **Exfiltration patterns**: HTTP POST with collected env vars or file contents
+- **Second-stage droppers**: script downloads a runtime or binary and runs it
+- **Persistence**: writes outside the package into IDE/agent or shell config
+  (`.vscode/tasks.json`, `.claude/settings.json`, shell rc files, git hooks,
+  cron / launch agents); survives uninstall
+- **Token-triggered destruction**: deletes files when a token stops working.
+  Follow the §4.6 V4 incident-response order (remove persistence before
+  revoking credentials)
 
 ---
 
@@ -186,14 +362,15 @@ Skip for Tier 1 packages.
 | `none` | Note "X deps checked, none with HIGH+ CVEs (OSV)" in transitive row. Proceed. |
 | `low` | Note findings count. Does not change verdict alone. |
 | `medium` | Note MEDIUM count. Soft CONDITIONAL signal if multiple findings in direct deps. |
-| `high` | CONDITIONAL lean. Cite affected dep name(s) + CVE IDs. Condition: update to patched transitive version. |
-| `critical` | Strong CONDITIONAL. Must cite dep name + CVE IDs. Immediate upgrade path required. |
+| `high` | Third-party component (`references/criteria.md` §4.3) → HIGH flag → CONDITIONAL. Cite dep name(s) + CVE IDs. Condition: a version of this package, or a lockfile override, that resolves to the fixed dep version. |
+| `critical` | Check each CRITICAL against CISA KEV. KEV-listed → REJECTED (Blocking CVE); name the fixed dep version. Otherwise HIGH flag → CONDITIONAL, same condition as `high`. |
 
-**Transitive vs direct:** Use the `depth` field in each finding. A finding with `depth: 1`
-(direct dep) carries the same verdict weight as a CVE in the package itself. A finding
-with `depth > 1` (transitive) warrants a flag and citation but not automatic verdict
-escalation — report it and let the reviewer weigh reachability. Tier 2 always emits
-`depth: 1`; Tier 3 reflects actual tree depth.
+**Transitive vs direct:** Use the `depth` field in each finding. Every dependency
+is a third-party component under §4.3, so depth never makes a finding a Blocking
+CVE (only KEV does). Depth shapes the condition: a `depth: 1` finding usually needs
+a new release of this package or an override; a `depth > 1` finding warrants a
+flag and citation — report it and let the reviewer weigh reachability. Tier 2
+always emits `depth: 1`; Tier 3 reflects actual tree depth.
 
 ### Depth thresholds
 
@@ -320,8 +497,8 @@ ecosystem mapping for these is not yet established.
 | `none` | Note "None found (checked: OSV, GHSA)" in CVE row. Proceed. |
 | `low` | Note finding; verify version-range scope. Does not shift verdict alone. |
 | `medium` | Investigate — check if requested version is in affected range. May push toward CONDITIONAL. |
-| `high` | Strong CONDITIONAL lean. Report must cite CVE IDs and affected ranges. Condition: upgrade to patched version; pin lockfile. |
-| `critical` | REJECTED lean. Exception only if requested version is affirmatively outside affected range — document the version-range check. |
+| `high` | Cite CVE IDs and affected ranges. Fixed release exists → HIGH flag → CONDITIONAL (condition: install the fixed version; pin lockfile). No fixed release → Blocking CVE → REJECTED (`SKILL.md` Tree terms). |
+| `critical` | Check CISA KEV first. KEV-listed → REJECTED even when fixed (name the fixed release). Not KEV: no fixed release → REJECTED; fixed release → HIGH flag → CONDITIONAL. A version affirmatively outside the affected range is unaffected — document the range check. |
 | Discrepancy (one DB only) | Flag and investigate. May be ingestion lag or a withdrawn advisory. Document in Security row; do not silently discard. |
 
 ### When `-Version` is supplied

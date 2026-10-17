@@ -117,6 +117,33 @@ PYPI_ONE_AUTHOR = {
     "urls": [], "releases": {"1.0.0": []},
 }
 
+NPM_IDENTITY_DRIFT = {
+    "name": "fixpkg", "description": "fixture", "dist-tags": {"latest": "1.1.0"},
+    "maintainers": [{"name": "solo"}],
+    "versions": {
+        "1.0.0": {"license": "MIT",
+                  "_npmUser": {"name": "GitHub Actions",
+                               "trustedPublisher": {"id": "github", "oidcConfigId": "cfg-1"}},
+                  "dist": {"attestations": {"url": "https://registry.npmjs.org/-/npm/v1/attestations/fixpkg@1.0.0",
+                                            "provenance": {"predicateType": "https://slsa.dev/provenance/v1"}}}},
+        "1.1.0-beta.1": {"license": "MIT", "_npmUser": {"name": "canary-bot"}},
+        "1.1.0": {"license": "MIT", "_npmUser": {"name": "solo"}, "scripts": {"preinstall": "node setup.js"}},
+    },
+    # 1.0.1 is in `time` but no longer served: removed, like a pulled malicious release.
+    "time": {"created": "2020-01-01T00:00:00Z", "modified": "2020-03-01T00:00:00Z",
+             "1.0.0": "2020-01-01T00:00:00Z", "1.0.1": "2020-01-15T00:00:00Z",
+             "1.1.0-beta.1": "2020-02-01T00:00:00Z", "1.1.0": "2020-03-01T00:00:00Z"},
+}
+DRIFT_ROUTES = [{"match": "registry.npmjs.org", "body": NPM_IDENTITY_DRIFT}, {"match": "", "fail": True}]
+DRIFT_PREVIOUS = {"version": "1.0.0", "publisher": "GitHub Actions",
+                  "trustedPublisher": {"id": "github", "oidcConfigId": "cfg-1"},
+                  "provenance": "https://slsa.dev/provenance/v1", "installHooks": []}
+
+
+def without(d, *keys):
+    return {k: v for k, v in d.items() if k not in keys}
+
+
 BASELINE_TSV = """# fixture baseline
 chalk\t500000000
 react\t180000000
@@ -229,8 +256,32 @@ class RegistryLookupPython(unittest.TestCase):
     def test_single_entries_are_arrays(self):
         npm = run_main(self.mod, ["npm", "fixpkg"])
         self.assertEqual((npm["maintainers"], npm["maintainerCount"], npm["installScripts"]), (["solo"], 1, ONE_HOOK))
+        self.assertEqual((npm["previousVersion"], npm["removedVersions"], npm["trustedPublisher"]), (None, [], None))
         pypi = run_main(self.mod, ["pypi", "fixpkg"])
         self.assertEqual((pypi["maintainers"], pypi["maintainerCount"]), (["solo"], 1))
+        self.assertNotIn("previousVersion", pypi)
+
+
+class RegistryLookupNpmIdentityPython(unittest.TestCase):
+    def setUp(self):
+        self.mod = load("registry-lookup")
+
+        def fake_invoke_api(url, timeout=15):
+            for r in DRIFT_ROUTES:
+                if r["match"] in url:
+                    return None if r.get("fail") else r["body"]
+        self.mod.invoke_api = fake_invoke_api
+
+    def test_identity_drop_and_removed_version(self):
+        out = run_main(self.mod, ["npm", "fixpkg"])
+        self.assertEqual((out["publisher"], out["trustedPublisher"], out["provenance"]), ("solo", None, None))
+        self.assertEqual(without(out["previousVersion"], "publishedAt"), DRIFT_PREVIOUS)
+        self.assertEqual(out["previousVersion"]["publishedAt"], "2020-01-01")
+        self.assertEqual(out["removedVersions"], ["1.0.1"])
+
+    def test_prerelease_compares_with_any_earlier_version(self):
+        out = run_main(self.mod, ["npm", "fixpkg", "1.1.0-beta.1"])
+        self.assertEqual((out["publisher"], out["previousVersion"]["version"]), ("canary-bot", "1.0.0"))
 
 
 @unittest.skipUnless(PWSH, "pwsh not on PATH")
@@ -238,8 +289,19 @@ class RegistryLookupPowerShell(unittest.TestCase):
     def test_single_entries_are_arrays(self):
         npm = run_ps("registry-lookup", {"Ecosystem": "npm", "Name": "fixpkg"}, REGISTRY_ROUTES)
         self.assertEqual((npm["maintainers"], npm["maintainerCount"], npm["installScripts"]), (["solo"], 1, ONE_HOOK))
+        self.assertEqual((npm["previousVersion"], npm["removedVersions"], npm["trustedPublisher"]), (None, [], None))
         pypi = run_ps("registry-lookup", {"Ecosystem": "pypi", "Name": "fixpkg"}, REGISTRY_ROUTES)
         self.assertEqual((pypi["maintainers"], pypi["maintainerCount"]), (["solo"], 1))
+
+    def test_identity_drop_and_removed_version(self):
+        out = run_ps("registry-lookup", {"Ecosystem": "npm", "Name": "fixpkg"}, DRIFT_ROUTES)
+        self.assertEqual((out["publisher"], out["trustedPublisher"], out["provenance"]), ("solo", None, None))
+        self.assertEqual(without(out["previousVersion"], "publishedAt"), DRIFT_PREVIOUS)
+        self.assertEqual(out["removedVersions"], ["1.0.1"])
+
+    def test_prerelease_compares_with_any_earlier_version(self):
+        out = run_ps("registry-lookup", {"Ecosystem": "npm", "Name": "fixpkg", "Version": "1.1.0-beta.1"}, DRIFT_ROUTES)
+        self.assertEqual((out["publisher"], out["previousVersion"]["version"]), ("canary-bot", "1.0.0"))
 
 
 # ── typosquat-check ─────────────────────────────────────────────────────────

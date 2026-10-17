@@ -80,9 +80,12 @@ Collect before proceeding (same as generic, specialized for registry context):
 6. **Checksum / lockfile** -- is this going into a lockfile? Is there an
    integrity hash? (`npm` uses `sha512` in `package-lock.json`; `pip` uses
    hashes in `requirements.txt` with `--require-hashes`)
+7. **Client and version** -- e.g. npm 12, pnpm 10, Bun, pip, uv. It decides
+   whether install scripts run (addendum "Client execution model"). Unknown
+   → assume they run.
 
-If any of 1--5 are missing, ask before proceeding. Item 6 is optional but its
-presence increases trust.
+If any of 1--5 are missing, ask before proceeding. Items 6--7 are optional;
+a lockfile increases trust.
 
 ---
 
@@ -91,8 +94,13 @@ presence increases trust.
 **Run the registry lookup script first** to get hard data:
 
 ```
-python3 scripts/registry-lookup.py -Ecosystem <eco> -Name "<name>"
+python3 scripts/registry-lookup.py -Ecosystem <eco> -Name "<name>" [-Version "<version>"]
 ```
+
+Pass `-Version` when the user pinned one; otherwise the script reports the
+version `latest` resolves to. Its `daysSincePublish` and, for npm,
+`trustedPublisher`, `provenance` and `previousVersion` feed the Version
+integrity row (addendum "Version & Update Integrity (§4.6)").
 
 > **PowerShell hosts:** each `scripts/<script>.py` has a `scripts/<script>.ps1` twin taking identical arguments (e.g. `.\scripts\vuln-lookup.ps1 -Ecosystem npm -Name "lodash"`).
 
@@ -128,20 +136,30 @@ Thresholds"):
 - No CRITICAL or HIGH CVEs in requested version
 - No maintainer changes in last 90 days
 - First publish >1 year ago
-- Provenance attestation present OR ecosystem has no mechanism
+- Version to be installed published ≥ 7 days ago (`references/criteria.md`
+  §4.6 V1)
+- No change of signer, trusted-publisher config or publisher from the
+  previous release, and no other §4.6 V3 item
+- No past compromise (§4.6 V4 case c)
+
+Trusted publishing or provenance is **not** required: its absence does not
+block Tier 1, and its presence never qualifies a package on its own (§4.6
+V2).
 
 **Quick audit scope:** Confirm version is current, check for CVEs, verify the
-name is not a typosquat, note the license, check for provenance attestation.
-Write a short report. Takes ~2 minutes.
+name is not a typosquat, note the license, check version age and continuity
+with the previous release (Version integrity row). Write a short report.
+Takes ~2 minutes.
 
 **Examples:** `express`, `lodash`, `react`, `requests`, `flask`, `django`,
-`serde`, `tokio`, `rails`, `Newtonsoft.Json`, `hashicorp/aws` (Terraform).
+`serde`, `tokio`, `rails`, `Newtonsoft.Json`, `hashicorp/aws` (Terraform),
+when the version-level rows above hold at audit time.
 
 ### Tier 2 -- Standard Audit (default)
 
 Use when the package has some trust signals but does not meet all Tier 1
 criteria:
-- Moderate adoption (1K--1M weekly npm / proportional)
+- Moderate adoption (between the addendum's Tier 3 trigger and Tier 1 bar)
 - Identifiable publisher with history
 - No unpatched CVEs in requested version
 - First publish >30 days ago
@@ -153,7 +171,7 @@ This is the default tier.
 ### Tier 3 -- Deep Audit (any red flag)
 
 **Any one** of the following triggers Tier 3:
-- Weekly downloads <1K (npm-equivalent) and not a known niche tool
+- Adoption below the addendum's Tier 3 trigger and not a known niche tool
 - First publish <30 days ago
 - Single anonymous/pseudonymous maintainer, account <6 months old
 - Name similarity to a top-1000 package (edit distance <=2)
@@ -162,6 +180,9 @@ This is the default tier.
 - `preinstall`/`postinstall` scripts with network or exec calls
 - Recent maintainer transfer from established to unknown account
 - Will run in CI/CD with access to secrets or production credentials
+- Version to be installed has a §4.6 V3 HIGH (trusted publisher or
+  provenance dropped or changed, new install hook) or a publisher change
+  from the previous release (addendum V3 plug-in)
 
 **Deep audit scope:** Everything in Standard, plus: install script source
 review, dependency tree audit, behavioral analysis of source code, and
@@ -181,16 +202,20 @@ alone), specialized for registry package risk:
    for homoglyphs, dash insertion/removal, scope impersonation. See
    `references/criteria/registry-package.md` "Typosquat Detection" for
    interpretation and `references/criteria.md` 4.1 for the substitution table.
-2. **Does the publisher have provenance?** Check for ecosystem-specific trust
-   signals (see `references/criteria/registry-package.md` "Ecosystem Trust
-   Signals" table). Note presence or absence.
+2. **Does this version's identity verify and match the previous release?**
+   Check the ecosystem's identity signals
+   (`references/criteria/registry-package.md` "Ecosystem Trust Signals")
+   against the previous release (`previousVersion` for npm). A drop or change
+   is a §4.6 V3 HIGH; never used is a note.
 3. **Are there known vulnerabilities?** CVEs, security advisories, supply
    chain incidents affecting this package or its maintainer account.
 4. **Who maintains it and are they still active?** Maintainer identity,
    account age, other packages by same maintainer, ownership transfers.
-5. **What happens at install time?** Review lifecycle scripts
-   (`preinstall`/`postinstall` for npm, `setup.py` for PyPI, `build.rs` for
-   crates, etc.). See the install script risk patterns in
+5. **What happens at install time, and will it run?** Review lifecycle
+   scripts (`preinstall`/`postinstall`/`binding.gyp` for npm, `setup.py` or
+   wheel `.pth` files for PyPI, `build.rs` for crates, etc.) and whether the
+   user's client runs them (npm ≥ 12 and pnpm ≥ 10 block dependency scripts
+   until approved). See "Install Script Risk Patterns" in
    `references/criteria/registry-package.md`.
 6. **What does the dependency tree look like?** Direct dependency count,
    transitive depth, known-bad transitives. See transitive guidance in
@@ -243,6 +268,8 @@ Audit Coverage transitive dependencies row.
 - `"<package name>" vulnerability OR malware OR "supply chain"`
 - `"<package name>" deprecated OR abandoned OR alternative`
 - `"<package name>" maintainer compromise OR hijack`
+- `"<package name>" "<version>" malicious OR compromised` (version scope,
+  `references/criteria.md` §4.6 V4)
 - For IaC modules: `"<module name>" misconfiguration OR insecure default`
 
 **Check the OpenSSF Scorecard** if a source repository is known:
@@ -250,8 +277,10 @@ Audit Coverage transitive dependencies row.
 below 4/10 are a significant negative signal.
 
 **For Tier 3 -- install script review:**
-- npm: Read `package.json` `scripts` block; inspect referenced files
-- PyPI: Read `setup.py` or `setup.cfg`; check for `cmdclass` overrides
+- npm: Read `package.json` `scripts` block; inspect referenced files; a root
+  `binding.gyp` means an implicit `node-gyp rebuild`
+- PyPI: Read `setup.py` or `setup.cfg`; check for `cmdclass` overrides; list
+  `*.pth` files in the wheel's `RECORD` (they run at every interpreter start)
 - crates.io: Read `build.rs` if present
 - RubyGems: Read `extconf.rb` if present
 - NuGet: Check for `.targets`, `.props`, `init.ps1`, `install.ps1`
@@ -293,11 +322,17 @@ As you run each check, record its outcome for the **Audit Coverage** table
   If T3 fell back: note `T3→T2 fallback: <reason>`.
   For Tier 1: `Skipped -- Tier 1 quick audit`.
 
+- **Version integrity row** (all tiers): cite age, identity and continuity,
+  e.g. `Done -- registry-lookup: 1.4.2 published 2026-09-30 (16 d); trusted
+  publisher github, same config as 1.4.1; provenance SLSA v1; no past
+  compromise`, or `Done -- 2.0.1 published 1 d ago; provenance on 2.0.0,
+  absent on 2.0.1 (V3 HIGH)`.
+
 ### Tier-specific research scope
 
 **Tier 1 (Quick):** Confirm no CVEs, verify not a typosquat, check license
-compatibility, note provenance attestation status. Skip deep web research,
-dependency tree audit, and install script review.
+compatibility, check version age and identity continuity (§4.6). Skip deep
+web research, dependency tree audit, and install script review.
 
 **Tier 2 (Standard):** All of the above plus: full web search for incidents,
 maintainer/activity assessment, OpenSSF Scorecard lookup, dependency tree
@@ -325,10 +360,14 @@ sections below specialize the shared criteria for registry package context.
 - **Publisher identity**: Can the publisher be linked to a real organization
   or known individual? Check the registry profile, linked GitHub org, and
   publishing history.
-- **Provenance attestation**: Does the package use ecosystem-specific
-  provenance? npm Sigstore provenance, PyPI Trusted Publishers, NuGet package
-  signing, crates.io GitHub-linked ownership. Presence is a strong positive.
-  Absence when the mechanism exists is a minor note.
+- **Provenance / trusted publishing**: Does this version carry the
+  ecosystem's identity signal (npm trusted publishing or provenance, PyPI
+  attestations, crates.io trusted publishing, NuGet author signature), and
+  does it name the same repo / workflow as the previous release? Verified and
+  continuous → positive note; it proves origin, not safety, and never on its
+  own justifies Tier 1 or APPROVED (`references/criteria.md` §4.6 V2).
+  Dropped or changed → §4.6 V3 HIGH (no Tier 1; Tier 3). Never used → minor
+  note; does not block Tier 1.
 - **Typosquatting**: Character-by-character comparison against the legitimate
   package name. For scoped packages, also verify the scope owner (`@babel`
   vs `@bable`). Apply the substitution table from `references/criteria.md`
@@ -379,7 +418,9 @@ Evaluate behavioral permissions:
 
 - **npm install scripts**: `preinstall`/`postinstall` hooks execute with the
   user's shell permissions. Flag if they spawn subprocesses, make network
-  calls, or access files outside the package directory.
+  calls, or access files outside the package directory. npm ≥ 12 and pnpm
+  ≥ 10 run dependency hooks only after approval; rate them as if approved
+  when the package needs them.
 - **Native addons**: Packages requiring `node-gyp`, C extensions (Python),
   or Rust FFI compile and link native code. This is normal for performance
   packages but increases the attack surface -- note it.
@@ -450,8 +491,12 @@ packages:
 - **Known malware**: Package malicious by design (cryptominer, credential
   stealer, data exfiltration). Malicious versions of a legitimate package are
   rated by version scope per `references/criteria.md` §4.6 V4
-- **Unpatched CRITICAL/HIGH CVE**: In the requested version with no fix
-  available
+- **Blocking CVE** (`SKILL.md` Tree terms; `references/criteria.md` §4.3):
+  CRITICAL listed in CISA KEV (in the package or a dependency), or
+  HIGH/CRITICAL in the package's own code with no fixed release
+- **Install-time persistence or dropper**: install script or `.pth` file that
+  writes into IDE/agent or shell config (`.vscode/`, `.claude/`, shell rc
+  files, git hooks) or downloads and runs a second-stage binary
 
 ### Toward CONDITIONAL
 
@@ -466,8 +511,17 @@ conditions):
   maintainer change
 - **Moderate transitive risk**: Condition: run `npm audit` / equivalent
   before each update; pin lockfile
-- **Missing provenance when mechanism exists**: Condition: verify checksum
-  manually; pin to exact version
+- **Identity dropped or changed vs the previous release** (§4.6 V3 HIGH):
+  Condition: install the last release that passes V3; re-audit when the
+  maintainers explain the change. Never using an available mechanism is a
+  note, not a condition
+- **Fresh version** (§4.6 V1): Condition: install the previous release, or
+  set the client cooldown from the addendum's V1 table
+- **Install scripts need approval** (npm ≥ 12, pnpm ≥ 10): Condition: approve
+  only this package, pinned to the audited version
+- **Dependency HIGH/CRITICAL CVE, not in KEV** (third-party component,
+  §4.3): Condition: a version or override that resolves to the fixed
+  dependency
 - **Stale but not abandoned**: Condition: monitor for deprecation; identify
   successor package
 - **3+ MEDIUM flags accumulated**: Cumulative risk triggers CONDITIONAL per
@@ -480,7 +534,8 @@ All of the following support APPROVED:
 - All tier-appropriate checks completed with no flags
 - Publisher is verified or well-known
 - No CVEs in requested version
-- Provenance attestation present (or ecosystem has no mechanism)
+- Version ≥ 72 h old with no §4.6 V3 item; identity continuous with the
+  previous release where the package uses an identity mechanism
 - Healthy maintenance signals
 - License is compatible
 - Adoption level appropriate for stated use case
