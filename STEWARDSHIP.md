@@ -35,6 +35,24 @@ Any of the following events triggers an immediate out-of-cycle review for the af
 - An **eval case starts producing unexpected results** (regression signal) — indicates the rubric's expected output no longer matches ecosystem reality
 - A **real audit surfaces a gap** not covered by the rubric — a case the workflow should have caught but didn't
 
+### Watch List
+
+Sources to scan at checklist step 3 and between reviews for the triggers above. As of 2026-10; prune or extend at each review.
+
+| Workflow | Watch |
+|---|---|
+| `registry-package.md` | GitHub changelog (npm) and npm CLI releases: script approval, trusted publishing, staged publishing · blog.pypi.org: attestations, quarantine · crates.io, RubyGems and NuGet blogs: trusted publishing |
+| `browser-extension.md` | Chrome and Edge MV2 timeline pages · Chrome Web Store and AMO policy posts · CISA KEV entries naming extensions |
+| `container-image.md` | Docker Official Images signing replacement (none confirmed as of 2026-10) · Docker Hardened Images verification flow · `cosign` / `gh attestation` flag changes · publisher namespace freezes (e.g. `bitnamilegacy`) |
+| `ci-action.md` | GitHub changelog (Actions): immutable releases, workflow lockfiles, `actions/checkout` majors |
+| `ide-plugin.md` | VS Code Marketplace block-list and security posts · Open VSX / Eclipse takedowns · JetBrains Marketplace security posts |
+| `desktop-app.md` | Store packaging policies (Microsoft Store, Mac App Store, Snap Store, Flathub) · Gatekeeper / notarization changes · CA/Browser Forum code-signing ballots · Homebrew cask policy |
+| `cli-binary.md` | Homebrew releases: `brew trust`, `HOMEBREW_VERIFY_ATTESTATIONS` default · GitHub immutable releases and `gh release verify` |
+| `agent-extension.md` | MCP spec revisions · Claude Code plugin / skill / MCP docs: component types, marketplace source types, trust gating |
+| `remote-integration.md` | OAuth 2.1 RFC status · MCP authorization spec · Slack / Google API-terms changes · Google CASA program |
+| `generic.md` | New installable kinds no type covers; classifier routing-override changes |
+| Shared (`references/criteria.md` §4.3, §4.6, §4.7) | CISA KEV catalog · package-manager cooldown settings · OpenSSF Scorecard API (`api.scorecard.dev`) |
+
 ---
 
 ## Re-Evaluation Checklist
@@ -43,7 +61,7 @@ Run these steps in order for each workflow during a scheduled or event-triggered
 
 1. Read the workflow file end-to-end; note any stale commands, URLs, or version references
 2. Read the paired criteria file; verify tier thresholds still reflect current ecosystem norms
-3. Check ecosystem changelogs/announcements since last review for security-relevant changes
+3. Check ecosystem changelogs/announcements since last review for security-relevant changes (start from § Watch List)
 4. Run existing eval cases for this workflow; confirm no regressions (see Running Evals below: `prepare --workflow <name>` → run → `grade` → `summary`; any failed assertion or routing mismatch is a regression signal)
 5. If rubric gaps found: file a `plan-projex` for the update (do not edit in-place during review)
 6. If eval gaps found: add new cases or update existing ones via `plan-projex`

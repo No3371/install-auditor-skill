@@ -106,7 +106,7 @@ Run `gh`, `cosign`, `slsa-verifier`, `gpg` and `minisign` under the audit-toolin
 ### Scoring impact
 
 - `curl … | sudo sh` from unknown source = automatic Tier 3, push toward REJECTED
-- `curl … | sh` from known vendor = Tier 2 minimum, note pipe-to-shell risk; condition or recommendation = executed-bytes rule
+- `curl … | sh` from known vendor = Tier 3 (Tier 3 trigger: pipe-to-shell from any source), note pipe-to-shell risk; condition or recommendation = executed-bytes rule
 - Install-command lure = CRITICAL
 - Pipe-to-shell (any shell, incl. PowerShell `iex`) from a URL that hides the publisher or uses plain HTTP = CRITICAL
 - `irm … | iex` from known vendor, URL traced to vendor docs = same as `curl … | sh` from known vendor
@@ -172,13 +172,14 @@ ANY of these triggers:
 - Identity evidence differs from vendor docs or the previous release (§4.6 V3)
 - Binary requests elevated privileges (sudo/admin) with unclear justification
 
-## Own Code vs Third-Party Components (§4.3)
+## CVE Scope (§4.3)
 
 Plug-in for `references/criteria.md` §4.3. The verdict classes stay as defined there and in `SKILL.md` "Blocking CVE".
 
 - **Own code:** the project's own source as shipped in the binary (incl. forks it maintains) and the project's install script.
 - **Third-party component:** statically linked or vendored libraries (Go modules, Rust crates, bundled C libraries), bundled runtimes or interpreters, and Homebrew dependency formulae.
 - **Fixed release:** for a third-party component, a release of this binary (or an update of the Homebrew dependency formula) that ships the fixed component. An upstream library fix that no binary release ships yet is not a fixed release of the subject.
+- **Third-party component, no fixed release (not KEV):** HIGH flag per `references/criteria.md` §4.3. Condition: avoid the affected feature or input the advisory names; run without sudo / Administrator; no network-exposed or long-running use of the affected path; pin the audited release; re-audit when a binary release ships the fix. A scanner's "not called" reachability result supports the condition as a note, not as VEX.
 - **Scan sources:** OSV / GHSA for the repo and for the dependency versions in its `go.mod` / `Cargo.lock` at the release tag; vendor advisories. Where available, scanners that read a binary's embedded dependency metadata (`govulncheck -mode=binary <file>` for Go; `cargo audit bin <file>` for Rust binaries built with `cargo auditable`). The audit-tooling note in `references/criteria.md` applies.
 - **VEX sources:** only the project's own VEX documents or advisory statements that name the version. Reachability output from a scanner you run (e.g. govulncheck reporting a vulnerable symbol as not called) is a note, not VEX evidence.
 

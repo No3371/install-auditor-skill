@@ -221,7 +221,7 @@ This is the dominant axis for Type 5:
   (addendum §Runtime & Pin Freshness)
 - Required runner assumptions and external service dependencies
 
-### 4.6 Alternatives
+### Alternatives
 
 Prefer official first-party or verified alternatives when a third-party
 action is risky, stale, or over-privileged.

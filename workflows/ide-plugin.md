@@ -359,7 +359,7 @@ no granular permission model like browser extensions. The risk axes are:
   version only (`references/criteria.md` §4.6 V5); name the addendum's V5
   update controls in the Recommendation.
 
-### 4.6 Alternatives (ide-plugin-specialized)
+### Alternatives (ide-plugin-specialized)
 
 - Are there alternative plugins with narrower capabilities for the
   same purpose?

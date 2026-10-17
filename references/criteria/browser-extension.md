@@ -179,7 +179,7 @@ ALL of these must hold:
 - No `<all_urls>` or `*://*/*` unless the extension's purpose is inherently
   broad (ad blocker, password manager, dev tools — and even then, note it)
 - MV3 manifest version (or MV2 on Firefox with AMO Recommended)
-- No known incidents or store removals in search results
+- No known incidents or store removals in search results (a removal for MV2 retirement or inactivity does not count — § Manifest Version)
 - Extension has been listed ≥ 1 year
 - `references/criteria.md` §4.6 allows Tier 1 (version ≥ 7 days old, no V3 item, no past compromise)
 
@@ -201,7 +201,7 @@ ANY of these triggers:
 - `userScripts` or `debugger` outside an extension whose purpose needs them
 - Extension shared via direct link / chat (not store URL)
 - Recent ownership transfer or developer change
-- Known prior removal or policy violation from any store
+- Known prior removal or policy violation from any store (an MV2-retirement or inactivity removal does not count)
 - MV2 targeted at Chrome (unsupported)
 - `nativeMessaging` permission present
 - Self-hosted update URL

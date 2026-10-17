@@ -26,7 +26,7 @@
 - **crates.io** — Requires GitHub auth to publish. Higher baseline trust than npm/PyPI. Trusted publishing (`trustpub_data` per version) names the publishing repo + commit. `build.rs` runs at build time.
 
 ### Go
-- **pkg.go.dev / go get** — Module proxy + checksum DB (`sum.golang.org`) guarantee everyone gets the same bytes for a version: consistency, not author identity or safety (the proxy keeps serving a cached version even if it is malicious). Medium-High baseline. `GOSUMDB=off`, or a `GONOSUMDB` / `GOPRIVATE` pattern covering public modules, disables checksum verification — flag (`GOINSECURE` does not).
+- **pkg.go.dev / go get** — Module proxy + checksum DB (`sum.golang.org`) guarantee everyone gets the same bytes for a version: consistency, not author identity or safety (the proxy keeps serving a cached version even if it is malicious). Medium-High baseline. `GOSUMDB=off`, or a `GONOSUMDB` / `GOPRIVATE` pattern covering public modules, disables checksum verification — flag; Recommendation: remove the setting, or narrow the pattern to private module paths (`GOINSECURE` does not disable it).
 
 ### Java / JVM
 - **Maven Central** — Requires PGP signing (Sigstore bundles optional) and namespace verification. High trust. A signature proves the key holder, not safety — check key continuity across versions.
@@ -41,6 +41,7 @@
 | Source | Trust |
 |---|---|
 | Official Docker Hub images (library/) | High |
+| Hardened catalogs (Docker Hardened Images `dhi.io`, Chainguard `cgr.dev`) | High — when signed attestations verify against the publisher's documented key or identity |
 | Docker Hub verified publishers | Medium-High |
 | Docker Hub community images | Low-Medium |
 | GitHub Container Registry (ghcr.io) from known orgs | Medium-High |
@@ -48,6 +49,7 @@
 | Quay.io (Red Hat) | Medium |
 | Random Docker Hub with <100 pulls | Low |
 | Self-hosted registry (unknown) | Low — verify provenance |
+| Frozen / legacy namespace (e.g. `bitnamilegacy`) | Low — no further updates; HIGH flag `frozen namespace` (`references/criteria/container-image.md`) |
 
 **Always check:** Use `docker scout` or Trivy scan results if available. Image digest pinning preferred over tag pinning.
 
@@ -66,8 +68,8 @@
 | Marketplace | Trust |
 |---|---|
 | VS Code Marketplace (marketplace.visualstudio.com) | Medium (Microsoft-operated) |
-| JetBrains Marketplace | Medium-High (JetBrains review process) |
-| Vim-Plug / GitHub-sourced Vim plugins | Low-Medium (no central review) |
+| JetBrains Marketplace | Medium (manual listing review; the Plugin Verifier checks compatibility, not malware — see `references/criteria/ide-plugin.md`) |
+| Vim / Neovim plugins from GitHub (vim-plug, lazy.nvim, `vim.pack`) | Low-Medium (no central review; trust the repo and the pinned commit) |
 | Emacs MELPA | Low-Medium (community-maintained) |
 | Open VSX (open-vsx.org) | Low-Medium (Eclipse-operated; operator-configured publish checks; confirm the namespace is *verified*) |
 | VS Code forks (Cursor, Windsurf, VSCodium, …) | Trust of the registry the fork installs from — usually Open VSX, **not** VS Code Marketplace (see `references/criteria/ide-plugin.md`) |

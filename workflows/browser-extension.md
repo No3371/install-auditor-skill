@@ -311,7 +311,7 @@ declared permission against the risk classification in
 - **Enterprise policy compatibility**: If the user's org manages browser
   extensions via policy, note any conflicts.
 
-### 4.6 Alternatives (browser-extension-specialized)
+### Alternatives (browser-extension-specialized)
 
 - Are there alternative extensions with fewer permissions for the same
   purpose?
@@ -376,7 +376,8 @@ All of the following support APPROVED:
 - `references/criteria.md` §4.6 raises no flag
 - Permissions are proportional to stated purpose
 - Publisher is identified (company or known individual/project)
-- No known incidents or store removals
+- No known incidents or store removals (MV2-retirement or inactivity
+  removals excepted)
 - MV3 manifest version (or MV2 on Firefox with Recommended badge)
 - No content scripts, or content scripts scoped to relevant domains
 - Open source (bonus, not required)

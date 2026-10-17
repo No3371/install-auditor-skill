@@ -48,7 +48,7 @@ Any installable: browser extensions, IDE/editor plugins, registry packages (npm,
 | 4 | container-image | `docker pull/run`, `FROM` in Dockerfile, `sha256:` digest, `hub.docker.com/*`, `ghcr.io/*`, `quay.io/*`, ECR/GCR |
 | 5 | ci-action | `uses:` in workflows, GitLab `include:`, CircleCI `orbs:`, `github.com/<owner>/<action>@<ref>` |
 | 6 | desktop-app | `.msi/.dmg/.deb/.rpm/.pkg`, `brew install --cask`, `winget`, `choco`, MS/Mac App Store URLs |
-| 7 | cli-binary | `curl … \| sh`, `irm … \| iex`, GitHub Releases binary, `brew install <formula>` (not `--cask`), nvm/pyenv/rustup, vendor-hosted executables |
+| 7 | cli-binary | `curl … \| sh`, `irm … \| iex`, GitHub Releases binary, `brew install <formula>` (not a cask), nvm/pyenv/rustup, vendor-hosted executables |
 | 8 | agent-extension | MCP config or server URL (**8a**), Claude Code plugin / `/plugin install` (**8b**), `SKILL.md` skill (**8c**) |
 | 9 | remote-integration | OAuth flow, API key exchange, "Connect to <service>"; no local code or MCP server |
 | 0 | generic | no strong signal fires, or conflict unresolved by the innermost-boundary rule |
@@ -179,7 +179,7 @@ Subject-independent. Each applies only when its full condition holds; partial ma
 - **Removed for cause** — previously removed from Chrome Web Store, npm, PyPI, etc. for malicious behavior, compromise, or a security-policy violation (not author unpublish, rename, or naming dispute)
 - **Confirmed supply chain compromise** — advisory or vendor confirms malicious code in the version to be installed, or the affected range is unknown, or the compromise is unresolved (`references/criteria.md` §4.6 V4)
 - **Excessive permissions** — browser extension reads all history/cookies/clipboard with no justification
-- **Mutable CI ref with privileged access** — action or reusable workflow referenced by branch, default branch, or unknown ref — or by any non-SHA ref from an unverified third-party publisher — in a job holding secrets, a write-scoped token, `id-token: write`, or publish rights. Tag-pinned actions from official/verified publishers are HIGH → CONDITIONAL (pin to SHA) per `workflows/ci-action.md`.
+- **Mutable CI ref with privileged access** — action or reusable workflow referenced by branch, default branch, or unknown ref — or by any non-SHA ref from an unverified third-party publisher — in a job holding secrets, a write-scoped token, `id-token: write`, or publish rights. Mutable tag-pinned actions from official/verified publishers are HIGH → CONDITIONAL (pin to SHA) per `workflows/ci-action.md`.
 - **Known malware** — confirmed cryptominer, credential stealer, or data exfiltration
 
 ### Behavioral Principles

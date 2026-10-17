@@ -45,7 +45,7 @@ Each row is **Required** (must appear in the table), **Tier-skip** (Tier 1 uses 
 | License compatibility | Required | Required | Required | See `references/licenses.md` |
 | Maintainer / activity / health | Tier-skip (brief) | Required | Required | Downloads, last release, signals |
 | Web search — incidents & supply chain | Tier-skip | Required | Required | Malware, hijack, removal notices |
-| OpenSSF Scorecard | Optional | Required (Done or Not available) | Required | Query `api.securityscorecards.dev` when repo known |
+| OpenSSF Scorecard | Optional | Required (Done or Not available) | Required | Query `api.scorecard.dev` when repo known |
 | Permissions / least privilege | If applicable | If applicable | If applicable | Extensions, Docker, GH Actions, etc. |
 | Dependency tree / transitive risk | Tier-skip | Required | Required | Known-bad transitive deps |
 | Install script review (`pre`/`postinstall`, etc.) | Tier-skip | Required | Required | N/A if no scripts |
@@ -147,10 +147,10 @@ Badges, verified-publisher status and signatures establish **identity**, not cod
 **Always check:** Is the CVE in the version being requested, or only in older versions? If user is installing an old pinned version that has known CVEs, escalate.
 
 - **Own code** = what the subject's publisher writes and ships (the package, binary, extension, action or app itself, incl. components it forks and maintains). **Third-party component** = OS packages, base-image layers, bundled or transitive dependencies.
-- **Fixed release** = a published version that removes the CVE. When one exists, the condition is: install it (and audit that version). A KEV-listed CRITICAL rejects the requested version even when a fix exists; the Recommendation names the fixed release. Third-party component with no fix → condition: the routed workflow's mitigations, plus re-audit when a fix ships.
+- **Fixed release** = a published version that removes the CVE. When one exists, the condition is: install it (and audit that version). A KEV-listed CRITICAL rejects the requested version even when a fix exists; the Recommendation names the fixed release. Third-party component with no fix → condition: the mitigations the routed workflow or addendum names (default when neither names any: keep untrusted input away from the affected component, run with least privilege, pin the audited version; list them in the Recommendation), plus re-audit when a fix ships.
 - **KEV:** check each CRITICAL against the CISA Known Exploited Vulnerabilities catalog; record the result in the CVE row. If the catalog is unreachable, search for in-the-wild exploitation; credible reports count as listed.
 - **VEX:** a `not_affected` statement (OpenVEX, CSAF or CycloneDX VEX) counts as evidence that the CVE does not apply if it names this version, gives a justification, and comes from the subject's publisher or the component's maintainer. Record source + justification in the CVE row and leave the CVE out of the rating. For a signed statement, check the signer per §4.6 V2. `affected` / `under_investigation` change nothing.
-- **Addendum:** draws the own-code / third-party line for its artifact type and names its scan and VEX sources. It does not change the verdict classes above.
+- **Addendum:** under one heading `## CVE Scope (§4.3)`, draws the own-code / third-party line for its artifact type, names its scan and VEX sources, and may name mitigations for a third-party component with no fix. It does not change the verdict classes above. No plug-in → the definitions above apply.
 
 ### Supply Chain Indicators
 Search for these terms combined with the package name:
@@ -314,7 +314,7 @@ The verdict covers the audited version only. A later version is unaudited until 
 
 ## 4.7 OpenSSF Scorecard (if available)
 
-If an OpenSSF Scorecard exists for the project (check via `api.securityscorecards.dev`), note:
+If an OpenSSF Scorecard exists for the project (check via `api.scorecard.dev`), note:
 - **Score below 4/10** → Flag as LOW trust
 - **Score 4–7** → MEDIUM trust
 - **Score 7+** → HIGH trust signal (not sufficient alone, but positive)

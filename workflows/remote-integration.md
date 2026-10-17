@@ -23,6 +23,13 @@ remote-integration tiering and scoring. When it conflicts with the shared
 rubric, the addendum wins — except the version-integrity floor in
 `references/criteria.md` §4.6, which it only tightens.
 
+**Scope:** a remote MCP server or AI-assistant connector that adds tools
+the assistant calls routes to `workflows/agent-extension.md` (8a;
+`references/classifier.md` Routing Overrides). That audit runs this
+workflow's grant checks (addendum §1, §5, §6) as a sub-step. Audit here
+grants that expose no tools to the user's agent, incl. AI apps that read
+your data.
+
 ---
 
 ## Identify
@@ -41,7 +48,7 @@ rubric, the addendum wins — except the version-integrity floor in
 | Service-account JSON or key file (GCP, Firebase, cloud IAM) | Service account | Long-lived key |
 | "Enter this code at \<provider\>/device" or a "connection code" | Device authorization grant | OAuth token |
 | "Sign in with Google/GitHub/Microsoft" only | SSO / federated sign-in | OIDC identity only |
-| "Add connector" in an AI assistant (remote MCP over HTTP + OAuth, no local code) | AI connector | Usually OAuth |
+| "Add connector" in an AI assistant (remote MCP over HTTP + OAuth, no local code; tool-adding connectors are audited under agent-extension 8a — see Scope) | AI connector | Usually OAuth |
 
 Several rows can apply (e.g. OAuth app plus inbound webhook): audit each
 credential.

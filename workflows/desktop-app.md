@@ -39,7 +39,7 @@ which the addendum only fills.
 |---------|---------------------|-----------------|
 | Microsoft Store | `apps.microsoft.com/detail/*`, `ms-windows-store://pdp/*` | Ratings + install count |
 | Mac App Store | `apps.apple.com/*/app/*` | Ratings + install count |
-| Homebrew Cask (official) | `brew install --cask <name>`, `formulae.brew.sh/cask/*` | Install analytics on formulae.brew.sh |
+| Homebrew Cask (official) | `brew install --cask <name>` (or bare `brew install <name>` when only a cask has that name), `formulae.brew.sh/cask/*` | Install analytics on formulae.brew.sh |
 | Homebrew Cask (third-party tap) | `brew install --cask <user>/<tap>/<name>`, `brew tap <user>/<tap>` | Tap repo activity |
 | winget | `winget install <id>`, `winget.run/pkg/*` | Manifest presence + community activity |
 | Chocolatey | `choco install <name>`, `community.chocolatey.org/packages/*` | Download count |

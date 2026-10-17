@@ -1,6 +1,7 @@
 <!--
 workflows/container-image.md - Type 4 subject-specific workflow.
-Handles OCI/Docker container images from Docker Hub, GHCR, Quay, ECR, GCR,
+Handles OCI/Docker container images from Docker Hub, Docker Hardened
+Images, GHCR, Quay, ECR, Google Artifact Registry (incl. legacy `gcr.io`)
 and other registries, whether pulled directly (`docker pull`), referenced
 from a Dockerfile (`FROM`), or declared in Compose / Kubernetes manifests.
 

@@ -105,7 +105,7 @@ Dockerfile / image-history patterns that elevate risk when observed:
 
 ### Scoring impact
 
-- Root at runtime (first row): dev workstation = LOW note `root at runtime (dev)` (the Recommendation may suggest rootless Docker / Podman); production or any other non-dev workload (shared host, CI runner, cluster) = HIGH flag → CONDITIONAL. Condition: non-root `USER` / `runAsNonRoot: true`, a rootless runtime, or Kubernetes user namespaces (`hostUsers: false`). This row is rated only by this rule, not by the pattern counts below
+- Root at runtime (first row, or `securityContext.runAsUser: 0` in a manifest): dev workstation = LOW note `root at runtime (dev)` (the Recommendation may suggest rootless Docker / Podman); production or any other non-dev workload (shared host, CI runner, cluster) = HIGH flag → CONDITIONAL. Condition: non-root `USER` / `runAsNonRoot: true`, a rootless runtime, or Kubernetes user namespaces (`hostUsers: false`). This row is rated only by this rule, not by the pattern counts below
 - Any 2 high patterns = HIGH flag
 - Any 1 high pattern without justification = MEDIUM-HIGH flag
 - Multiple medium patterns (3+) = MEDIUM flag (cumulative hygiene concern)
@@ -138,7 +138,7 @@ Source: `docker run` arguments, Compose `service` config, Kubernetes `Pod` /
 | `--cap-add=NET_RAW` | Medium | Raw socket access; enables some network attacks |
 | `--cap-add=CHOWN` / `FOWNER` / `SETUID` / `SETGID` | Low-Medium | Per-cap risk is modest, but any cap-add on an unverified image is a note |
 | `allowPrivilegeEscalation: true` (or not set) | Medium | In Kubernetes, defaults to true; explicitly false is the safe choice |
-| `securityContext.runAsUser: 0` | Medium | Explicit root; prefer a non-zero UID |
+| `securityContext.runAsUser: 0` | LOW on a dev workstation; HIGH in production (Layer Risk Patterns → Scoring impact) | Explicit root at runtime; rated only by the root-at-runtime rule, like `USER root` |
 | Bind-mount of specific host paths (config dirs) read-write | Low-Medium | Reduced risk vs whole-filesystem mount, but still host data exposure |
 | Missing `readOnlyRootFilesystem: true` | Low | Not required, but a positive signal when set |
 

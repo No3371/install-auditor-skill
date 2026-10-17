@@ -350,7 +350,7 @@ function Lookup-OpenSSF {
         return $null
     }
 
-    $data = Invoke-Api "https://api.securityscorecards.dev/projects/github.com/$repo"
+    $data = Invoke-Api "https://api.scorecard.dev/projects/github.com/$repo"
     if (-not $data) { return $null }
 
     $checks = @()

@@ -217,7 +217,7 @@ Apply `references/criteria.md` with these cli-binary-specific
 overrides. Cite `references/criteria/cli-binary.md` for detailed
 scoring.
 
-### §4.1 Provenance — Binary Authenticity
+### 4.1 Provenance — Binary Authenticity
 
 - **Primary axis: checksum + identity verification** matched to the
   expected identity (§4.6 V2). A verified, checksummed binary from a
@@ -238,7 +238,7 @@ scoring.
 - Mirror / shared copy: bytes verified against the vendor's signed
   checksum → channel risk is a note.
 
-### §4.2 Maintenance & Project Health
+### 4.2 Maintenance & Project Health
 
 - Last release date, commit frequency, open issue responsiveness.
 - Bus factor: single maintainer vs team/org.
@@ -249,7 +249,7 @@ scoring.
   is Abandoned; name the successor they recommend.
 - Archived or transferred repos are strong negative signals.
 
-### §4.3 Security — Vulnerabilities & Incidents
+### 4.3 Security — Vulnerabilities & Incidents
 
 - Check OSV/GHSA for the binary name and its source repo.
 - Search for prior supply-chain compromises (especially for install scripts
@@ -257,11 +257,11 @@ scoring.
 - Assess dependency chain if the binary is a compiled artifact (Go, Rust
   binaries ship their deps statically).
 - Classify CVEs as own code or third-party component per
-  `references/criteria/cli-binary.md` Own Code vs Third-Party Components
-  (§4.3); verdict classes per `SKILL.md` "Blocking CVE".
+  `references/criteria/cli-binary.md` CVE Scope (§4.3); verdict classes
+  per `SKILL.md` "Blocking CVE".
 - For install scripts: the script itself is the primary attack surface.
 
-### §4.4 Permissions & Access
+### 4.4 Permissions & Access
 
 - What privileges does the binary require? User-level, root/admin, or mixed?
 - Does the install script require `sudo`? Is the elevated access justified?
@@ -269,14 +269,14 @@ scoring.
 - Does the binary modify system paths, shell configs, or environment variables?
 - Network access: does it phone home, check for updates, send telemetry?
 
-### §4.5 Reliability & Stability
+### 4.5 Reliability & Stability
 
 - Is the binary statically linked or does it pull runtime dependencies?
 - Does it work across the target platform versions?
 - Is there an uninstall/removal path?
 - For install scripts: is there an uninstall script or documented removal steps?
 
-### §4.6 Version & Update Integrity
+### 4.6 Version & Update Integrity
 
 - Apply `references/criteria.md` §4.6 with the plug-ins in
   `references/criteria/cli-binary.md` Version & Update Integrity (§4.6).

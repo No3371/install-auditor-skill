@@ -338,7 +338,7 @@ def lookup_openssf(repo_url):
         return None
     repo = re.sub(r"\.git$", "", m.group(1))
 
-    data = invoke_api("https://api.securityscorecards.dev/projects/github.com/" + repo)
+    data = invoke_api("https://api.scorecard.dev/projects/github.com/" + repo)
     if not data:
         return None
 

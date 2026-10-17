@@ -273,7 +273,7 @@ Audit Coverage transitive dependencies row.
 - For IaC modules: `"<module name>" misconfiguration OR insecure default`
 
 **Check the OpenSSF Scorecard** if a source repository is known:
-`api.securityscorecards.dev/projects/github.com/<owner>/<repo>`. Scores
+`api.scorecard.dev/projects/github.com/<owner>/<repo>`. Scores
 below 4/10 are a significant negative signal.
 
 **For Tier 3 -- install script review:**
@@ -448,7 +448,7 @@ Evaluate behavioral permissions:
   function can indicate bundled binaries or data exfiltration payloads.
   Compare to alternatives.
 
-### 4.6 Alternatives (registry-specialized)
+### Alternatives (registry-specialized)
 
 - **Same-function packages**: Search `"<package name> vs"` or
   `"<package name> alternative"`. Check the package's README for "similar
