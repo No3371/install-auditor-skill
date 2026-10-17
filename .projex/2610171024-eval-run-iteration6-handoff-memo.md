@@ -5,7 +5,7 @@
 > **Parent:** Orchestrator
 > **Source Type:** Deferred
 > **Origin:** Orchestrated session 2026-10-16/17 ("What can we do to improve this?" → "orchestarte it" → "handoff")
-> **Related Projex:** 2604070218-install-auditor-subject-typed-redesign-nav.md, 2610170504-eval-suite-refresh-walkthrough.md, 2610170541-stewardship-review-pass-record-patch.md
+> **Related Projex:** 2604070218-install-auditor-subject-typed-redesign-nav.md, 2610170504-eval-suite-refresh-walkthrough.md, 2610170541-stewardship-review-pass-record-patch.md, 2610171239-eval-iteration6-fixes-plan.md
 
 ---
 
