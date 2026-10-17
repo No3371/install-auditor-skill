@@ -1,6 +1,6 @@
 # Eval Suite Refresh — Rubric Re-expectation + 2025–26 Attack Cases
 
-> **Status:** Ready
+> **Status:** In Progress
 > **Author:** Claude (Opus)
 > **Parent:** Orchestrator
 > **Source:** Direct request (orchestrator) — eval hand-offs of the 2026-10-16 refresh plans + stewardship review evals
