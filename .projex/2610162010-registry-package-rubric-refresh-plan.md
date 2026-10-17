@@ -1,6 +1,6 @@
 # Registry-Package Rubric Refresh
 
-> **Status:** Ready
+> **Status:** In Progress
 > **Author:** Claude (Opus)
 > **Parent:** 2610161927-registry-package-and-ci-action-stewardship-review-eval.md
 > **Source:** 2610161927-registry-package-and-ci-action-stewardship-review-eval.md (RP-1, RP-2, RP-4, RP-5, RP-6, RP-7 npm part, RP-9) + Hand-off row "registry-package" of 2610161941-shared-version-integrity-floor-plan.md (C6 alignment, §4.3 / §4.6 plug-ins) + human decision on Tier 1 identity (2026-10-17, via orchestrator; see Revision Log)
