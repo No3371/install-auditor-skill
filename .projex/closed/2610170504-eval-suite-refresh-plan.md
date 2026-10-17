@@ -1,11 +1,14 @@
 # Eval Suite Refresh — Rubric Re-expectation + 2025–26 Attack Cases
 
-> **Status:** In Progress
+> **Status:** Complete
 > **Author:** Claude (Opus)
 > **Parent:** Orchestrator
 > **Source:** Direct request (orchestrator) — eval hand-offs of the 2026-10-16 refresh plans + stewardship review evals
 > **Related Projex:** 2610161941-shared-version-integrity-floor-plan.md (Hand-off row "eval plan") | 2610162003-ide-plugin-rubric-refresh-plan.md | 2610162004-container-image-rubric-refresh-plan.md | 2610162004-generic-fallback-and-classifier-refresh-plan.md | 2610162005-ci-action-rubric-refresh-plan.md | 2610162006-browser-extension-rubric-refresh-plan.md | 2610162006-cli-binary-rubric-refresh-plan.md | 2610162006-desktop-app-rubric-refresh-plan.md | 2610162007-agent-extension-rubric-refresh-plan.md | 2610162007-remote-integration-rubric-refresh-plan.md | 2610162010-registry-package-rubric-refresh-plan.md | 2610161927-agent-extension-stewardship-review-eval.md | 2610161927-browser-extension-ide-plugin-stewardship-review-eval.md | 2610161927-registry-package-and-ci-action-stewardship-review-eval.md | 2610161927-remote-integration-generic-stewardship-review-eval.md | 2610161928-stewardship-review-container-cli-desktop-eval.md | 2610170500-runtime-cross-plan-consistency-plan.md (sibling; disjoint files)
 > **Worktree:** Yes
+> **Completed:** 2026-10-17
+> **Walkthrough:** 2610170504-eval-suite-refresh-walkthrough.md
+> **Log:** 2610170504-eval-suite-refresh-log.md
 
 ---
 

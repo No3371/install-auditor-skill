@@ -57,7 +57,7 @@ class ValidateTests(unittest.TestCase):
         data = R.load_evals(R.EVALS_PATH)
         self.assertEqual(R.validate(data, R.known_workflows()), [])
         total, det, concept = R.count_assertions(data)
-        self.assertEqual((len(data["evals"]), total, det, concept), (41, 248, 82, 166))
+        self.assertEqual((len(data["evals"]), total, det, concept), (61, 362, 126, 236))
 
     def _synthetic(self, root: Path) -> tuple[dict, set[str]]:
         (root / "SKILL.md").write_text("---\nname: demo\n---\nbody\n", encoding="utf-8")
